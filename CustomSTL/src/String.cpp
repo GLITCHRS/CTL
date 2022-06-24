@@ -45,7 +45,7 @@ namespace CustomSTL
 
 /*
 *
-*	METHODS (NON-CONST)
+*	METHODS (CONST)
 *
 */
 namespace CustomSTL
