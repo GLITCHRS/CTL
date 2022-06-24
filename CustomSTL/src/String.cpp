@@ -1,10 +1,21 @@
+#include <iostream>
 #include <cstring>
 
 #include "String/String.h"
 
+/*
+*
+*	CONSTRUCTORS
+*
+*/
 namespace CustomSTL
 {
 	String::String() : m_Count(0), m_Size(sizeof(char) * 15), m_Buffer(new char[m_Size] {})
+	{
+		std::cout << "Constructed " << m_Size << " bytes!\n";
+	}
+
+	String::String(size_t count) : m_Count(count + 1), m_Size(sizeof(char)* m_Count), m_Buffer(new char[m_Size] {})
 	{
 		std::cout << "Constructed " << m_Size << " bytes!\n";
 	}
@@ -13,11 +24,6 @@ namespace CustomSTL
 	{
 		std::cout << "Constructed " << m_Size << " bytes!\n";
 		strcpy_s(m_Buffer, m_Size, string);
-	}
-
-	String::String(size_t count) : m_Count(count + 1), m_Size(sizeof(char)* m_Count), m_Buffer(new char[m_Size] {})
-	{
-		std::cout << "Constructed " << m_Size << " bytes!\n";
 	}
 
 	String::String(const String& other) : m_Count(other.m_Count), m_Size(other.m_Size), m_Buffer(new char[m_Size])
@@ -35,7 +41,39 @@ namespace CustomSTL
 
 		strcpy_s(m_Buffer, m_Size, string.data());
 	}
+};
 
+/*
+*
+*	METHODS (NON-CONST)
+*
+*/
+namespace CustomSTL
+{
+	const size_t String::Count() const
+	{
+		return m_Count;
+	}
+
+	const size_t String::Size() const
+	{
+		return m_Size;
+	}
+}
+
+/*
+* 
+*	OPERATORS OVERLOADINGS
+* 
+*/
+namespace CustomSTL
+{
+
+	/*
+	*
+	*	operator+
+	*
+	*/
 	String String::operator+(const String& other) const
 	{
 		String newStr{ (m_Count + other.m_Count) - 2 };
@@ -61,7 +99,25 @@ namespace CustomSTL
 		return this->operator+(string.data());
 	}
 
+	/*
+	*
+	*	operator<<(cout)
+	*
+	*/
+	std::ostream& operator<<(std::ostream& stream, const String& data)
+	{
+		stream << data.m_Buffer;
+		return stream;
+	}
+}
 
+/*
+*
+*	Destructor
+*
+*/
+namespace CustomSTL
+{
 	String::~String()
 	{
 		std::cout << "Destructing " << m_Size << " bytes!\n";
@@ -69,10 +125,4 @@ namespace CustomSTL
 		delete[] m_Buffer;
 		m_Buffer = nullptr;
 	}
-
-	std::ostream& operator<<(std::ostream& stream, const String& data)
-	{
-		stream << data.m_Buffer;
-		return stream;
-	}
-};
+}

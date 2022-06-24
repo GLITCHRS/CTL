@@ -1,6 +1,6 @@
 #pragma once
 
-#include <iostream>
+#include <ostream>
 
 namespace CustomSTL
 {
@@ -16,8 +16,8 @@ namespace CustomSTL
 		String(const std::string& string);
 
 	public:
-		const size_t Count() const { return m_Count; }
-		const size_t Size() const { return m_Size; }
+		const size_t Count() const;
+		const size_t Size() const;
 
 	public:
 		String operator+(const String& other) const;
