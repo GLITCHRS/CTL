@@ -3,7 +3,6 @@
 
 int main()
 {
-	CustomSTL::String name{ "Ahmed" };
-
-	std::cout << name.Has('a') << '\n';
+	CustomSTL::String name{ "mAmedhmed" };
+	std::cout << name.Has("med") << '\n';
 }

@@ -21,6 +21,7 @@ namespace CustomSTL
 
 	public:
 		bool Has(const char character) const;
+		bool Has(const char* string) const;
 
 	public:
 		String operator+(const char* string) const;

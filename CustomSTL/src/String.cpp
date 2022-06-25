@@ -76,6 +76,23 @@ namespace CustomSTL
 
 		return false;
 	}
+
+	bool String::Has(const char* string) const
+	{
+		size_t strCount{ strlen(string) };
+		char* nextFirstCharacterMatch{};
+		
+		std::ptrdiff_t i{};
+		while ((nextFirstCharacterMatch = strchr(m_Buffer + i, string[0])))
+		{
+			if (strncmp(nextFirstCharacterMatch, string, strCount) == 0)
+				return true;
+
+			i = (nextFirstCharacterMatch - m_Buffer) + 1;
+		}
+
+		return false;
+	}
 }
 
 /*
