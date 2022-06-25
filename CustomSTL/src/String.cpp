@@ -10,16 +10,26 @@
 */
 namespace CustomSTL
 {
-	String::String() : m_Count(0), m_Size(sizeof(char) * 15), m_Buffer(new char[m_Size] {})
+	String::String() : m_Count(0), m_Size(sizeof(char) * 15), m_Buffer(static_cast<char*>(_malloca(m_Size)))
 	{
-		std::cout << "Constructed " << m_Size << " bytes!\n";
+		if (m_Buffer)
+		{
+			memset(m_Buffer, 0, m_Size);
+			std::cout << "Constructed " << m_Size << " bytes!\n";
+		}
+		else
+			throw std::bad_alloc();
 	}
 
-	String::String(const String& other) : m_Count(other.m_Count), m_Size(other.m_Size), m_Buffer(new char[m_Size])
+	String::String(const String& other) : m_Count(other.m_Count), m_Size(other.m_Size), m_Buffer(static_cast<char*>(_malloca(m_Size)))
 	{
-		std::cout << "Copied " << m_Size << " bytes!\n";
-
-		strcpy_s(m_Buffer, m_Size, other.m_Buffer);
+		if (m_Buffer)
+		{
+			memset(m_Buffer, 0, m_Size);
+			std::cout << "Constructed " << m_Size << " bytes!\n";
+		}
+		else
+			throw std::bad_alloc();
 	}
 
 
@@ -29,24 +39,38 @@ namespace CustomSTL
 	* 
 	*/
 
-	String::String(size_t count) : m_Count(count + 1), m_Size(sizeof(char)* m_Count), m_Buffer(new char[m_Size] {})
+	String::String(size_t count) : m_Count(count + 1), m_Size(sizeof(char)* m_Count), m_Buffer(static_cast<char*>(_malloca(m_Size)))
 	{
-		std::cout << "Constructed " << m_Size << " bytes!\n";
+		if (m_Buffer)
+		{
+			memset(m_Buffer, 0, m_Size);
+			std::cout << "Constructed " << m_Size << " bytes!\n";
+		}
+		else
+			throw std::bad_alloc();
 	}
 
-	String::String(const char* string) : m_Count(strlen(string) + 1), m_Size(sizeof(char)* m_Count), m_Buffer(new char[m_Size])
+	String::String(const char* string) : m_Count(strlen(string) + 1), m_Size(sizeof(char)* m_Count), m_Buffer(static_cast<char*>(_malloca(m_Size)))
 	{
-		std::cout << "Constructed " << m_Size << " bytes!\n";
-		strcpy_s(m_Buffer, m_Size, string);
+		if (m_Buffer)
+		{
+			strcpy_s(m_Buffer, m_Size, string);
+			std::cout << "Constructed " << m_Size << " bytes!\n";
+		}
+		else
+			throw std::bad_alloc();
 	}
 
 	String::String(const std::string& string)
 	{
 		m_Size = string.size() + 1;
 		m_Count = m_Size / sizeof(char);
-		m_Buffer = new char[m_Size];
+		m_Buffer = static_cast<char*>(_malloca(m_Size));
 
-		strcpy_s(m_Buffer, m_Size, string.data());
+		if(m_Buffer)
+			strcpy_s(m_Buffer, m_Size, string.data());
+		else
+			throw std::bad_alloc();
 	}
 };
 
@@ -169,7 +193,7 @@ namespace CustomSTL
 	{
 		std::cout << "Destructing " << m_Size << " bytes!\n";
 
-		delete[] m_Buffer;
+		_freea(m_Buffer);
 		m_Buffer = nullptr;
 	}
 }
