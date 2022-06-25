@@ -3,9 +3,7 @@
 
 int main()
 {
-	std::string te{ "Test!" };
-	CustomSTL::String a{ te };
-	CustomSTL::String b{ " World!" };
+	CustomSTL::String name{ "Ahmed" };
 
-	std::cout << (a + b) << '\n';
+	std::cout << name.Has('a') << '\n';
 }

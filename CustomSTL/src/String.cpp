@@ -45,7 +45,7 @@ namespace CustomSTL
 
 /*
 *
-*	METHODS (CONST)
+*	CONST GETTERS
 *
 */
 namespace CustomSTL
@@ -58,6 +58,23 @@ namespace CustomSTL
 	const size_t String::Size() const
 	{
 		return m_Size;
+	}
+}
+
+/*
+*
+*	CONST METHODS
+*
+*/
+namespace CustomSTL
+{
+	bool String::Has(const char character) const
+	{
+		for (size_t i{}; i < m_Count; ++i)
+			if (m_Buffer[i] == character)
+				return true;
+
+		return false;
 	}
 }
 

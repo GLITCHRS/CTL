@@ -20,6 +20,9 @@ namespace CustomSTL
 		const size_t Size() const;
 
 	public:
+		bool Has(const char character) const;
+
+	public:
 		String operator+(const char* string) const;
 		String operator+(const String& other) const;
 		String operator+(const std::string& string) const;
