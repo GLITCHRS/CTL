@@ -15,6 +15,20 @@ namespace CustomSTL
 		std::cout << "Constructed " << m_Size << " bytes!\n";
 	}
 
+	String::String(const String& other) : m_Count(other.m_Count), m_Size(other.m_Size), m_Buffer(new char[m_Size])
+	{
+		std::cout << "Copied " << m_Size << " bytes!\n";
+
+		strcpy_s(m_Buffer, m_Size, other.m_Buffer);
+	}
+
+
+	/*
+	* 
+	* EXPLICIT CONSTRUCTORS
+	* 
+	*/
+
 	String::String(size_t count) : m_Count(count + 1), m_Size(sizeof(char)* m_Count), m_Buffer(new char[m_Size] {})
 	{
 		std::cout << "Constructed " << m_Size << " bytes!\n";
@@ -24,13 +38,6 @@ namespace CustomSTL
 	{
 		std::cout << "Constructed " << m_Size << " bytes!\n";
 		strcpy_s(m_Buffer, m_Size, string);
-	}
-
-	String::String(const String& other) : m_Count(other.m_Count), m_Size(other.m_Size), m_Buffer(new char[m_Size])
-	{
-		std::cout << "Copied " << m_Size << " bytes!\n";
-
-		strcpy_s(m_Buffer, m_Size, other.m_Buffer);
 	}
 
 	String::String(const std::string& string)
@@ -93,6 +100,16 @@ namespace CustomSTL
 
 		return false;
 	}
+
+	bool String::Has(const std::string& string) const
+	{
+		return Has(string.data());
+	}
+
+	bool String::Has(const String& string) const
+	{
+		return Has(string.m_Buffer);
+	}
 }
 
 /*
@@ -105,7 +122,7 @@ namespace CustomSTL
 
 	/*
 	*
-	*	operator+
+	*	operator+()
 	*
 	*/
 

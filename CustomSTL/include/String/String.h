@@ -10,10 +10,11 @@ namespace CustomSTL
 
 	public:
 		String();
-		String(size_t count);
-		String(const char* string);
 		String(const String& other);
-		String(const std::string& string);
+
+		explicit String(size_t count);
+		explicit String(const char* string);
+		explicit String(const std::string& string);
 
 	public:
 		const size_t Count() const;
@@ -22,6 +23,8 @@ namespace CustomSTL
 	public:
 		bool Has(const char character) const;
 		bool Has(const char* string) const;
+		bool Has(const std::string& string) const;
+		bool Has(const String& string) const;
 
 	public:
 		String operator+(const char* string) const;
