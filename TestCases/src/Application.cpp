@@ -1,15 +1,21 @@
 #include <iostream>
 #include "String/String.h"
 
-int main()
+#define PROFILING 0
+#include "Benchcpp11+.h"
+
+void Test1()
 {
 	CustomSTL::String name{ "Hello W Worl World" };
 
-	std::cout << name.Has("World") << '\n';
-	std::cout << name.Has("Worl") << '\n';
-	std::cout << name.Has("ld") << '\n';
-	std::cout << name.Has("d") << '\n';
-	std::cout << name.Has("Hello W") << '\n';
-	std::cout << name.Has("Hello") << '\n';
-	std::cout << name.Has("HellW") << '\n';
+	for (size_t i{}; i < 1'000'000; ++i)
+		name.Has("World");
+}
+
+int main()
+{
+	funcsArray<void(*)()> funcs{ Test1 };
+	START_PROFILE("TEST1");
+	Benchmarks::RunBenchmarks(funcs);
+	END_PROFILE();
 }
