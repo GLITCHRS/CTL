@@ -74,15 +74,6 @@ namespace CustomSTL
 	*	operator+
 	*
 	*/
-	String String::operator+(const String& other) const
-	{
-		String newStr{ (m_Count + other.m_Count) - 2 };
-
-		strcat_s(newStr.m_Buffer, newStr.m_Size, m_Buffer);
-		strcat_s(newStr.m_Buffer, newStr.m_Size, other.m_Buffer);
-
-		return newStr;
-	}
 
 	String String::operator+(const char* string) const
 	{
@@ -94,9 +85,14 @@ namespace CustomSTL
 		return newStr;
 	}
 
+	String String::operator+(const String& other) const
+	{
+		return (*this + other.m_Buffer);
+	}
+
 	String String::operator+(const std::string& string) const
 	{
-		return this->operator+(string.data());
+		return (*this + string.data());
 	}
 
 	/*
