@@ -26,6 +26,8 @@ namespace CustomSTL
 		bool Has(const std::string& string) const;
 		bool Has(const String& string) const;
 
+	private:
+
 	public:
 		String operator+(const char* string) const;
 		String operator+(const std::string& string) const;

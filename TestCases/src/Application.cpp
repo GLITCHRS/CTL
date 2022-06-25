@@ -3,10 +3,13 @@
 
 int main()
 {
-	CustomSTL::String name{ "mAmedhmed" };
-	CustomSTL::String find{ "med" };
+	CustomSTL::String name{ "Hello W Worl World" };
 
-	std::cout << name.Has("med") << '\n';
-	std::cout << name.Has(std::string{ "med" }) << '\n';
-	std::cout << name.Has(find) << '\n';
+	std::cout << name.Has("World") << '\n';
+	std::cout << name.Has("Worl") << '\n';
+	std::cout << name.Has("ld") << '\n';
+	std::cout << name.Has("d") << '\n';
+	std::cout << name.Has("Hello W") << '\n';
+	std::cout << name.Has("Hello") << '\n';
+	std::cout << name.Has("HellW") << '\n';
 }

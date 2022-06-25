@@ -70,7 +70,7 @@ namespace CustomSTL
 
 /*
 *
-*	CONST METHODS
+*	CONST PUBLIC METHODS
 *
 */
 namespace CustomSTL
@@ -87,17 +87,17 @@ namespace CustomSTL
 	bool String::Has(const char* string) const
 	{
 		size_t strCount{ strlen(string) };
-		char* nextFirstCharacterMatch{};
-		
-		std::ptrdiff_t i{};
-		while ((nextFirstCharacterMatch = strchr(m_Buffer + i, string[0])))
+
+		for (size_t i{}; i < m_Count; ++i)
 		{
-			if (strncmp(nextFirstCharacterMatch, string, strCount) == 0)
+			size_t j{};
+
+			while (j < strCount && m_Buffer[i] == string[j])
+				++i, ++j;
+
+			if (j == strCount)
 				return true;
-
-			i = (nextFirstCharacterMatch - m_Buffer) + 1;
 		}
-
 		return false;
 	}
 
@@ -110,6 +110,15 @@ namespace CustomSTL
 	{
 		return Has(string.m_Buffer);
 	}
+}
+
+/*
+*
+*	CONST PRIVATE METHODS
+*
+*/
+namespace CustomSTL
+{
 }
 
 /*
