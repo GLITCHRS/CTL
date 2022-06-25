@@ -25,7 +25,7 @@ namespace CustomSTL
 	{
 		if (m_Buffer)
 		{
-			memset(m_Buffer, 0, m_Size);
+			strcpy_s(m_Buffer, m_Size, other.m_Buffer);
 			std::cout << "Constructed " << m_Size << " bytes!\n";
 		}
 		else
@@ -67,8 +67,11 @@ namespace CustomSTL
 		m_Count = m_Size / sizeof(char);
 		m_Buffer = static_cast<char*>(_malloca(m_Size));
 
-		if(m_Buffer)
+		if (m_Buffer)
+		{
 			strcpy_s(m_Buffer, m_Size, string.data());
+			std::cout << "Constructed " << m_Size << " bytes!\n";
+		}
 		else
 			throw std::bad_alloc();
 	}
