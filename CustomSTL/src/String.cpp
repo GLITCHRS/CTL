@@ -88,7 +88,7 @@ namespace CustomSTL
 	{
 		size_t strCount{ strlen(string) };
 		char* nextFirstCharacterMatch{};
-		
+
 		std::ptrdiff_t i{};
 		while ((nextFirstCharacterMatch = strchr(m_Buffer + i, string[0])))
 		{
