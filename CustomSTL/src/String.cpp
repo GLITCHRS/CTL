@@ -136,14 +136,14 @@ namespace CustomSTL
 		return newStr;
 	}
 
-	String String::operator+(const String& other) const
-	{
-		return (*this + other.m_Buffer);
-	}
-
 	String String::operator+(const std::string& string) const
 	{
 		return (*this + string.data());
+	}
+
+	String String::operator+(const String& other) const
+	{
+		return (*this + other.m_Buffer);
 	}
 
 	/*

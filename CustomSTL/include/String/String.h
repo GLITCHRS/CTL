@@ -28,8 +28,8 @@ namespace CustomSTL
 
 	public:
 		String operator+(const char* string) const;
-		String operator+(const String& other) const;
 		String operator+(const std::string& string) const;
+		String operator+(const String& other) const;
 
 	public:
 		~String();
