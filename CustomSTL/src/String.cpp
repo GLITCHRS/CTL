@@ -10,7 +10,7 @@
 */
 namespace CustomSTL
 {
-	String::String() : m_Count(0), m_Size(sizeof(char) * 15), m_Buffer(static_cast<char*>(_malloca(m_Size)))
+	String::String() : m_Length(0), m_Count(0), m_Size(sizeof(char) * 15), m_Buffer(static_cast<char*>(_malloca(m_Size)))
 	{
 		if (m_Buffer)
 		{
@@ -21,7 +21,7 @@ namespace CustomSTL
 			throw std::bad_alloc();
 	}
 
-	String::String(const String& other) : m_Count(other.m_Count), m_Size(other.m_Size), m_Buffer(static_cast<char*>(_malloca(m_Size)))
+	String::String(const String& other) : m_Length(other.m_Length), m_Count(other.m_Count), m_Size(other.m_Size), m_Buffer(static_cast<char*>(_malloca(m_Size)))
 	{
 		if (m_Buffer)
 		{
@@ -39,7 +39,7 @@ namespace CustomSTL
 	* 
 	*/
 
-	String::String(size_t count) : m_Count(count + 1), m_Size(sizeof(char)* m_Count), m_Buffer(static_cast<char*>(_malloca(m_Size)))
+	String::String(size_t length) : m_Length(length), m_Count(length + 1), m_Size(sizeof(char)* m_Count), m_Buffer(static_cast<char*>(_malloca(m_Size)))
 	{
 		if (m_Buffer)
 		{
@@ -50,7 +50,7 @@ namespace CustomSTL
 			throw std::bad_alloc();
 	}
 
-	String::String(const char* string) : m_Count(strlen(string) + 1), m_Size(sizeof(char)* m_Count), m_Buffer(static_cast<char*>(_malloca(m_Size)))
+	String::String(const char* string) : m_Length(strlen(string)), m_Count(m_Length + 1), m_Size(sizeof(char)* m_Count), m_Buffer(static_cast<char*>(_malloca(m_Size)))
 	{
 		if (m_Buffer)
 		{
@@ -63,7 +63,8 @@ namespace CustomSTL
 
 	String::String(const std::string& string)
 	{
-		m_Size = string.size() + 1;
+		m_Length = string.size();
+		m_Size = m_Length + 1;
 		m_Count = m_Size / sizeof(char);
 		m_Buffer = static_cast<char*>(_malloca(m_Size));
 
@@ -84,6 +85,11 @@ namespace CustomSTL
 */
 namespace CustomSTL
 {
+	const size_t String::Length() const
+	{
+		return m_Length;
+	}
+
 	const size_t String::Count() const
 	{
 		return m_Count;
@@ -188,7 +194,7 @@ namespace CustomSTL
 	*/
 	String String::operator+(const char* string) const
 	{
-		String newStr{ (m_Count + strlen(string)) - 1 };
+		String newStr{ m_Length + strlen(string) };
 
 		strcat_s(newStr.m_Buffer, newStr.m_Size, m_Buffer);
 		strcat_s(newStr.m_Buffer, newStr.m_Size, string);
@@ -214,9 +220,9 @@ namespace CustomSTL
 
 	bool String::operator==(const char* string) const
 	{
-		const size_t strSize{ strlen(string) + 1 };
+		const size_t strSize{ strlen(string) };
 
-		if (m_Count != strSize)
+		if (m_Length != strSize)
 			return false;
 
 		for (size_t i{}; i < m_Count; ++i)
@@ -265,12 +271,12 @@ namespace CustomSTL
 
 	bool String::operator>(const char* string) const
 	{
-		const size_t strSize{ strlen(string) + 1 };
+		const size_t strSize{ strlen(string) };
 
-		if (m_Count > strSize)
+		if (m_Length > strSize)
 			return true;
 
-		else if (m_Count < strSize)
+		else if (m_Length < strSize)
 			return false;
 
 		for (size_t i{}; i < m_Count; ++i)

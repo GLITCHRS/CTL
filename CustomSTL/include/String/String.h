@@ -17,6 +17,7 @@ namespace CustomSTL
 		explicit String(const std::string& string);
 
 	public:
+		const size_t Length() const;
 		const size_t Count() const;
 		const size_t Size() const;
 
@@ -64,6 +65,7 @@ namespace CustomSTL
 		~String();
 
 	private:
+		size_t m_Length;
 		size_t m_Count;
 		size_t m_Size;
 		char* m_Buffer;
