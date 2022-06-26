@@ -6,13 +6,32 @@
 
 void Test1() noexcept
 {
-	CustomSTL::String s{};
+	PROFILE_FUNCTION();
+
+	for (size_t i{}; i < 100'000; ++i)
+	{
+		{
+			CustomSTL::String s{};
+		}
+	}
+}
+
+void Test2() noexcept
+{
+	PROFILE_FUNCTION();
+
+	for (size_t i{}; i < 100'000; ++i)
+	{
+		{
+			std::string s{};
+		}
+	}
 }
 
 int main()
 {
-	funcsArray<void(*)()> funcs{ Test1 };
-	START_PROFILE("TEST1");
-	Benchmarks::RunBenchmarks(funcs, 100);
+	funcsArray<void(*)()> funcs{ Test1, Test2 };
+	START_PROFILE("NEW");
+	Benchmarks::RunBenchmarks(funcs);
 	END_PROFILE();
 }

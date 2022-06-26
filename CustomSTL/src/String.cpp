@@ -15,7 +15,6 @@ namespace CustomSTL
 		if (m_Buffer)
 		{
 			memset(m_Buffer, 0, m_Size);
-			std::cout << "Constructed " << m_Size << " bytes!\n";
 		}
 		else
 			throw std::bad_alloc();
@@ -23,8 +22,6 @@ namespace CustomSTL
 
 	String::String(const String& other) : m_Count(other.m_Count), m_Size(other.m_Size), m_Buffer(new char[m_Size])
 	{
-		std::cout << "Copied " << m_Size << " bytes!\n";
-
 		strcpy_s(m_Buffer, m_Size, other.m_Buffer);
 	}
 
@@ -37,12 +34,10 @@ namespace CustomSTL
 
 	String::String(size_t count) : m_Count(count + 1), m_Size(sizeof(char)* m_Count), m_Buffer(new char[m_Size] {})
 	{
-		std::cout << "Constructed " << m_Size << " bytes!\n";
 	}
 
 	String::String(const char* string) : m_Count(strlen(string) + 1), m_Size(sizeof(char)* m_Count), m_Buffer(new char[m_Size])
 	{
-		std::cout << "Constructed " << m_Size << " bytes!\n";
 		strcpy_s(m_Buffer, m_Size, string);
 	}
 
@@ -182,8 +177,6 @@ namespace CustomSTL
 {
 	String::~String()
 	{
-		std::cout << "Destructing " << m_Size << " bytes!\n";
-
 		_freea(m_Buffer);
 		m_Buffer = nullptr;
 	}
