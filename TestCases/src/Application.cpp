@@ -3,8 +3,8 @@
 
 int main()
 {
-	CTL::String name{ "Ahmed Zaki" };
-	name.reserve(100);
+	CTL::String name{ 100 };
+	name.append("Ahmed Zaki");
 
 	std::cout << name << '\n';
 	std::cout << name.Length() << '\n';
