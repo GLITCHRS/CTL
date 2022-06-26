@@ -2,7 +2,7 @@
 
 #include <ostream>
 
-namespace CustomSTL
+namespace CTL
 {
 	class String
 	{

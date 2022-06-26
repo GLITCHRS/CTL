@@ -8,7 +8,7 @@
 *	CONSTRUCTORS
 *
 */
-namespace CustomSTL
+namespace CTL
 {
 	String::String() : m_Length(0), m_Count(0), m_Size(sizeof(char) * 15), m_Buffer(static_cast<char*>(_malloca(m_Size)))
 	{
@@ -83,7 +83,7 @@ namespace CustomSTL
 *	CONST GETTERS
 *
 */
-namespace CustomSTL
+namespace CTL
 {
 	const size_t String::Length() const
 	{
@@ -106,7 +106,7 @@ namespace CustomSTL
 *	CONST METHODS
 *
 */
-namespace CustomSTL
+namespace CTL
 {
 	bool String::Has(const char character) const
 	{
@@ -150,7 +150,7 @@ namespace CustomSTL
 * NON-CONST OPERATORS OVERLOADINGS
 * 
 */
-namespace CustomSTL
+namespace CTL
 {
 	/*
 	* 
@@ -171,7 +171,7 @@ namespace CustomSTL
 *	CONST OPERATORS OVERLOADINGS
 * 
 */
-namespace CustomSTL
+namespace CTL
 {
 
 	/*
@@ -383,7 +383,7 @@ namespace CustomSTL
 *	Destructor
 *
 */
-namespace CustomSTL
+namespace CTL
 {
 	String::~String()
 	{
