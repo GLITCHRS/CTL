@@ -5,7 +5,6 @@ int main()
 {
 	CTL::String name1{"Ahmed"};
 
-	std::cout << name1[0] << '\n';
-	std::cout << name1[name1.Length() - 1] << '\n';
-	std::cout << sizeof(CTL::String) << '\n';
+	for (char& item : name1)
+		std::cout << item << '\n';
 }

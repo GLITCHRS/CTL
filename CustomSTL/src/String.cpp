@@ -79,11 +79,39 @@ namespace CTL
 
 /*
 *
+*	NON-CONST GETTERS
+*
+*/
+namespace CTL
+{
+	char* String::begin()
+	{
+		return m_Buffer;
+	}
+
+	char* String::end()
+	{
+		return m_Buffer + m_Length;
+	}
+}
+
+/*
+*
 *	CONST GETTERS
 *
 */
 namespace CTL
 {
+	const char* String::begin() const
+	{
+		return m_Buffer;
+	}
+
+	const char* String::end() const
+	{
+		return m_Buffer + m_Length;
+	}
+
 	const size_t String::Length() const
 	{
 		return m_Length;

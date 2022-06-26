@@ -17,6 +17,12 @@ namespace CTL
 		explicit String(const std::string& string);
 
 	public:
+		char* begin();
+		char* end();
+
+	public:
+		const char* begin() const;
+		const char* end() const;
 		const size_t Length() const;
 		const size_t Size() const;
 
