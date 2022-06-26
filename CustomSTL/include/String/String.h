@@ -31,6 +31,10 @@ namespace CustomSTL
 		String operator+(const std::string& string) const;
 		String operator+(const String& other) const;
 
+		bool operator==(const char* string) const;
+		bool operator==(const std::string& string) const;
+		bool operator==(const String& other) const;
+
 	public:
 		~String();
 
