@@ -10,7 +10,7 @@
 */
 namespace CTL
 {
-	String::String() : m_Length(0), m_Count(0), m_Size(sizeof(char) * 15), m_Buffer(static_cast<char*>(_malloca(m_Size)))
+	String::String() : m_Length(0), m_Size(sizeof(char) * 15), m_Buffer(static_cast<char*>(_malloca(m_Size)))
 	{
 		if (m_Buffer)
 		{
@@ -21,7 +21,7 @@ namespace CTL
 			throw std::bad_alloc();
 	}
 
-	String::String(const String& other) : m_Length(other.m_Length), m_Count(other.m_Count), m_Size(other.m_Size), m_Buffer(static_cast<char*>(_malloca(m_Size)))
+	String::String(const String& other) : m_Length(other.m_Length), m_Size(other.m_Size), m_Buffer(static_cast<char*>(_malloca(m_Size)))
 	{
 		if (m_Buffer)
 		{
@@ -39,7 +39,7 @@ namespace CTL
 	* 
 	*/
 
-	String::String(size_t length) : m_Length(length), m_Count(length + 1), m_Size(sizeof(char)* m_Count), m_Buffer(static_cast<char*>(_malloca(m_Size)))
+	String::String(size_t length) : m_Length(length), m_Size(sizeof(char)* (m_Length + 1)), m_Buffer(static_cast<char*>(_malloca(m_Size)))
 	{
 		if (m_Buffer)
 		{
@@ -50,7 +50,7 @@ namespace CTL
 			throw std::bad_alloc();
 	}
 
-	String::String(const char* string) : m_Length(strlen(string)), m_Count(m_Length + 1), m_Size(sizeof(char)* m_Count), m_Buffer(static_cast<char*>(_malloca(m_Size)))
+	String::String(const char* string) : m_Length(strlen(string)), m_Size(sizeof(char)* (m_Length + 1)), m_Buffer(static_cast<char*>(_malloca(m_Size)))
 	{
 		if (m_Buffer)
 		{
@@ -65,7 +65,6 @@ namespace CTL
 	{
 		m_Length = string.size();
 		m_Size = m_Length + 1;
-		m_Count = m_Size / sizeof(char);
 		m_Buffer = static_cast<char*>(_malloca(m_Size));
 
 		if (m_Buffer)
@@ -90,11 +89,6 @@ namespace CTL
 		return m_Length;
 	}
 
-	const size_t String::Count() const
-	{
-		return m_Count;
-	}
-
 	const size_t String::Size() const
 	{
 		return m_Size;
@@ -110,7 +104,7 @@ namespace CTL
 {
 	bool String::Has(const char character) const
 	{
-		for (size_t i{}; i < m_Count; ++i)
+		for (size_t i{}; i < m_Length; ++i)
 			if (m_Buffer[i] == character)
 				return true;
 
@@ -121,7 +115,7 @@ namespace CTL
 	{
 		size_t strCount{ strlen(string) };
 
-		for (size_t i{}; i < m_Count; ++i)
+		for (size_t i{}; i < m_Length; ++i)
 		{
 			size_t j{};
 
@@ -159,7 +153,7 @@ namespace CTL
 	*/
 	char& String::operator[](size_t index)
 	{
-		if(m_Count > index)
+		if(m_Length > index)
 			return m_Buffer[index];
 
 		throw std::out_of_range("Index out of bounds!");
@@ -181,7 +175,7 @@ namespace CTL
 	*/
 	const char& String::operator[](size_t index) const
 	{
-		if (m_Count > index)
+		if (m_Length > index)
 			return m_Buffer[index];
 
 		throw std::out_of_range("Index out of bounds!");
@@ -225,7 +219,7 @@ namespace CTL
 		if (m_Length != strSize)
 			return false;
 
-		for (size_t i{}; i < m_Count; ++i)
+		for (size_t i{}; i < m_Length; ++i)
 			if (m_Buffer[i] != string[i])
 				return false;
 
@@ -279,7 +273,7 @@ namespace CTL
 		else if (m_Length < strSize)
 			return false;
 
-		for (size_t i{}; i < m_Count; ++i)
+		for (size_t i{}; i < m_Length; ++i)
 			if (m_Buffer[i] > string[i])
 				return true;
 

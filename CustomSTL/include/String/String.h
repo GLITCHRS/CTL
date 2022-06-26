@@ -18,7 +18,6 @@ namespace CTL
 
 	public:
 		const size_t Length() const;
-		const size_t Count() const;
 		const size_t Size() const;
 
 	public:
@@ -66,7 +65,6 @@ namespace CTL
 
 	private:
 		size_t m_Length;
-		size_t m_Count;
 		size_t m_Size;
 		char* m_Buffer;
 	};
