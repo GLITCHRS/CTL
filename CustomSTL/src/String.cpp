@@ -141,7 +141,28 @@ namespace CustomSTL
 
 /*
 * 
-*	OPERATORS OVERLOADINGS
+* NON-CONST OPERATORS OVERLOADINGS
+* 
+*/
+namespace CustomSTL
+{
+	/*
+	* 
+	* operator[](index)
+	* 
+	*/
+	char& String::operator[](size_t index)
+	{
+		if(m_Count > index)
+			return m_Buffer[index];
+
+		throw std::out_of_range("Index out of bounds!");
+	}
+}
+
+/*
+* 
+*	CONST OPERATORS OVERLOADINGS
 * 
 */
 namespace CustomSTL
@@ -149,10 +170,22 @@ namespace CustomSTL
 
 	/*
 	*
+	* operator[](index)
+	*
+	*/
+	const char& String::operator[](size_t index) const
+	{
+		if (m_Count > index)
+			return m_Buffer[index];
+
+		throw std::out_of_range("Index out of bounds!");
+	}
+
+	/*
+	*
 	*	operator+()
 	*
 	*/
-
 	String String::operator+(const char* string) const
 	{
 		String newStr{ (m_Count + strlen(string)) - 1 };

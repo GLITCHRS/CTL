@@ -27,6 +27,11 @@ namespace CustomSTL
 		bool Has(const String& string) const;
 
 	public:
+		char& operator[](size_t index);
+
+	public:
+		const char& operator[](size_t index) const;
+
 		String operator+(const char* string) const;
 		String operator+(const std::string& string) const;
 		String operator+(const String& other) const;
