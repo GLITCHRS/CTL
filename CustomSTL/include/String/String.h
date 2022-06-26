@@ -17,6 +17,19 @@ namespace CTL
 		explicit String(const std::string& string);
 
 	public:
+		bool reserve(const size_t size);
+
+		void append(const char* string, const size_t requiredSize = 0);
+		void append(const std::string& string, const size_t requiredSize = 0);
+		void append(const String& string, const size_t requiredSize = 0);
+
+	public:
+		bool Has(const char character) const;
+		bool Has(const char* string) const;
+		bool Has(const std::string& string) const;
+		bool Has(const String& string) const;
+
+	public:
 		char* begin();
 		char* end();
 
@@ -25,12 +38,6 @@ namespace CTL
 		const char* end() const;
 		const size_t Length() const;
 		const size_t Size() const;
-
-	public:
-		bool Has(const char character) const;
-		bool Has(const char* string) const;
-		bool Has(const std::string& string) const;
-		bool Has(const String& string) const;
 
 	public:
 		char& operator[](size_t index);
@@ -78,5 +85,4 @@ namespace CTL
 	};
 
 	std::ostream& operator<<(std::ostream& stream, const String& data);
-
 };

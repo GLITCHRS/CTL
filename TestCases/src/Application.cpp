@@ -3,8 +3,10 @@
 
 int main()
 {
-	std::string name1{ "ahmed" };
-	std::string name2{ "Ahmeda" };
+	CTL::String name{ "Ahmed Zaki" };
+	name.reserve(100);
 
-	std::cout << (name1.compare(name2) > 0) << '\n';
+	std::cout << name << '\n';
+	std::cout << name.Length() << '\n';
+	std::cout << name.Size() << '\n';
 }
