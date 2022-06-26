@@ -10,9 +10,15 @@
 */
 namespace CustomSTL
 {
-	String::String() : m_Count(0), m_Size(sizeof(char) * 15), m_Buffer(new char[m_Size] {})
+	String::String() : m_Count(0), m_Size(sizeof(char) * 15), m_Buffer(static_cast<char*>(_malloca(m_Size)))
 	{
-		std::cout << "Constructed " << m_Size << " bytes!\n";
+		if (m_Buffer)
+		{
+			memset(m_Buffer, 0, m_Size);
+			std::cout << "Constructed " << m_Size << " bytes!\n";
+		}
+		else
+			throw std::bad_alloc();
 	}
 
 	String::String(const String& other) : m_Count(other.m_Count), m_Size(other.m_Size), m_Buffer(new char[m_Size])
@@ -178,7 +184,7 @@ namespace CustomSTL
 	{
 		std::cout << "Destructing " << m_Size << " bytes!\n";
 
-		delete[] m_Buffer;
+		_freea(m_Buffer);
 		m_Buffer = nullptr;
 	}
 }

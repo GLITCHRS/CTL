@@ -1,21 +1,18 @@
 #include <iostream>
 #include "String/String.h"
 
-#define PROFILING 0
-#include "Benchcpp11+.h"
+#define PROFILING 1
+#include "Benchcpp17+.h"
 
-void Test1()
+void Test1() noexcept
 {
-	CustomSTL::String name{ "Hello W Worl World" };
-
-	for (size_t i{}; i < 1'000'000; ++i)
-		name.Has("World");
+	CustomSTL::String s{};
 }
 
 int main()
 {
 	funcsArray<void(*)()> funcs{ Test1 };
 	START_PROFILE("TEST1");
-	Benchmarks::RunBenchmarks(funcs);
+	Benchmarks::RunBenchmarks(funcs, 100);
 	END_PROFILE();
 }

@@ -1,6 +1,8 @@
 #pragma once
 
+#include <string>
 #include <thread>
+#include <chrono>
 #include <fstream>
 
 #if PROFILING == 1
