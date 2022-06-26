@@ -181,7 +181,12 @@ namespace CustomSTL
 
 	bool String::operator==(const char* string) const
 	{
-		for (size_t i{}; i < m_Count && i < strlen(string) + 1; ++i)
+		const size_t strSize{ strlen(string) + 1 };
+
+		if (m_Count != strSize)
+			return false;
+
+		for (size_t i{}; i < m_Count; ++i)
 			if (m_Buffer[i] != string[i])
 				return false;
 
@@ -227,7 +232,15 @@ namespace CustomSTL
 
 	bool String::operator>(const char* string) const
 	{
-		for (size_t i{}; i < m_Count && i < strlen(string) + 1; ++i)
+		const size_t strSize{ strlen(string) + 1 };
+
+		if (m_Count > strSize)
+			return true;
+
+		else if (m_Count < strSize)
+			return false;
+
+		for (size_t i{}; i < m_Count; ++i)
 			if (m_Buffer[i] > string[i])
 				return true;
 
@@ -274,6 +287,7 @@ namespace CustomSTL
 	bool String::operator>=(const char* string) const
 	{
 		const String& self{ *this };
+
 		return (self > string || self == string);
 	}
 
