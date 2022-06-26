@@ -42,6 +42,8 @@ namespace CTL
 		String operator+(const std::string& string) const;
 		String operator+(const String& other) const;
 
+		String operator*(const size_t count) const;
+
 		bool operator==(const char* string) const;
 		bool operator==(const std::string& string) const;
 		bool operator==(const String& other) const;

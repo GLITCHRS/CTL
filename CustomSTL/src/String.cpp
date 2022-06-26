@@ -211,7 +211,7 @@ namespace CTL
 
 	/*
 	*
-	*	operator+()
+	*	operator+(string)
 	*
 	*/
 	String String::operator+(const char* string) const
@@ -232,6 +232,17 @@ namespace CTL
 	String String::operator+(const String& other) const
 	{
 		return (*this + other.m_Buffer);
+	}
+
+	/*
+	*
+	*	operator*(string)
+	*
+	*/
+
+	String String::operator*(const size_t count) const
+	{
+		// supporting `+=` or `.append` is required!
 	}
 
 	/*
