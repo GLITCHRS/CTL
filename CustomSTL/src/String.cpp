@@ -200,6 +200,31 @@ namespace CustomSTL
 
 	/*
 	*
+	*	operator>=()
+	*
+	*/
+
+	bool String::operator>=(const char* string) const
+	{
+		for (size_t i{}; i < m_Count && i < strlen(string) + 1; ++i)
+			if (string[i] < m_Buffer[i])
+				return false;
+
+		return true;
+	}
+
+	bool String::operator>=(const std::string& string) const
+	{
+		return (*this >= string.data());
+	}
+
+	bool String::operator>=(const String& other) const
+	{
+		return (*this >= other.m_Buffer);
+	}
+
+	/*
+	*
 	*	operator<<(cout)
 	*
 	*/
