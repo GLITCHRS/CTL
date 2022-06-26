@@ -206,71 +206,17 @@ namespace CustomSTL
 
 	bool String::operator!=(const char* string) const
 	{
-		for (size_t i{}; i < m_Count && i < strlen(string) + 1; ++i)
-			if (m_Buffer[i] != string[i])
-				return true;
-
-		return false;
+		return !(*this == string);
 	}
 
 	bool String::operator!=(const std::string& string) const
 	{
-		return (*this != string.data());
+		return !(*this == string.data());
 	}
 
 	bool String::operator!=(const String& other) const
 	{
-		return (*this != other.m_Buffer);
-	}
-
-	/*
-	*
-	*	operator>=()
-	*
-	*/
-
-	bool String::operator>=(const char* string) const
-	{
-		for (size_t i{}; i < m_Count && i < strlen(string) + 1; ++i)
-			if (m_Buffer[i] < string[i])
-				return false;
-
-		return true;
-	}
-
-	bool String::operator>=(const std::string& string) const
-	{
-		return (*this >= string.data());
-	}
-
-	bool String::operator>=(const String& other) const
-	{
-		return (*this >= other.m_Buffer);
-	}
-
-	/*
-	*
-	*	operator<=()
-	*
-	*/
-
-	bool String::operator<=(const char* string) const
-	{
-		for (size_t i{}; i < m_Count && i < strlen(string) + 1; ++i)
-			if (m_Buffer[i] > string[i])
-				return false;
-
-		return true;
-	}
-
-	bool String::operator<=(const std::string& string) const
-	{
-		return (*this <= string.data());
-	}
-
-	bool String::operator<=(const String& other) const
-	{
-		return (*this <= other.m_Buffer);
+		return !(*this == other.m_Buffer);
 	}
 
 	/*
@@ -306,21 +252,65 @@ namespace CustomSTL
 
 	bool String::operator<(const char* string) const
 	{
-		for (size_t i{}; i < m_Count && i < strlen(string) + 1; ++i)
-			if (string[i] > m_Buffer[i])
-				return true;
-
-		return false;
+		return !(*this >= string);
 	}
 
 	bool String::operator<(const std::string& string) const
 	{
-		return (*this < string.data());
+		return !(*this >= string);
 	}
 
 	bool String::operator<(const String& other) const
 	{
-		return (*this < other.m_Buffer);
+		return !(*this >= other);
+	}
+
+	/*
+	*
+	*	operator>=()
+	*
+	*/
+
+	bool String::operator>=(const char* string) const
+	{
+		const String& self{ *this };
+		return (self > string || self == string);
+	}
+
+	bool String::operator>=(const std::string& string) const
+	{
+		const String& self{ *this };
+		const char* data{ string.data() };
+
+		return (self > data || self == data);
+	}
+
+	bool String::operator>=(const String& other) const
+	{
+		const String& self{ *this };
+
+		return (self > other.m_Buffer || self == other.m_Buffer);
+	}
+
+	/*
+	*
+	*	operator<=()
+	*
+	*/
+
+	bool String::operator<=(const char* string) const
+	{
+		return !(*this > string);
+	}
+
+	bool String::operator<=(const std::string& string) const
+	{
+		return !(*this > string.data());
+	}
+
+	bool String::operator<=(const String& other) const
+	{
+		return !(*this > other.m_Buffer);
 	}
 
 	/*
