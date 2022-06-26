@@ -240,10 +240,10 @@ namespace CTL
 	*
 	*/
 
-	String String::operator*(const size_t count) const
-	{
-		// supporting `+=` or `.append` is required!
-	}
+	//String String::operator*(const size_t count) const
+	//{
+	//	// supporting `+=` or `.append` is required!
+	//}
 
 	/*
 	*
@@ -253,9 +253,7 @@ namespace CTL
 
 	bool String::operator==(const char* string) const
 	{
-		const size_t strSize{ strlen(string) };
-
-		if (m_Length != strSize)
+		if (m_Length != strlen(string))
 			return false;
 
 		for (size_t i{}; i < m_Length; ++i)
@@ -304,14 +302,6 @@ namespace CTL
 
 	bool String::operator>(const char* string) const
 	{
-		const size_t strSize{ strlen(string) };
-
-		if (m_Length > strSize)
-			return true;
-
-		else if (m_Length < strSize)
-			return false;
-
 		for (size_t i{}; i < m_Length; ++i)
 			if (m_Buffer[i] > string[i])
 				return true;
@@ -365,17 +355,12 @@ namespace CTL
 
 	bool String::operator>=(const std::string& string) const
 	{
-		const String& self{ *this };
-		const char* data{ string.data() };
-
-		return (self > data || self == data);
+		return (*this >= string.data());
 	}
 
 	bool String::operator>=(const String& other) const
 	{
-		const String& self{ *this };
-
-		return (self > other.m_Buffer || self == other.m_Buffer);
+		return (*this >= other.m_Buffer);
 	}
 
 	/*

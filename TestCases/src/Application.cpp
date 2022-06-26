@@ -3,8 +3,8 @@
 
 int main()
 {
-	CTL::String name1{"Ahmed"};
+	std::string name1{ "ahmed" };
+	std::string name2{ "Ahmeda" };
 
-	for (char& item : name1)
-		std::cout << item << '\n';
+	std::cout << (name1.compare(name2) > 0) << '\n';
 }
