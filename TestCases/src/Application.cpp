@@ -3,10 +3,21 @@
 
 int main()
 {
-	CTL::String name{ 100 };
-	name.append("Ahmed Zaki");
+	CTL::String t0{ "Data" };
 
-	std::cout << name << '\n';
-	std::cout << name.Length() << '\n';
-	std::cout << name.Size() << '\n';
+	std::cout << t0 << '\n';
+	std::cout << t0.Length() << '\n';
+	std::cout << t0.Size() << '\n';
+
+	t0.append(" new Str 1!");
+
+	std::cout << t0 << '\n';
+	std::cout << t0.Length() << '\n';
+	std::cout << t0.Size() << '\n';
+
+	t0.append(t0);
+
+	std::cout << t0 << '\n';
+	std::cout << t0.Length() << '\n';
+	std::cout << t0.Size() << '\n';
 }
