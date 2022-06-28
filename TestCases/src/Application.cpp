@@ -8,10 +8,12 @@ void Test1() noexcept
 {
 	PROFILE_FUNCTION();
 
+	CTL::String s{" LOLDataLOL "};
+
 	for (size_t i{}; i < 100'000; ++i)
 	{
 		{
-			CustomSTL::String s{};
+			s = "Mohammed is a Professional Hacker Pal!";
 		}
 	}
 }
@@ -20,10 +22,12 @@ void Test2() noexcept
 {
 	PROFILE_FUNCTION();
 
+	std::string s{ "LOLDataLOL" };
+
 	for (size_t i{}; i < 100'000; ++i)
 	{
 		{
-			std::string s{};
+			s = "Mohammed is a Professional Hacker Pal!";
 		}
 	}
 }
