@@ -5,5 +5,7 @@ int main()
 {
 	CTL::String t0{ "Hello" };
 
-	std::cout << t0.Has("Hello") << '\n';
+	t0 = "Hello World";
+
+	std::cout << t0 << '\n';
 }
