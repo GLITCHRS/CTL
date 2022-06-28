@@ -386,6 +386,16 @@ namespace CTL
 			}
 		}
 
+		CONSTEXPR20 void operator=(const std::string& string)
+		{
+			return this->operator=(string.data());
+		}
+
+		CONSTEXPR20 void operator=(const String& string)
+		{
+			return this->operator=(string.m_Buffer);
+		}
+
 		/*
 		*
 		*	operator==()
