@@ -373,10 +373,10 @@ namespace CTL
 		CONSTEXPR20 bool operator>(const char* string) const
 		{
 			for (size_t i{}; i < m_Length; ++i)
-				if (m_Buffer[i] > string[i])
-					return true;
+				if (m_Buffer[i] < string[i])
+					return false;
 
-			return false;
+			return true;
 		}
 
 		CONSTEXPR20 bool operator>(const std::string& string) const

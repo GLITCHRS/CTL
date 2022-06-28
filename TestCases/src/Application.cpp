@@ -4,20 +4,7 @@
 int main()
 {
 	CTL::String t0{ "Data" };
+	CTL::String f{ "ata" };
 
-	std::cout << t0 << '\n';
-	std::cout << t0.Length() << '\n';
-	std::cout << t0.Size() << '\n';
-
-	t0.append(" new Str 1!");
-
-	std::cout << t0 << '\n';
-	std::cout << t0.Length() << '\n';
-	std::cout << t0.Size() << '\n';
-
-	t0.append(t0);
-
-	std::cout << t0 << '\n';
-	std::cout << t0.Length() << '\n';
-	std::cout << t0.Size() << '\n';
+	std::cout << (t0 <= f) << '\n';
 }
