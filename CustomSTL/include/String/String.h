@@ -42,12 +42,12 @@ namespace CTL
 			}
 		}
 
-		CONSTEXPR20 String(const String& other) : m_Length(other.m_Length), m_Size(other.m_Size)
+		CONSTEXPR20 String(const String& string) : m_Length(string.m_Length), m_Size(string.m_Size)
 		{
 			AllocStr(m_Buffer, m_Size, false);
 
 			if (m_Buffer)
-				strcpy_s(m_Buffer, m_Size, other.m_Buffer);
+				strcpy_s(m_Buffer, m_Size, string.m_Buffer);
 			else
 			{
 				m_Length = 0;
@@ -324,9 +324,9 @@ namespace CTL
 			return (*this + string.data());
 		}
 
-		CONSTEXPR20 String operator+(const String& other) const
+		CONSTEXPR20 String operator+(const String& string) const
 		{
-			return (*this + other.m_Buffer);
+			return (*this + string.m_Buffer);
 		}
 
 		/*
@@ -416,12 +416,12 @@ namespace CTL
 
 		CONSTEXPR20 bool operator==(const std::string& string) const
 		{
-			return (*this == string.data());
+			return this->operator==(string.data());
 		}
 
-		CONSTEXPR20 bool operator==(const String& other) const
+		CONSTEXPR20 bool operator==(const String& string) const
 		{
-			return (*this == other.m_Buffer);
+			return this->operator==(string.m_Buffer);
 		}
 
 		/*
@@ -440,9 +440,9 @@ namespace CTL
 			return !(*this == string.data());
 		}
 
-		CONSTEXPR20 bool operator!=(const String& other) const
+		CONSTEXPR20 bool operator!=(const String& string) const
 		{
-			return !(*this == other.m_Buffer);
+			return !(*this == string.m_Buffer);
 		}
 
 		/*
@@ -462,12 +462,12 @@ namespace CTL
 
 		CONSTEXPR20 bool operator>(const std::string& string) const
 		{
-			return (*this > string.data());
+			return this->operator>(string.data());
 		}
 
-		CONSTEXPR20 bool operator>(const String& other) const
+		CONSTEXPR20 bool operator>(const String& string) const
 		{
-			return (*this > other.m_Buffer);
+			return this->operator>(string.m_Buffer);
 		}
 
 		/*
@@ -478,17 +478,17 @@ namespace CTL
 
 		CONSTEXPR20 bool operator<(const char* string) const
 		{
-			return !(*this >= string);
+			return !this->operator>=(string);
 		}
 
 		CONSTEXPR20 bool operator<(const std::string& string) const
 		{
-			return !(*this >= string);
+			return !this->operator>=(string.data());
 		}
 
-		CONSTEXPR20 bool operator<(const String& other) const
+		CONSTEXPR20 bool operator<(const String& string) const
 		{
-			return !(*this >= other);
+			return !this->operator>=(string.m_Buffer);
 		}
 
 		/*
@@ -506,12 +506,18 @@ namespace CTL
 
 		CONSTEXPR20 bool operator>=(const std::string& string) const
 		{
-			return (*this >= string.data());
+			const String& self{ *this };
+			const char* stringData{ string.data() };
+
+			return (self > stringData || self == stringData);
 		}
 
-		CONSTEXPR20 bool operator>=(const String& other) const
+		CONSTEXPR20 bool operator>=(const String& string) const
 		{
-			return (*this >= other.m_Buffer);
+			const String& self{ *this };
+			const char* stringData{ string.m_Buffer };
+
+			return (self > stringData || self == stringData);
 		}
 
 		/*
@@ -522,17 +528,17 @@ namespace CTL
 
 		CONSTEXPR20 bool operator<=(const char* string) const
 		{
-			return !(*this > string);
+			return !this->operator>(string);
 		}
 
 		CONSTEXPR20 bool operator<=(const std::string& string) const
 		{
-			return !(*this > string.data());
+			return !this->operator>(string.data());
 		}
 
-		CONSTEXPR20 bool operator<=(const String& other) const
+		CONSTEXPR20 bool operator<=(const String& string) const
 		{
-			return !(*this > other.m_Buffer);
+			return !this->operator>(string.m_Buffer);
 		}
 
 		CONSTEXPR20 ~String()
