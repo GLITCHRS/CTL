@@ -2,11 +2,11 @@
 
 #if _HAS_CXX20
 #define CONSTEXPR20 constexpr
-#define AllocStr(SIZE) new char[SIZE]{}
+#define AllocStr(VAR, SIZE) new char[SIZE]{}
 #define DeallocStr(VAR) delete[] VAR; VAR = nullptr
 #else
 #define CONSTEXPR20 inline
-#define AllocStr(SIZE) static_cast<char*>(_malloca(SIZE))
+#define AllocStr(VAR, SIZE) static_cast<char*>(_malloca(SIZE)); memset(VAR, 0, SIZE)
 #define DeallocStr(VAR) _freea(VAR)
 #endif
 
@@ -30,14 +30,16 @@ namespace CTL
 		friend std::ostream& operator<<(std::ostream& stream, const String& data);
 
 	public:
-		CONSTEXPR20 String() : m_Length(0), m_Size(sizeof(char) * 15), m_Buffer(AllocStr(m_Size))
+		CONSTEXPR20 String() : m_Length(0), m_Size(sizeof(char) * 15)
 		{
+			m_Buffer = AllocStr(m_Buffer, m_Size);
 			if (!m_Buffer)
 				throw std::bad_alloc();
 		}
 
-		CONSTEXPR20 String(const String& other) : m_Length(other.m_Length), m_Size(other.m_Size), m_Buffer(AllocStr(m_Size))
+		CONSTEXPR20 String(const String& other) : m_Length(other.m_Length), m_Size(other.m_Size)
 		{
+			m_Buffer = AllocStr(m_Buffer, m_Size);
 			if (m_Buffer)
 				strcpy_s(m_Buffer, m_Size, other.m_Buffer);
 			else
@@ -51,8 +53,9 @@ namespace CTL
 		*
 		*/
 
-		CONSTEXPR20 String(size_t requiredLength) : m_Length(0), m_Size(sizeof(char)* (requiredLength + 1)), m_Buffer(AllocStr(m_Size))
+		CONSTEXPR20 String(size_t requiredLength) : m_Length(0), m_Size(sizeof(char)* (requiredLength + 1))
 		{
+			m_Buffer = AllocStr(m_Buffer, m_Size);
 			if (!m_Buffer)
 				throw std::bad_alloc();
 		}
@@ -61,7 +64,7 @@ namespace CTL
 		{
 			m_Length = length(string);
 			m_Size = (m_Length + 1) * sizeof(char);
-			m_Buffer = AllocStr(m_Size);
+			m_Buffer = AllocStr(m_Buffer, m_Size);
 
 			if (m_Buffer)
 				strcpy_s(m_Buffer, m_Size, string);
@@ -69,8 +72,9 @@ namespace CTL
 				throw std::bad_alloc();
 		}
 
-		CONSTEXPR20 String(const std::string& string) : m_Length(string.size()), m_Size(m_Length + 1), m_Buffer(AllocStr(m_Size))
+		CONSTEXPR20 String(const std::string& string) : m_Length(string.size()), m_Size(m_Length + 1)
 		{
+			m_Buffer = AllocStr(m_Buffer, m_Size);
 			if (m_Buffer)
 				strcpy_s(m_Buffer, m_Size, string.data());
 			else
@@ -90,7 +94,7 @@ namespace CTL
 			if (m_Length == 0)
 			{
 				DeallocStr(m_Buffer);
-				m_Buffer = AllocStr(size);
+				m_Buffer = AllocStr(m_Buffer, size);
 
 				if (m_Buffer)
 					m_Size = size;
@@ -100,7 +104,7 @@ namespace CTL
 			else
 			{
 				char* oldStr{ m_Buffer };
-				m_Buffer = AllocStr(size);
+				m_Buffer = AllocStr(m_Buffer, size);
 
 				if (m_Buffer)
 				{
@@ -136,7 +140,7 @@ namespace CTL
 
 				std::cout << "New strSize: " << newStrSize << '\n';
 
-				m_Buffer = AllocStr(newStrSize);
+				m_Buffer = AllocStr(m_Buffer, newStrSize);
 				if (m_Buffer)
 				{
 					strcpy_s(m_Buffer, newStrSize, oldStr);
