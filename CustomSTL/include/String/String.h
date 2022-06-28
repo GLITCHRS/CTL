@@ -47,8 +47,12 @@ namespace CTL
 			AllocStr(m_Buffer, m_Size, false);
 
 			if (m_Buffer)
+			{
 				for (size_t i{}; i < m_Length; ++i)
 					m_Buffer[i] = string[i];
+
+				m_Buffer[m_Length] = '\0';
+			}
 			else
 			{
 				m_Length = 0;
@@ -102,8 +106,12 @@ namespace CTL
 			AllocStr(m_Buffer, m_Size, false);
 
 			if (m_Buffer)
+			{
 				for (size_t i{}; i < m_Length; ++i)
 					m_Buffer[i] = string[i];
+
+				m_Buffer[m_Length] = '\0';
+			}
 			else
 			{
 				m_Length = 0;
@@ -146,6 +154,7 @@ namespace CTL
 					for (size_t i{}; i < m_Length; ++i)
 						m_Buffer[i] = oldStr[i];
 
+					m_Buffer[m_Length] = '\0';
 					m_Size = size;
 					DeallocStr(oldStr);
 				}
@@ -201,8 +210,12 @@ namespace CTL
 			else
 			{
 				strLength += m_Length;
+
+				size_t j{};
 				for (size_t i{ m_Length }; i < strLength; ++i)
-					m_Buffer[i] = string[i];
+					m_Buffer[i] = string[j++];
+				m_Buffer[strLength] = '\0';
+
 				m_Length = strLength;
 			}
 		}
@@ -390,7 +403,6 @@ namespace CTL
 
 					for (size_t i{}; i < strLength; ++i)
 						m_Buffer[i] = string[i];
-
 					m_Buffer[m_Length] = '\0';
 				}
 				else
