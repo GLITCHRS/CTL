@@ -3,15 +3,10 @@
 
 int main()
 {
-	CustomSTL::String name1{};
-	CustomSTL::String name2{ 15 };
-	CustomSTL::String name3{ "mAmedhmed" };
-	CustomSTL::String name4{ std::string{"Hello World!"} };
-	CustomSTL::String name5{ name3 };
+	CTL::String t0{ 15 };
 
-	std::cout << name1 << '\n';
-	std::cout << name2 << '\n';
-	std::cout << name3 << '\n';
-	std::cout << name4 << '\n';
-	std::cout << name5 << '\n';
+	std::cout << t0 << '\n';
+	std::cout << t0.Length() << '\n';
+	std::cout << t0.Size() << '\n';
+	std::cout << t0.Has("lo") << '\n';
 }
