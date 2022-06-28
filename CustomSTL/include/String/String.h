@@ -6,7 +6,8 @@
 #define DeallocStr(VAR) delete[] VAR; VAR = nullptr
 #else
 #define CONSTEXPR20 inline
-#define AllocStr(VAR, SIZE, AUTOINIT) VAR = static_cast<char*>(_malloca(SIZE)); if(AUTOINIT && VAR) memset(VAR, 0, SIZE)
+#define AllocStr(VAR, SIZE, AUTOINIT) VAR = static_cast<char*>(_malloca(SIZE)); if(AUTOINIT && VAR) \
+for(size_t i{}; i < (SIZE / sizeof(char)); ++i) VAR[i] = '\0';
 #define DeallocStr(VAR) _freea(VAR); VAR = nullptr
 #endif
 

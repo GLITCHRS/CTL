@@ -3,10 +3,7 @@
 
 int main()
 {
-	CTL::String t0{ "Hello" };
-
-	t0.reserve(100);
-	t0.append("Hel");
+	CTL::String t0{ 15 };
 
 	std::cout << t0 << '\n';
 	std::cout << t0.Length() << '\n';
