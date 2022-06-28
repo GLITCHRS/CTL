@@ -6,7 +6,8 @@
 #define DeallocStr(VAR) delete[] VAR; VAR = nullptr
 #else
 #define CONSTEXPR20 inline
-#define AllocStr(VAR, SIZE, AUTOINIT) VAR = static_cast<char*>(_malloca(SIZE)); if(AUTOINIT && VAR) memset(VAR, 0, SIZE)
+#define AllocStr(VAR, SIZE, AUTOINIT) VAR = static_cast<char*>(_malloca(SIZE)); if(AUTOINIT && VAR) \
+for(size_t i{}; i < (SIZE / sizeof(char)); ++i) VAR[i] = '\0';
 #define DeallocStr(VAR) _freea(VAR); VAR = nullptr
 #endif
 
@@ -47,7 +48,12 @@ namespace CTL
 			AllocStr(m_Buffer, m_Size, false);
 
 			if (m_Buffer)
-				strcpy_s(m_Buffer, m_Size, string.m_Buffer);
+			{
+				for (size_t i{}; i < m_Length; ++i)
+					m_Buffer[i] = string[i];
+
+				m_Buffer[m_Length] = '\0';
+			}
 			else
 			{
 				m_Length = 0;
@@ -82,7 +88,12 @@ namespace CTL
 			AllocStr(m_Buffer, m_Size, false);
 
 			if (m_Buffer)
-				strcpy_s(m_Buffer, m_Size, string);
+			{
+				for (size_t i{}; i < m_Length; ++i)
+					m_Buffer[i] = string[i];
+
+				m_Buffer[m_Length] = '\0';
+			}
 			else
 			{
 				m_Length = 0;
@@ -96,7 +107,12 @@ namespace CTL
 			AllocStr(m_Buffer, m_Size, false);
 
 			if (m_Buffer)
-				strcpy_s(m_Buffer, m_Size, string.data());
+			{
+				for (size_t i{}; i < m_Length; ++i)
+					m_Buffer[i] = string[i];
+
+				m_Buffer[m_Length] = '\0';
+			}
 			else
 			{
 				m_Length = 0;
@@ -136,9 +152,11 @@ namespace CTL
 
 				if (m_Buffer)
 				{
-					strcpy_s(m_Buffer, size, oldStr);
-					m_Size = size;
+					for (size_t i{}; i < m_Length; ++i)
+						m_Buffer[i] = oldStr[i];
 
+					m_Buffer[m_Length] = '\0';
+					m_Size = size;
 					DeallocStr(oldStr);
 				}
 				else
@@ -169,12 +187,19 @@ namespace CTL
 				AllocStr(m_Buffer, newStrSize, false);
 				if (m_Buffer)
 				{
-					strcpy_s(m_Buffer, newStrSize, oldStr);
-					strcat_s(m_Buffer, newStrSize, string);
+					for (size_t i{}; i < m_Length; ++i)
+						m_Buffer[i] = oldStr[i];
 
-					m_Length += strLength;
+					strLength += m_Length;
+
+					size_t j{};
+					for (size_t i{ m_Length }; i < strLength; ++i)
+						m_Buffer[i] = string[j++];
+
+					m_Buffer[strLength] = '\0';
+
+					m_Length = strLength;
 					m_Size = newStrSize;
-
 					DeallocStr(oldStr);
 				}
 				else
@@ -185,8 +210,14 @@ namespace CTL
 			}
 			else
 			{
-				strcat_s(m_Buffer, m_Size, string);
-				m_Length += strLength;
+				strLength += m_Length;
+
+				size_t j{};
+				for (size_t i{ m_Length }; i < strLength; ++i)
+					m_Buffer[i] = string[j++];
+				m_Buffer[strLength] = '\0';
+
+				m_Length = strLength;
 			}
 		}
 
@@ -370,7 +401,10 @@ namespace CTL
 				{
 					m_Length = strLength;
 					m_Size = sizeToAlloc;
-					strcpy_s(m_Buffer, m_Size, string);
+
+					for (size_t i{}; i < strLength; ++i)
+						m_Buffer[i] = string[i];
+					m_Buffer[m_Length] = '\0';
 				}
 				else
 				{
@@ -382,7 +416,10 @@ namespace CTL
 			else
 			{
 				m_Length = strLength;
-				strcpy_s(m_Buffer, m_Size, string);
+
+				for (size_t i{}; i < strLength; ++i)
+					m_Buffer[i] = string[i];
+				m_Buffer[m_Length] = '\0';
 			}
 		}
 
