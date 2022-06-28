@@ -1,4 +1,5 @@
 #include <iostream>
+#include <format>
 #include "String/String.h"
 
 #define PROFILING 1
@@ -10,11 +11,9 @@ void Test1() noexcept
 
 	CTL::String s{" LOLDataLOL "};
 
-	for (size_t i{}; i < 100'000; ++i)
+	for (size_t i{}; i < 1000'000; ++i)
 	{
-		{
-			s = "Mohammed is a Professional Hacker Pal!";
-		}
+		if(s.Has(std::format("{}", i)));
 	}
 }
 
@@ -24,11 +23,9 @@ void Test2() noexcept
 
 	std::string s{ "LOLDataLOL" };
 
-	for (size_t i{}; i < 100'000; ++i)
+	for (size_t i{}; i < 1000'000; ++i)
 	{
-		{
-			s = "Mohammed is a Professional Hacker Pal!";
-		}
+		if (s.find(std::format("{}", i)) != std::string::npos);
 	}
 }
 
