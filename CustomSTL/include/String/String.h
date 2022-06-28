@@ -2,11 +2,11 @@
 
 #if _HAS_CXX20
 #define CONSTEXPR20 constexpr
-#define AllocStr(VAR, SIZE) VAR = new char[SIZE]{}
+#define AllocStr(VAR, SIZE, AUTOINIT) if(AUTOINIT) VAR = new char[SIZE]{}; else VAR = new char[SIZE];
 #define DeallocStr(VAR) delete[] VAR; VAR = nullptr
 #else
 #define CONSTEXPR20 inline
-#define AllocStr(VAR, SIZE) VAR = static_cast<char*>(_malloca(SIZE))
+#define AllocStr(VAR, SIZE, AUTOINIT) VAR = static_cast<char*>(_malloca(SIZE)); if(AUTOINIT && VAR) memset(VAR, 0, SIZE)
 #define DeallocStr(VAR) _freea(VAR); VAR = nullptr
 #endif
 
@@ -32,22 +32,28 @@ namespace CTL
 	public:
 		CONSTEXPR20 String() : m_Length(0), m_Size(sizeof(char) * 15)
 		{
-			AllocStr(m_Buffer, m_Size);
+			AllocStr(m_Buffer, m_Size, true);
 
-			if (m_Buffer)
-				memset(m_Buffer, 0, m_Size);
-			else
+			if(!m_Buffer)
+			{
+				m_Length = 0;
+				m_Size = 0;
 				throw std::bad_alloc();
+			}
 		}
 
 		CONSTEXPR20 String(const String& other) : m_Length(other.m_Length), m_Size(other.m_Size)
 		{
-			AllocStr(m_Buffer, m_Size);
+			AllocStr(m_Buffer, m_Size, false);
 
 			if (m_Buffer)
 				strcpy_s(m_Buffer, m_Size, other.m_Buffer);
 			else
+			{
+				m_Length = 0;
+				m_Size = 0;
 				throw std::bad_alloc();
+			}
 		}
 
 
@@ -59,34 +65,44 @@ namespace CTL
 
 		CONSTEXPR20 String(size_t requiredLength) : m_Length(0), m_Size(sizeof(char)* (requiredLength + 1))
 		{
-			AllocStr(m_Buffer, m_Size);
+			AllocStr(m_Buffer, m_Size, true);
 
-			if (m_Buffer)
-				memset(m_Buffer, 0, m_Size);
-			else
+			if (!m_Buffer)
+			{
+				m_Length = 0;
+				m_Size = 0;
 				throw std::bad_alloc();
+			}
 		}
 
 		CONSTEXPR20 String(const char* string)
 		{
 			m_Length = length(string);
 			m_Size = (m_Length + 1) * sizeof(char);
-			AllocStr(m_Buffer, m_Size);
+			AllocStr(m_Buffer, m_Size, false);
 
 			if (m_Buffer)
 				strcpy_s(m_Buffer, m_Size, string);
 			else
+			{
+				m_Length = 0;
+				m_Size = 0;
 				throw std::bad_alloc();
+			}
 		}
 
 		CONSTEXPR20 String(const std::string& string) : m_Length(string.size()), m_Size(m_Length + 1)
 		{
-			AllocStr(m_Buffer, m_Size);
+			AllocStr(m_Buffer, m_Size, false);
 
 			if (m_Buffer)
 				strcpy_s(m_Buffer, m_Size, string.data());
 			else
+			{
+				m_Length = 0;
+				m_Size = 0;
 				throw std::bad_alloc();
+			}
 		}
 
 		/*
@@ -94,25 +110,29 @@ namespace CTL
 		* .reserve method
 		*
 		*/
-		CONSTEXPR20 bool reserve(const size_t size)
+		CONSTEXPR20 void reserve(const size_t size)
 		{
-			if (size < m_Size)
-				return false;
+			if (size <= m_Size)
+				return;
 
 			if (m_Length == 0)
 			{
 				DeallocStr(m_Buffer);
-				AllocStr(m_Buffer, size);
+				AllocStr(m_Buffer, size, true);
 
 				if (m_Buffer)
 					m_Size = size;
 				else
+				{
+					m_Length = 0;
+					m_Size = 0;
 					throw std::bad_alloc();
+				}
 			}
 			else
 			{
 				char* oldStr{ m_Buffer };
-				AllocStr(m_Buffer, size);
+				AllocStr(m_Buffer, size, false);
 
 				if (m_Buffer)
 				{
@@ -123,12 +143,12 @@ namespace CTL
 				}
 				else
 				{
+					m_Length = 0;
+					m_Size = 0;
 					DeallocStr(oldStr);
 					throw std::bad_alloc();
 				}
 			}
-
-			return true;
 		}
 
 		/*
@@ -146,9 +166,7 @@ namespace CTL
 				char* oldStr = m_Buffer;
 				size_t newStrSize{ (requiredSize != 0) ? requiredSize : strSize * 2 - 1 };
 
-				std::cout << "New strSize: " << newStrSize << '\n';
-
-				AllocStr(m_Buffer, newStrSize);
+				AllocStr(m_Buffer, newStrSize, false);
 				if (m_Buffer)
 				{
 					strcpy_s(m_Buffer, newStrSize, oldStr);
@@ -193,14 +211,18 @@ namespace CTL
 
 		CONSTEXPR20 bool Has(const char* string) const
 		{
-			size_t strCount{ length(string) };
+			size_t strLength{ length(string) };
+
+			if (m_Length < strLength)
+				return false;
 
 			for (size_t i{}; i < m_Length; ++i)
 			{
 				size_t j{};
-				while (j < strCount && m_Buffer[i] == string[j]) ++i, ++j;
+				size_t i_cpy{ i };
+				while (j < strLength && m_Buffer[i_cpy] == string[j]) ++i_cpy, ++j;
 
-				if (j == strCount)
+				if (j == strLength)
 					return true;
 			}
 			return false;
@@ -342,7 +364,7 @@ namespace CTL
 			if (strSize >= m_Size)
 			{
 				DeallocStr(m_Buffer);
-				AllocStr(m_Buffer, sizeToAlloc);
+				AllocStr(m_Buffer, sizeToAlloc, false);
 
 				if (m_Buffer)
 				{
@@ -508,10 +530,10 @@ namespace CTL
 			DeallocStr(m_Buffer);
 		}
 
-		private:
-			size_t m_Length;
-			size_t m_Size;
-			char* m_Buffer;
+	private:
+		size_t m_Length;
+		size_t m_Size;
+		char* m_Buffer;
 	};
 
 	/*
