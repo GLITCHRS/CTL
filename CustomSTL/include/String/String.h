@@ -7,8 +7,14 @@
 #else
 #define CONSTEXPR20 inline
 #define AllocStr(VAR, SIZE, AUTOINIT) VAR = static_cast<char*>(_malloca(SIZE)); if(AUTOINIT && VAR) \
-for(size_t i{}; i < (SIZE / sizeof(char)); ++i) VAR[i] = '\0';
+for(size_t i{}; i < (SIZE / sizeOfChar); ++i) VAR[i] = '\0';
 #define DeallocStr(VAR) _freea(VAR); VAR = nullptr
+#endif
+
+#if _HAS_CXX17
+static constinit size_t sizeOfChar{ sizeof(char) };
+#else
+static const size_t sizeOfChar{ sizeof(char) };
 #endif
 
 #include <iostream>
@@ -31,7 +37,7 @@ namespace CTL
 		friend std::ostream& operator<<(std::ostream& stream, const String& data);
 
 	public:
-		CONSTEXPR20 String() : m_Length(0), m_Size(sizeof(char) * 15)
+		CONSTEXPR20 String() : m_Length(0), m_Size(sizeOfChar * 15)
 		{
 			AllocStr(m_Buffer, m_Size, true);
 
@@ -69,7 +75,7 @@ namespace CTL
 		*
 		*/
 
-		CONSTEXPR20 String(size_t requiredLength) : m_Length(0), m_Size(sizeof(char)* (requiredLength + 1))
+		CONSTEXPR20 explicit String(size_t requiredLength) : m_Length(0), m_Size(sizeOfChar* (requiredLength + 1))
 		{
 			AllocStr(m_Buffer, m_Size, true);
 
@@ -81,10 +87,10 @@ namespace CTL
 			}
 		}
 
-		CONSTEXPR20 String(const char* string)
+		CONSTEXPR20 explicit String(const char* string)
 		{
 			m_Length = length(string);
-			m_Size = (m_Length + 1) * sizeof(char);
+			m_Size = (m_Length + 1) * sizeOfChar;
 			AllocStr(m_Buffer, m_Size, false);
 
 			if (m_Buffer)
@@ -102,7 +108,7 @@ namespace CTL
 			}
 		}
 
-		CONSTEXPR20 String(const std::string& string) : m_Length(string.size()), m_Size(m_Length + 1)
+		CONSTEXPR20 explicit String(const std::string& string) : m_Length(string.size()), m_Size(m_Length + 1)
 		{
 			AllocStr(m_Buffer, m_Size, false);
 
@@ -177,7 +183,7 @@ namespace CTL
 		CONSTEXPR20 void append(const char* string, const size_t requiredSize = 0)
 		{
 			size_t strLength{ length(string) };
-			size_t strSize{ (m_Length + strLength + 1) * sizeof(char) };
+			size_t strSize{ (m_Length + strLength + 1) * sizeOfChar };
 
 			if (m_Size <= strSize)
 			{
@@ -389,7 +395,7 @@ namespace CTL
 		CONSTEXPR20 void operator=(const char* string)
 		{
 			size_t strLength{ length(string) };
-			size_t strSize{ strLength * sizeof(char) + 1 };
+			size_t strSize{ (strLength + 1) * sizeOfChar };
 			size_t sizeToAlloc{ strSize * 2 - 1 };
 
 			if (strSize >= m_Size)
@@ -431,6 +437,32 @@ namespace CTL
 		CONSTEXPR20 void operator=(const String& string)
 		{
 			return this->operator=(string.m_Buffer);
+		}
+
+		/*
+		*
+		*	operator+=(string)
+		*
+		*/
+
+		CONSTEXPR20 void operator+=(const char character)
+		{
+			this->append(character);
+		}
+
+		CONSTEXPR20 void operator+=(const char* string)
+		{
+			this->append(string);
+		}
+
+		CONSTEXPR20 void operator+=(const std::string& string)
+		{
+			return this->append(string.data());
+		}
+
+		CONSTEXPR20 void operator+=(const String& string)
+		{
+			return this->append(string.m_Buffer);
 		}
 
 		/*
