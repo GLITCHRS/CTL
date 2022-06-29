@@ -5,7 +5,7 @@
 
 #if _HAS_CXX20
 #define CONSTEXPR20 constexpr
-#define AllocStr(VAR, SIZE, AUTOINIT) if(AUTOINIT) VAR = new char[SIZE]{}; else VAR = new char[SIZE];
+#define AllocStr(VAR, SIZE, AUTOINIT) if(AUTOINIT) VAR = new (std::nothrow) char[SIZE]{}; else VAR = new (std::nothrow) char[SIZE];
 #define DeallocStr(VAR) delete[] VAR; VAR = nullptr
 #else
 #define CONSTEXPR20 inline
