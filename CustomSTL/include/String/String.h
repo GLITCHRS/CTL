@@ -149,7 +149,6 @@ namespace CTL
 					m_Size = size;
 				else
 				{
-					m_Length = 0;
 					m_Size = 0;
 					throw std::bad_alloc();
 				}
