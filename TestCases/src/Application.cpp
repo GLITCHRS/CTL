@@ -3,7 +3,9 @@
 
 int main()
 {
-	CTL::String t0{ 15 };
+	CTL::String t0{ "Ahme" };
+
+	t0 += 'd';
 
 	std::cout << t0 << '\n';
 	std::cout << t0.Length() << '\n';

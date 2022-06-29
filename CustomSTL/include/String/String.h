@@ -447,7 +447,8 @@ namespace CTL
 
 		CONSTEXPR20 void operator+=(const char character)
 		{
-			this->append(character);
+			const char characterStr[]{ character, '\0' };
+			this->append(characterStr);
 		}
 
 		CONSTEXPR20 void operator+=(const char* string)
