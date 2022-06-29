@@ -21,7 +21,7 @@ for(size_t i{}; i < (SIZE / sizeof(char)); ++i) VAR[i] = '\0';
 */
 namespace CTL
 {
-	constexpr size_t length(const char* str)
+	CONSTEXPR20 size_t length(const char* str)
 	{
 		return *str ? 1 + length(str + 1) : 0;
 	}
