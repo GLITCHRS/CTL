@@ -5,10 +5,15 @@ int main()
 {
 	CTL::String t0{ "Ahme" };
 
-	t0 += 'd';
+	std::cout << t0 << '\n';
+	std::cout << t0.Length() << '\n';
+	std::cout << t0.Size() << '\n';
+	std::cout << t0.Has("me") << '\n';
+
+	t0 *= 5;
 
 	std::cout << t0 << '\n';
 	std::cout << t0.Length() << '\n';
 	std::cout << t0.Size() << '\n';
-	std::cout << t0.Has("lo") << '\n';
+	std::cout << t0.Has("me") << '\n';
 }

@@ -1,3 +1,6 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: https://pvs-studio.com
+
 #pragma once
 
 #if _HAS_CXX20
@@ -464,6 +467,36 @@ namespace CTL
 		CONSTEXPR20 void operator+=(const String& string)
 		{
 			return this->append(string.m_Buffer);
+		}
+
+		/*
+		*
+		*	operator*=()
+		*
+		*/
+		CONSTEXPR20 void operator*=(size_t count)
+		{
+			char* currentStr;
+
+			AllocStr(currentStr, m_Size, false);
+
+			if (currentStr)
+			{
+				for (size_t i{}; i < m_Length; ++i)
+					currentStr[i] = m_Buffer[i];
+
+				currentStr[m_Length] = '\0';
+			}
+			else
+				throw std::bad_alloc();
+
+			this->reserve(m_Size * count);
+
+			while (count > 1)
+			{
+				this->append(currentStr);
+				--count;
+			}
 		}
 
 		/*
