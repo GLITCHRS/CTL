@@ -15,9 +15,9 @@ for(size_t i{}; i < (SIZE / sizeOfChar); ++i) VAR[i] = '\0';
 #endif
 
 #if _HAS_CXX17
-static constinit size_t sizeOfChar{ sizeof(char) };
+constinit size_t sizeOfChar{ sizeof(char) };
 #else
-static const size_t sizeOfChar{ sizeof(char) };
+const size_t sizeOfChar{ sizeof(char) };
 #endif
 
 #include <iostream>
@@ -94,7 +94,6 @@ namespace CTL
 		{
 			m_Length = length(string);
 			size_t stringSize{ (m_Length + 1) * sizeOfChar };
-
 			m_Size = (requiredSize != 0) ? requiredSize : stringSize;
 
 			if (m_Size < stringSize)
@@ -195,7 +194,7 @@ namespace CTL
 			size_t strLength{ length(string) };
 			size_t strSize{ (m_Length + strLength + 1) * sizeOfChar };
 
-			if (m_Size <= strSize)
+			if (m_Size < strSize)
 			{
 				char* oldStr = m_Buffer;
 				size_t newStrSize{ (requiredSize != 0) ? requiredSize : strSize * 2 - 1 };
@@ -358,7 +357,7 @@ namespace CTL
 		*/
 		CONSTEXPR20 String operator+(const char* string) const
 		{
-			String newStr{ m_Buffer, m_Length + length(string) };
+			String newStr{ m_Buffer, (m_Length + length(string) + 1) * sizeOfChar };
 			newStr.append(string);
 
 			return newStr;

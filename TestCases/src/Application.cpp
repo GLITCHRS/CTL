@@ -4,7 +4,10 @@
 int main()
 {
 	CTL::String t0{ "Ahme" };
-	CTL::String t1{ "Ahme", 4 };
+	CTL::String t1{ "Ahme", 15 };
+	CTL::String t2{ t0 + "d Zaki" };
 
-	std::cout << (t0 + "d Zaki") << '\n';
+	t0 *= 2;
+
+	std::cout << t0 << '\n';
 }
