@@ -90,24 +90,32 @@ namespace CTL
 			}
 		}
 
-		CONSTEXPR20 explicit String(const char* string)
+		CONSTEXPR20 explicit String(const char* string, const size_t requiredSize = 0)
 		{
 			m_Length = length(string);
-			m_Size = (m_Length + 1) * sizeOfChar;
-			AllocStr(m_Buffer, m_Size, false);
+			size_t stringSize{ (m_Length + 1) * sizeOfChar };
 
-			if (m_Buffer)
-			{
-				for (size_t i{}; i < m_Length; ++i)
-					m_Buffer[i] = string[i];
+			m_Size = (requiredSize != 0) ? requiredSize : stringSize;
 
-				m_Buffer[m_Length] = '\0';
-			}
+			if (m_Size < stringSize)
+				throw std::bad_array_new_length();
 			else
 			{
-				m_Length = 0;
-				m_Size = 0;
-				throw std::bad_alloc();
+				AllocStr(m_Buffer, m_Size, false);
+
+				if (m_Buffer)
+				{
+					for (size_t i{}; i < m_Length; ++i)
+						m_Buffer[i] = string[i];
+
+					m_Buffer[m_Length] = '\0';
+				}
+				else
+				{
+					m_Length = 0;
+					m_Size = 0;
+					throw std::bad_alloc();
+				}
 			}
 		}
 
@@ -350,9 +358,7 @@ namespace CTL
 		*/
 		CONSTEXPR20 String operator+(const char* string) const
 		{
-			String newStr{ m_Length + length(string) };
-
-			newStr.append(m_Buffer);
+			String newStr{ m_Buffer, m_Length + length(string) };
 			newStr.append(string);
 
 			return newStr;
