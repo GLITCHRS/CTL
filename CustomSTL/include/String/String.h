@@ -324,6 +324,23 @@ namespace CTL
 
 		/*
 		*
+		*	.Count method
+		*
+		*/
+
+		CONSTEXPR20 unsigned int Count(const char character) const
+		{
+			unsigned int count{};
+
+			for (size_t i{}; i < m_Length; ++i)
+				if (m_Buffer[i] == character)
+					++count;
+
+			return count;
+		}
+
+		/*
+		*
 		*	.begin/end methods
 		*
 		*/
