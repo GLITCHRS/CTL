@@ -22,6 +22,8 @@
 #else
 #define CONSTINIT const
 #endif
+#else
+#error _MSVC_LANG macro is required, please refer to https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=msvc-170
 #endif
 
 #include <iostream>

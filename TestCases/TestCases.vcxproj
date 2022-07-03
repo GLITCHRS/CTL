@@ -138,11 +138,6 @@
   <ItemGroup>
     <ClCompile Include="src\Application.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\CustomSTL\CustomSTL.vcxproj">
-      <Project>{b730988d-b06e-4f9d-baec-2c4c4bacc0a7}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
