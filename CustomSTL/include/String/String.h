@@ -367,7 +367,7 @@ namespace CTL
 
 		CONSTEXPR20 unsigned int Count(const CTL::String& string) const
 		{
-			return Count(string.Data());
+			return Count(string.m_Buffer);
 		}
 
 		/*
