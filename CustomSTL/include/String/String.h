@@ -355,6 +355,14 @@ namespace CTL
 		*	operator+(string)
 		*
 		*/
+		CONSTEXPR20 String operator+(const char character) const
+		{
+			String newStr{ m_Buffer, (m_Length + sizeOfChar + 1) * sizeOfChar};
+			newStr.append({ character, '\0' });
+
+			return newStr;
+		}
+
 		CONSTEXPR20 String operator+(const char* string) const
 		{
 			String newStr{ m_Buffer, (m_Length + length(string) + 1) * sizeOfChar };
@@ -454,8 +462,7 @@ namespace CTL
 
 		CONSTEXPR20 void operator+=(const char character)
 		{
-			const char characterStr[]{ character, '\0' };
-			this->append(characterStr);
+			this->append({ character, '\0' });
 		}
 
 		CONSTEXPR20 void operator+=(const char* string)
