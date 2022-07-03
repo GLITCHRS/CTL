@@ -23,16 +23,18 @@ const size_t sizeOfChar{ sizeof(char) };
 #include <iostream>
 #include <cstring>
 
-/*
-*
-*	CONSTRUCTORS
-*
-*/
+
 namespace CTL
 {
-	CONSTEXPR20 size_t length(const char* str)
+
+	/*
+	*
+	*	length function
+	*
+	*/
+	CONSTEXPR20 size_t GetCStrLength(const char* str)
 	{
-		return *str ? 1 + length(str + 1) : 0;
+		return *str ? 1 + GetCStrLength(str + 1) : 0;
 	}
 
 	class String
@@ -40,6 +42,12 @@ namespace CTL
 		friend std::ostream& operator<<(std::ostream& stream, const String& data);
 
 	public:
+		/*
+		*
+		*	CONSTRUCTORS
+		*
+		*/
+
 		CONSTEXPR20 String() : m_Length(0), m_Size(sizeOfChar * 15)
 		{
 			AllocStr(m_Buffer, m_Size, true);
@@ -92,7 +100,7 @@ namespace CTL
 
 		CONSTEXPR20 explicit String(const char* string, const size_t requiredSize = 0)
 		{
-			m_Length = length(string);
+			m_Length = GetCStrLength(string);
 			size_t stringSize{ (m_Length + 1) * sizeOfChar };
 			m_Size = (requiredSize != 0) ? requiredSize : stringSize;
 
@@ -191,7 +199,7 @@ namespace CTL
 		*/
 		CONSTEXPR20 void append(const char* string, const size_t requiredSize = 0)
 		{
-			size_t strLength{ length(string) };
+			size_t strLength{ GetCStrLength(string) };
 			size_t strSize{ (m_Length + strLength + 1) * sizeOfChar };
 
 			if (m_Size < strSize)
@@ -257,7 +265,7 @@ namespace CTL
 
 		CONSTEXPR20 bool Has(const char* string) const
 		{
-			size_t strLength{ length(string) };
+			size_t strLength{ GetCStrLength(string) };
 
 			if (m_Length < strLength)
 				return false;
@@ -365,7 +373,7 @@ namespace CTL
 
 		CONSTEXPR20 String operator+(const char* string) const
 		{
-			String newStr{ m_Buffer, (m_Length + length(string) + 1) * sizeOfChar };
+			String newStr{ m_Buffer, (m_Length + GetCStrLength(string) + 1) * sizeOfChar };
 			newStr.append(string);
 
 			return newStr;
@@ -409,7 +417,7 @@ namespace CTL
 
 		CONSTEXPR20 void operator=(const char* string)
 		{
-			size_t strLength{ length(string) };
+			size_t strLength{ GetCStrLength(string) };
 			size_t strSize{ (strLength + 1) * sizeOfChar };
 			size_t sizeToAlloc{ strSize * 2 - 1 };
 
@@ -518,7 +526,7 @@ namespace CTL
 
 		CONSTEXPR20 bool operator==(const char* string) const
 		{
-			if (m_Length != length(string))
+			if (m_Length != GetCStrLength(string))
 				return false;
 
 			for (size_t i{}; i < m_Length; ++i)
