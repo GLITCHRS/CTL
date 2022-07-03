@@ -4,7 +4,8 @@
 int main()
 {
 	CTL::String t0{ "Ahme" };
-	t0 += 'd';
+	CTL::String t1{ std::move(t0) };
 
-	std::cout << (t0) << '\n';
+	std::cout << t0 << '\n';
+	std::cout << t1 << '\n';
 }

@@ -160,8 +160,8 @@ namespace CTL
 		{
 			m_Buffer = string.m_Buffer;
 
-			string.m_Buffer = nullptr;
-			string.~String();
+			AllocStr(string.m_Buffer, string.m_Size, true);
+			string.m_Length = 0;
 		}
 
 		/*
