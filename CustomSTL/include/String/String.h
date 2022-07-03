@@ -302,8 +302,7 @@ namespace CTL
 
 			for (size_t i{}; i < m_Length; ++i)
 			{
-				size_t j{};
-				size_t i_cpy{ i };
+				size_t i_cpy{ i }, j{};
 				while (j < strLength && m_Buffer[i_cpy] == string[j]) ++i_cpy, ++j;
 
 				if (j == strLength)
@@ -337,6 +336,38 @@ namespace CTL
 					++count;
 
 			return count;
+		}
+
+		CONSTEXPR20 unsigned int Count(const char* string) const
+		{
+			size_t strLength{ GetCStrLength(string) };
+
+			if (m_Length < strLength)
+				return 0;
+
+			unsigned int count{};
+			for (size_t i{}; i < m_Length; ++i)
+			{
+				size_t i_cpy{ i }, j{};
+
+				while (j < strLength && m_Buffer[i_cpy] == string[j])
+					++i_cpy, ++j;
+
+				if (j == strLength)
+					++count;
+			}
+
+			return count;
+		}
+
+		CONSTEXPR20 unsigned int Count(const std::string& string) const
+		{
+			return Count(string.data());
+		}
+
+		CONSTEXPR20 unsigned int Count(const CTL::String& string) const
+		{
+			return Count(string.Data());
 		}
 
 		/*
