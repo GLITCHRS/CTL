@@ -44,7 +44,7 @@ namespace CTL
 	public:
 		/*
 		*
-		*	CONSTRUCTORS
+		*	IMPLICIT CONSTRUCTORS
 		*
 		*/
 
@@ -59,26 +59,6 @@ namespace CTL
 				throw std::bad_alloc();
 			}
 		}
-
-		CONSTEXPR20 String(const String& string) : m_Length(string.m_Length), m_Size(string.m_Size)
-		{
-			AllocStr(m_Buffer, m_Size, false);
-
-			if (m_Buffer)
-			{
-				for (size_t i{}; i < m_Length; ++i)
-					m_Buffer[i] = string[i];
-
-				m_Buffer[m_Length] = '\0';
-			}
-			else
-			{
-				m_Length = 0;
-				m_Size = 0;
-				throw std::bad_alloc();
-			}
-		}
-
 
 		/*
 		*
@@ -143,6 +123,45 @@ namespace CTL
 				m_Size = 0;
 				throw std::bad_alloc();
 			}
+		}
+
+		/*
+		* 
+		* COPY CONSTRUCTOR
+		* 
+		*/
+
+		CONSTEXPR20 String(const String& string) : m_Length(string.m_Length), m_Size(string.m_Size)
+		{
+			AllocStr(m_Buffer, m_Size, false);
+
+			if (m_Buffer)
+			{
+				for (size_t i{}; i < m_Length; ++i)
+					m_Buffer[i] = string[i];
+
+				m_Buffer[m_Length] = '\0';
+			}
+			else
+			{
+				m_Length = 0;
+				m_Size = 0;
+				throw std::bad_alloc();
+			}
+		}
+
+		/*
+		*
+		* MOVE CONSTRUCTOR
+		*
+		*/
+
+		CONSTEXPR20 String(String&& string) noexcept : m_Length(string.m_Length), m_Size(string.m_Size)
+		{
+			m_Buffer = string.m_Buffer;
+
+			string.m_Buffer = nullptr;
+			string.~String();
 		}
 
 		/*
