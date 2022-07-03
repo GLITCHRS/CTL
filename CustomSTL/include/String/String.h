@@ -3,21 +3,25 @@
 
 #pragma once
 
-#if _HAS_CXX20
+#ifdef _MSVC_LANG
+// if C++20 or later is being used.
+#if _MSVC_LANG > 202002L
 #define CONSTEXPR20 constexpr
 #define AllocStr(VAR, SIZE, AUTOINIT) if(AUTOINIT) VAR = new (std::nothrow) char[SIZE]{}; else VAR = new (std::nothrow) char[SIZE];
 #define DeallocStr(VAR) delete[] VAR; VAR = nullptr
 #else
 #define CONSTEXPR20 inline
 #define AllocStr(VAR, SIZE, AUTOINIT) VAR = static_cast<char*>(_malloca(SIZE)); if(AUTOINIT && VAR) \
-for(size_t i{}; i < (SIZE / sizeOfChar); ++i) VAR[i] = '\0';
+			for(size_t i{}; i < (SIZE / sizeOfChar); ++i) VAR[i] = '\0';
 #define DeallocStr(VAR) _freea(VAR); VAR = nullptr
 #endif
 
-#if _HAS_CXX17
-constinit size_t sizeOfChar{ sizeof(char) };
+// if C++17 or later is being used.
+#if _MSVC_LANG >= 202002L
+#define CONSTINIT constinit
 #else
-const size_t sizeOfChar{ sizeof(char) };
+#define CONSTINIT const
+#endif
 #endif
 
 #include <iostream>
@@ -26,6 +30,7 @@ const size_t sizeOfChar{ sizeof(char) };
 
 namespace CTL
 {
+	CONSTINIT size_t sizeOfChar{ sizeof(char) };
 
 	/*
 	*
@@ -62,7 +67,7 @@ namespace CTL
 
 		/*
 		*
-		* EXPLICIT CONSTRUCTORS
+		*	EXPLICIT CONSTRUCTORS
 		*
 		*/
 
@@ -127,7 +132,7 @@ namespace CTL
 
 		/*
 		* 
-		* COPY CONSTRUCTOR
+		*	COPY CONSTRUCTOR
 		* 
 		*/
 
@@ -152,7 +157,7 @@ namespace CTL
 
 		/*
 		*
-		* MOVE CONSTRUCTOR
+		*	MOVE CONSTRUCTOR
 		*
 		*/
 
@@ -160,13 +165,13 @@ namespace CTL
 		{
 			m_Buffer = string.m_Buffer;
 
-			AllocStr(string.m_Buffer, string.m_Size, true);
+			AllocStr(string.m_Buffer, 15 * sizeOfChar, true);
 			string.m_Length = 0;
 		}
 
 		/*
 		*
-		* .reserve method
+		*	.reserve method
 		*
 		*/
 		CONSTEXPR20 void reserve(const size_t size)
@@ -213,7 +218,7 @@ namespace CTL
 
 		/*
 		*
-		* .append method
+		*	.append method
 		*
 		*/
 		CONSTEXPR20 void append(const char* string, const size_t requiredSize = 0)
@@ -273,6 +278,12 @@ namespace CTL
 			append(string.m_Buffer, requiredSize);
 		}
 
+		/*
+		*
+		*	.Has method
+		*
+		*/
+
 		CONSTEXPR20 bool Has(const char character) const
 		{
 			for (size_t i{}; i < m_Length; ++i)
@@ -311,6 +322,12 @@ namespace CTL
 			return Has(string.m_Buffer);
 		}
 
+		/*
+		*
+		*	.begin/end methods
+		*
+		*/
+
 		CONSTEXPR20 char* begin()
 		{
 			return m_Buffer;
@@ -319,11 +336,6 @@ namespace CTL
 		CONSTEXPR20 char* end()
 		{
 			return m_Buffer + m_Length;
-		}
-
-		CONSTEXPR20 char* Data()
-		{
-			return m_Buffer;
 		}
 
 		CONSTEXPR20 const char* begin() const
@@ -336,15 +348,38 @@ namespace CTL
 			return m_Buffer + m_Length;
 		}
 
+		/*
+		*
+		*	.Data method
+		*
+		*/
+
+		CONSTEXPR20 char* Data()
+		{
+			return m_Buffer;
+		}
+
 		CONSTEXPR20 const char* Data() const
 		{
 			return m_Buffer;
 		}
 
+		/*
+		*
+		*	.Length method
+		*
+		*/
+
 		CONSTEXPR20 const size_t Length() const
 		{
 			return m_Length;
 		}
+
+		/*
+		*
+		*	.Size method
+		*
+		*/
 
 		CONSTEXPR20 const size_t Size() const
 		{
@@ -353,9 +388,10 @@ namespace CTL
 
 		/*
 		*
-		* operator[](index)
+		*	operator[](index)
 		*
 		*/
+
 		CONSTEXPR20 char& operator[](size_t index)
 		{
 			if (m_Length > index)
@@ -364,11 +400,6 @@ namespace CTL
 			throw std::out_of_range("Index out of bounds!");
 		}
 
-		/*
-		*
-		* operator[](index)
-		*
-		*/
 		CONSTEXPR20 const char& operator[](size_t index) const
 		{
 			if (m_Length > index)
@@ -382,6 +413,7 @@ namespace CTL
 		*	operator+(string)
 		*
 		*/
+
 		CONSTEXPR20 String operator+(const char character) const
 		{
 			String newStr{ m_Buffer, (m_Length + sizeOfChar + 1) * sizeOfChar};
@@ -438,10 +470,10 @@ namespace CTL
 		{
 			size_t strLength{ GetCStrLength(string) };
 			size_t strSize{ (strLength + 1) * sizeOfChar };
-			size_t sizeToAlloc{ strSize * 2 - 1 };
 
-			if (strSize >= m_Size)
+			if (strSize > m_Size)
 			{
+				size_t sizeToAlloc{ strSize * 2 - 1 };
 				DeallocStr(m_Buffer);
 				AllocStr(m_Buffer, sizeToAlloc, false);
 
