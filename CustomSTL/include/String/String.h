@@ -31,6 +31,7 @@
 
 
 namespace CTL
+{namespace Dynamic
 {
 	CONSTINIT size_t sizeOfChar{ sizeof(char) };
 
@@ -59,7 +60,7 @@ namespace CTL
 		{
 			AllocStr(m_Buffer, m_Size, true);
 
-			if(!m_Buffer)
+			if (!m_Buffer)
 			{
 				m_Length = 0;
 				m_Size = 0;
@@ -133,9 +134,9 @@ namespace CTL
 		}
 
 		/*
-		* 
+		*
 		*	COPY CONSTRUCTOR
-		* 
+		*
 		*/
 
 		CONSTEXPR20 String(const String& string) : m_Length(string.m_Length), m_Size(string.m_Size)
@@ -367,7 +368,7 @@ namespace CTL
 			return Count(string.data());
 		}
 
-		CONSTEXPR20 unsigned int Count(const CTL::String& string) const
+		CONSTEXPR20 unsigned int Count(const String& string) const
 		{
 			return Count(string.m_Buffer);
 		}
@@ -539,7 +540,7 @@ namespace CTL
 
 		CONSTEXPR20 String operator+(const char character) const
 		{
-			String newStr{ m_Buffer, (m_Length + sizeOfChar + 1) * sizeOfChar};
+			String newStr{ m_Buffer, (m_Length + sizeOfChar + 1) * sizeOfChar };
 			newStr.append({ character, '\0' });
 
 			return newStr;
@@ -858,4 +859,5 @@ namespace CTL
 		stream << data.m_Buffer;
 		return stream;
 	}
+};
 };
