@@ -473,6 +473,44 @@ namespace CTL
 
 		/*
 		*
+		*	.EndsWith method
+		*
+		*/
+
+		CONSTEXPR20 const size_t EndsWith(const char character) const
+		{
+			return m_Buffer[m_Length - 1] == character;
+		}
+
+		CONSTEXPR20 const size_t EndsWith(const char* string) const
+		{
+			size_t strLength{ GetCStrLength(string) };
+
+			if (strLength > m_Length)
+				return false;
+
+			size_t j{ strLength - 1 };
+			size_t startFrom{ m_Length - 1 };
+
+			for (; j > 0; --startFrom, --j)
+				if (m_Buffer[startFrom] != string[j])
+					return false;
+
+			return (m_Buffer[startFrom] == string[j]);
+		}
+
+		CONSTEXPR20 const size_t EndsWith(const std::string& string) const
+		{
+			return EndsWith(string.data());
+		}
+
+		CONSTEXPR20 const size_t EndsWith(const String& string) const
+		{
+			return EndsWith(string.m_Buffer);
+		}
+
+		/*
+		*
 		*	operator[](index)
 		*
 		*/
