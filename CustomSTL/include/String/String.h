@@ -438,6 +438,41 @@ namespace CTL
 
 		/*
 		*
+		*	.StartsWith method
+		*
+		*/
+
+		CONSTEXPR20 const size_t StartsWith(const char character) const
+		{
+			return m_Buffer[0] == character;
+		}
+
+		CONSTEXPR20 const size_t StartsWith(const char* string) const
+		{
+			size_t strLength{ GetCStrLength(string) };
+
+			if (strLength > m_Length)
+				return false;
+
+			for (size_t i{}; i < strLength; ++i)
+				if (m_Buffer[i] != string[i])
+					return false;
+
+			return true;
+		}
+
+		CONSTEXPR20 const size_t StartsWith(const std::string& string) const
+		{
+			return StartsWith(string.data());
+		}
+
+		CONSTEXPR20 const size_t StartsWith(const String& string) const
+		{
+			return StartsWith(string.m_Buffer);
+		}
+
+		/*
+		*
 		*	operator[](index)
 		*
 		*/
