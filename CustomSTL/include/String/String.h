@@ -31,9 +31,9 @@
 
 
 namespace CTL
-{namespace Dynamic
+{CONSTINIT size_t sizeOfChar{ sizeof(char) };
+namespace Dynamic
 {
-	CONSTINIT size_t sizeOfChar{ sizeof(char) };
 
 	/*
 	*
@@ -861,3 +861,8 @@ namespace CTL
 	}
 };
 };
+
+CONSTEXPR20 CTL::Dynamic::String operator""DS(const char* string, size_t strLength)
+{
+	return CTL::Dynamic::String{ string, (strLength + 1) * CTL::sizeOfChar };
+}
