@@ -14,7 +14,7 @@
 #define CONSTINIT20 const
 #define CONSTEXPR20 inline
 #define AllocStr(VAR, SIZE, AUTOINIT) VAR = static_cast<char*>(_malloca(SIZE)); if(AUTOINIT && VAR) \
-			for(size_t i{}; i < (SIZE / sizeOfChar); ++i) VAR[i] = '\0';
+			for(size_t i{}; i < (SIZE / sizeof(char)); ++i) VAR[i] = '\0';
 #define DeallocStr(VAR) _freea(VAR); VAR = nullptr
 #endif
 #else
@@ -27,7 +27,6 @@
 
 namespace CTL
 {
-	const CONSTINIT20 size_t sizeOfChar{ sizeof(char) };
 namespace Dynamic
 {
 
@@ -55,7 +54,7 @@ namespace Dynamic
 		*
 		*/
 
-		CONSTEXPR20 String() : m_Length(0), m_Size(sizeOfChar * 15)
+		CONSTEXPR20 String() : m_Length(0), m_Size(sizeof(char) * 15)
 		{
 			AllocStr(m_Buffer, m_Size, true);
 
@@ -72,7 +71,7 @@ namespace Dynamic
 		*
 		*/
 
-		CONSTEXPR20 explicit String(size_t requiredLength) : m_Length(0), m_Size(sizeOfChar* (requiredLength + 1))
+		CONSTEXPR20 explicit String(size_t requiredLength) : m_Length(0), m_Size(sizeof(char)* (requiredLength + 1))
 		{
 			AllocStr(m_Buffer, m_Size, true);
 
@@ -86,7 +85,7 @@ namespace Dynamic
 		CONSTEXPR20 explicit String(const char* string, const size_t requiredSize = 0)
 		{
 			m_Length = GetCStrLength(string);
-			size_t stringSize{ (m_Length + 1) * sizeOfChar };
+			size_t stringSize{ (m_Length + 1) * sizeof(char) };
 			m_Size = (requiredSize != 0) ? requiredSize : stringSize;
 
 			if (m_Size < stringSize)
@@ -115,7 +114,7 @@ namespace Dynamic
 			}
 		}
 
-		CONSTEXPR20 explicit String(const std::string& string) : m_Length(string.size()), m_Size((m_Length + 1) * sizeOfChar)
+		CONSTEXPR20 explicit String(const std::string& string) : m_Length(string.size()), m_Size((m_Length + 1) * sizeof(char))
 		{
 			AllocStr(m_Buffer, m_Size, false);
 
@@ -169,7 +168,7 @@ namespace Dynamic
 		{
 			m_Buffer = string.m_Buffer;
 
-			AllocStr(string.m_Buffer, 15 * sizeOfChar, true);
+			AllocStr(string.m_Buffer, 15 * sizeof(char), true);
 			string.m_Length = 0;
 		}
 
@@ -228,7 +227,7 @@ namespace Dynamic
 		CONSTEXPR20 void append(const char* string)
 		{
 			size_t strLength{ GetCStrLength(string) };
-			size_t strSize{ (m_Length + strLength + 1) * sizeOfChar };
+			size_t strSize{ (m_Length + strLength + 1) * sizeof(char) };
 
 			if (m_Size < strSize)
 			{
@@ -540,7 +539,7 @@ namespace Dynamic
 
 		CONSTEXPR20 String operator+(const char character) const
 		{
-			String newStr{ m_Buffer, (m_Length + sizeOfChar + 1) * sizeOfChar };
+			String newStr{ m_Buffer, (m_Length + sizeof(char) + 1) * sizeof(char) };
 			newStr.append({ character, '\0' });
 
 			return newStr;
@@ -548,7 +547,7 @@ namespace Dynamic
 
 		CONSTEXPR20 String operator+(const char* string) const
 		{
-			String newStr{ m_Buffer, (m_Length + GetCStrLength(string) + 1) * sizeOfChar };
+			String newStr{ m_Buffer, (m_Length + GetCStrLength(string) + 1) * sizeof(char) };
 			newStr.append(string);
 
 			return newStr;
@@ -593,7 +592,7 @@ namespace Dynamic
 		CONSTEXPR20 void operator=(const char* string)
 		{
 			size_t strLength{ GetCStrLength(string) };
-			size_t strSize{ (strLength + 1) * sizeOfChar };
+			size_t strSize{ (strLength + 1) * sizeof(char) };
 
 			if (strSize > m_Size)
 			{
@@ -864,5 +863,5 @@ namespace Dynamic
 
 CONSTEXPR20 CTL::Dynamic::String operator""DS(const char* string, size_t strLength)
 {
-	return CTL::Dynamic::String{ string, (strLength + 1) * CTL::sizeOfChar };
+	return CTL::Dynamic::String{ string, (strLength + 1) * CTL::sizeof(char) };
 }
