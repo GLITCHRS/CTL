@@ -5,7 +5,7 @@
 
 #ifdef _MSVC_LANG
 // if C++20 or later is being used.
-#if _MSVC_LANG > 202002L
+#if _MSVC_LANG >= 202002L
 #define CONSTINIT20 constinit
 #define CONSTEXPR20 constexpr
 #define AllocStr(VAR, SIZE, AUTOINIT) if(AUTOINIT) VAR = new (std::nothrow) char[SIZE]{}; else VAR = new (std::nothrow) char[SIZE];
