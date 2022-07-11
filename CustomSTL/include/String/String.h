@@ -6,21 +6,16 @@
 #ifdef _MSVC_LANG
 // if C++20 or later is being used.
 #if _MSVC_LANG > 202002L
+#define CONSTINIT20 constinit
 #define CONSTEXPR20 constexpr
 #define AllocStr(VAR, SIZE, AUTOINIT) if(AUTOINIT) VAR = new (std::nothrow) char[SIZE]{}; else VAR = new (std::nothrow) char[SIZE];
 #define DeallocStr(VAR) delete[] VAR; VAR = nullptr
 #else
+#define CONSTINIT20 const
 #define CONSTEXPR20 inline
 #define AllocStr(VAR, SIZE, AUTOINIT) VAR = static_cast<char*>(_malloca(SIZE)); if(AUTOINIT && VAR) \
 			for(size_t i{}; i < (SIZE / sizeOfChar); ++i) VAR[i] = '\0';
 #define DeallocStr(VAR) _freea(VAR); VAR = nullptr
-#endif
-
-// if C++17 or later is being used.
-#if _MSVC_LANG >= 202002L
-#define CONSTINIT constinit
-#else
-#define CONSTINIT const
 #endif
 #else
 #error _MSVC_LANG macro is required, please refer to https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=msvc-170
@@ -31,7 +26,8 @@
 
 
 namespace CTL
-{CONSTINIT size_t sizeOfChar{ sizeof(char) };
+{
+	CONSTINIT20 size_t sizeOfChar{ sizeof(char) };
 namespace Dynamic
 {
 
@@ -42,7 +38,10 @@ namespace Dynamic
 	*/
 	CONSTEXPR20 size_t GetCStrLength(const char* str)
 	{
-		return *str ? 1 + GetCStrLength(str + 1) : 0;
+		size_t i{};
+		while (str[i++] != '\0');
+
+		return i;
 	}
 
 	class String
@@ -524,7 +523,7 @@ namespace Dynamic
 			throw std::out_of_range("Index out of bounds!");
 		}
 
-		CONSTEXPR20 const char& operator[](size_t index) const
+		CONSTEXPR20 const char operator[](size_t index) const
 		{
 			if (m_Length > index)
 				return m_Buffer[index];
