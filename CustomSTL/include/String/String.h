@@ -323,6 +323,86 @@ namespace Dynamic
 
 		/*
 		*
+		*	.Find method
+		*
+		*/
+
+		CONSTEXPR20 char* Find(const char character)
+		{
+			for (size_t i{}; i < m_Length; ++i)
+				if (m_Buffer[i] == character)
+					return (m_Buffer + i);
+
+			return nullptr;
+		}
+
+		CONSTEXPR20 char* Find(const char* string)
+		{
+			size_t strLength{ GetCStrLength(string) };
+
+			if (m_Length < strLength)
+				return nullptr;
+
+			for (size_t i{}; i < m_Length; ++i)
+			{
+				size_t i_cpy{ i }, j{};
+				while (j < strLength && m_Buffer[i_cpy] == string[j]) ++i_cpy, ++j;
+
+				if (j == strLength)
+					return (m_Buffer + i);
+			}
+			return nullptr;
+		}
+
+		CONSTEXPR20 char* Find(const std::string& string)
+		{
+			return Find(string.data());
+		}
+
+		CONSTEXPR20 char* Find(const String& string)
+		{
+			return Find(string.m_Buffer);
+		}
+
+		CONSTEXPR20 const char* const Find(const char character) const
+		{
+			for (size_t i{}; i < m_Length; ++i)
+				if (m_Buffer[i] == character)
+					return (m_Buffer + i);
+
+			return nullptr;
+		}
+
+		CONSTEXPR20 const char* const Find(const char* string) const
+		{
+			size_t strLength{ GetCStrLength(string) };
+
+			if (m_Length < strLength)
+				return nullptr;
+
+			for (size_t i{}; i < m_Length; ++i)
+			{
+				size_t i_cpy{ i }, j{};
+				while (j < strLength && m_Buffer[i_cpy] == string[j]) ++i_cpy, ++j;
+
+				if (j == strLength)
+					return (m_Buffer + i);
+			}
+			return nullptr;
+		}
+
+		CONSTEXPR20 const char* const Find(const std::string& string) const
+		{
+			return Find(string.data());
+		}
+
+		CONSTEXPR20 const char* const Find(const String& string) const
+		{
+			return Find(string.m_Buffer);
+		}
+
+		/*
+		*
 		*	.Count method
 		*
 		*/
