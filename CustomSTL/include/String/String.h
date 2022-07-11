@@ -15,6 +15,8 @@
 			for(size_t i{}; i < (SIZE / sizeof(char)); ++i) VAR[i] = '\0';
 #define DeallocStr(VAR) _freea(VAR); VAR = nullptr
 #endif
+#define FillWCharacter(VAR, START, END, CHARACTER) size_t i{ START }; for(; i < END; ++i) VAR[i] = CHARACTER
+#define FillWString(VAR, START, END, STRING) size_t i{ START }; for(; i < END; ++i) VAR[i] = STRING[i]
 #else
 #error _MSVC_LANG macro is required, please refer to https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=msvc-170
 #endif
@@ -98,9 +100,7 @@ namespace Dynamic
 
 				if (m_Buffer)
 				{
-					for (size_t i{}; i < m_Length; ++i)
-						m_Buffer[i] = string[i];
-
+					FillWString(m_Buffer, 0, m_Length, string);
 					m_Buffer[m_Length] = '\0';
 				}
 				else
@@ -118,9 +118,7 @@ namespace Dynamic
 
 			if (m_Buffer)
 			{
-				for (size_t i{}; i < m_Length; ++i)
-					m_Buffer[i] = string[i];
-
+				FillWString(m_Buffer, 0, m_Length, string);
 				m_Buffer[m_Length] = '\0';
 			}
 			else
@@ -143,9 +141,7 @@ namespace Dynamic
 
 			if (m_Buffer)
 			{
-				for (size_t i{}; i < m_Length; ++i)
-					m_Buffer[i] = string[i];
-
+				FillWString(m_Buffer, 0, m_Length, string);
 				m_Buffer[m_Length] = '\0';
 			}
 			else
@@ -162,10 +158,8 @@ namespace Dynamic
 		*
 		*/
 
-		CONSTEXPR20 String(String&& string) noexcept : m_Length(string.m_Length), m_Size(string.m_Size)
+		CONSTEXPR20 String(String&& string) noexcept : m_Length(string.m_Length), m_Size(string.m_Size), m_Buffer(string.m_Buffer)
 		{
-			m_Buffer = string.m_Buffer;
-
 			AllocStr(string.m_Buffer, 15 * sizeof(char), true);
 			string.m_Length = 0;
 		}
@@ -200,9 +194,7 @@ namespace Dynamic
 
 				if (m_Buffer)
 				{
-					for (size_t i{}; i < m_Length; ++i)
-						m_Buffer[i] = oldStr[i];
-
+					FillWString(m_Buffer, 0, m_Length, oldStr);
 					m_Buffer[m_Length] = '\0';
 					m_Size = size;
 					DeallocStr(oldStr);
@@ -227,6 +219,28 @@ namespace Dynamic
 			size_t strLength{ GetCStrLength(string) };
 			size_t strSize{ (m_Length + strLength + 1) * sizeof(char) };
 
+			if (m_Length == 0)
+			{
+				if (m_Size < strSize)
+				{
+					DeallocStr(m_Buffer);
+					AllocStr(m_Buffer, strSize, false);
+
+					if (m_Buffer)
+					{
+						FillWString(m_Buffer, 0, strLength, string);
+					}
+					else
+					{
+						m_Size = 0;
+						throw std::bad_alloc();
+					}
+				}
+				else
+				{
+					FillWString(m_Buffer, 0, strLength, string);
+				}
+			}
 			if (m_Size < strSize)
 			{
 				char* oldStr = m_Buffer;
@@ -235,18 +249,16 @@ namespace Dynamic
 				AllocStr(m_Buffer, newStrSize, false);
 				if (m_Buffer)
 				{
-					for (size_t i{}; i < m_Length; ++i)
-						m_Buffer[i] = oldStr[i];
+					FillWString(m_Buffer, 0, strLength, oldStr);
 
-					strLength += m_Length;
-
+					size_t i{ m_Length };
 					size_t j{};
-					for (size_t i{ m_Length }; i < strLength; ++i)
+
+					m_Length += strLength;
+					for (; i < m_Length; ++i)
 						m_Buffer[i] = string[j++];
+					m_Buffer[m_Length] = '\0';
 
-					m_Buffer[strLength] = '\0';
-
-					m_Length = strLength;
 					m_Size = newStrSize;
 					DeallocStr(oldStr);
 				}
@@ -683,8 +695,7 @@ namespace Dynamic
 					m_Length = strLength;
 					m_Size = sizeToAlloc;
 
-					for (size_t i{}; i < strLength; ++i)
-						m_Buffer[i] = string[i];
+					FillWString(m_Buffer, 0, m_Length, string);
 					m_Buffer[m_Length] = '\0';
 				}
 				else
@@ -697,9 +708,7 @@ namespace Dynamic
 			else
 			{
 				m_Length = strLength;
-
-				for (size_t i{}; i < strLength; ++i)
-					m_Buffer[i] = string[i];
+				FillWString(m_Buffer, 0, m_Length, string);
 				m_Buffer[m_Length] = '\0';
 			}
 		}
@@ -748,20 +757,17 @@ namespace Dynamic
 		CONSTEXPR20 void operator*=(size_t count)
 		{
 			char* currentStr;
-
 			AllocStr(currentStr, m_Size, false);
 
 			if (currentStr)
 			{
-				for (size_t i{}; i < m_Length; ++i)
-					currentStr[i] = m_Buffer[i];
-
+				FillWString(currentStr, 0, m_Length, m_Buffer);
 				currentStr[m_Length] = '\0';
 			}
 			else
 				throw std::bad_alloc();
 
-			this->reserve(m_Size * count);
+			this->reserve(m_Size * count - count);
 
 			while (count > 1)
 			{
