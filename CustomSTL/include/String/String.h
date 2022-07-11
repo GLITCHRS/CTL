@@ -27,7 +27,7 @@
 
 namespace CTL
 {
-	CONSTINIT20 size_t sizeOfChar{ sizeof(char) };
+	const CONSTINIT20 size_t sizeOfChar{ sizeof(char) };
 namespace Dynamic
 {
 
@@ -61,7 +61,6 @@ namespace Dynamic
 
 			if (!m_Buffer)
 			{
-				m_Length = 0;
 				m_Size = 0;
 				throw std::bad_alloc();
 			}
@@ -79,7 +78,6 @@ namespace Dynamic
 
 			if (!m_Buffer)
 			{
-				m_Length = 0;
 				m_Size = 0;
 				throw std::bad_alloc();
 			}
@@ -92,7 +90,11 @@ namespace Dynamic
 			m_Size = (requiredSize != 0) ? requiredSize : stringSize;
 
 			if (m_Size < stringSize)
+			{
+				m_Length = 0;
+				m_Size = 0;
 				throw std::bad_array_new_length();
+			}
 			else
 			{
 				AllocStr(m_Buffer, m_Size, false);
@@ -113,7 +115,7 @@ namespace Dynamic
 			}
 		}
 
-		CONSTEXPR20 explicit String(const std::string& string) : m_Length(string.size()), m_Size(m_Length + 1)
+		CONSTEXPR20 explicit String(const std::string& string) : m_Length(string.size()), m_Size((m_Length + 1) * sizeOfChar)
 		{
 			AllocStr(m_Buffer, m_Size, false);
 
@@ -259,14 +261,13 @@ namespace Dynamic
 			}
 			else
 			{
-				strLength += m_Length;
-
+				size_t i{ m_Length };
 				size_t j{};
-				for (size_t i{ m_Length }; i < strLength; ++i)
-					m_Buffer[i] = string[j++];
-				m_Buffer[strLength] = '\0';
 
-				m_Length = strLength;
+				m_Length += strLength;
+				for (; i < m_Length; ++i)
+					m_Buffer[i] = string[j++];
+				m_Buffer[m_Length] = '\0';
 			}
 		}
 
