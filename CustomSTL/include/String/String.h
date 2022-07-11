@@ -41,7 +41,7 @@ namespace Dynamic
 		size_t i{};
 		while (str[i++] != '\0');
 
-		return i;
+		return i - 1;
 	}
 
 	class String
@@ -225,7 +225,7 @@ namespace Dynamic
 		*	.append method
 		*
 		*/
-		CONSTEXPR20 void append(const char* string, const size_t requiredSize = 0)
+		CONSTEXPR20 void append(const char* string)
 		{
 			size_t strLength{ GetCStrLength(string) };
 			size_t strSize{ (m_Length + strLength + 1) * sizeOfChar };
@@ -233,7 +233,7 @@ namespace Dynamic
 			if (m_Size < strSize)
 			{
 				char* oldStr = m_Buffer;
-				size_t newStrSize{ (requiredSize != 0) ? requiredSize : strSize * 2 - 1 };
+				size_t newStrSize{ strSize * 2 - 1 };
 
 				AllocStr(m_Buffer, newStrSize, false);
 				if (m_Buffer)
@@ -271,14 +271,14 @@ namespace Dynamic
 			}
 		}
 
-		CONSTEXPR20 void append(const std::string& string, const size_t requiredSize = 0)
+		CONSTEXPR20 void append(const std::string& string)
 		{
-			append(string.data(), requiredSize);
+			append(string.data());
 		}
 
-		CONSTEXPR20 void append(const String& string, const size_t requiredSize = 0)
+		CONSTEXPR20 void append(const String& string)
 		{
-			append(string.m_Buffer, requiredSize);
+			append(string.m_Buffer);
 		}
 
 		/*
