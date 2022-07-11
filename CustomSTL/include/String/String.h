@@ -11,8 +11,7 @@
 #define DeallocStr(VAR) delete[] VAR; VAR = nullptr
 #else
 #define CONSTEXPR20 inline
-#define AllocStr(VAR, SIZE, AUTOINIT) VAR = static_cast<char*>(_malloca(SIZE)); if(AUTOINIT && VAR) \
-			for(size_t i{}; i < (SIZE / sizeof(char)); ++i) VAR[i] = '\0';
+#define AllocStr(VAR, SIZE, AUTOINIT) VAR = static_cast<char*>(_malloca(SIZE)); if(AUTOINIT && VAR) FillWCharacter(m_Buffer, 0, SIZE / sizeof(char) - 1, '\0')
 #define DeallocStr(VAR) _freea(VAR); VAR = nullptr
 #endif
 #define FillWCharacter(VAR, START, END, CHARACTER) size_t i{ START }; for(; i < END; ++i) VAR[i] = CHARACTER
