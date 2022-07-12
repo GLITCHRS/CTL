@@ -12,6 +12,10 @@ int main()
 {
 	const CTL::Dynamic::String data{ "Hello World" };
 
+	using namespace std::string_literals;
+
+	""s;
+
 	PrintStr(data);
 	std::cout << data.Index('o') << '\n';
 	std::cout << data.Index("o W") << '\n';
