@@ -14,6 +14,11 @@
 #define AllocStr(VAR, SIZE, AUTOINIT) VAR = static_cast<char*>(_malloca(SIZE)); if(AUTOINIT && VAR) FillWCharacter(m_Buffer, 0, SIZE / sizeof(char) - 1, '\0')
 #define DeallocStr(VAR) _freea(VAR); VAR = nullptr
 #endif
+#if _MSVC_LANG >= 201703L
+#define NODISCARD17 [[nodiscard]]
+#else
+#define NODISCARD17
+#endif
 #define FillWCharacter(VAR, START, END, CHARACTER) { size_t i{ START }; for(; i < END; ++i) VAR[i] = CHARACTER; }
 #define FillWString(VAR, START, END, STRING) { size_t i{ START }; for(; i < END; ++i) VAR[i] = STRING[i]; }
 #else
@@ -987,7 +992,7 @@ namespace Dynamic
 };
 };
 
-CONSTEXPR20 CTL::Dynamic::String operator""_DS(const char* string, size_t strLength)
+NODISCARD17 CONSTEXPR20 CTL::Dynamic::String operator""_DS(const char* string, size_t strLength)
 {
 	return CTL::Dynamic::String{ string, (strLength + 1) * sizeof(char) };
 }
