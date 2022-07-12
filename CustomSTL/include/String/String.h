@@ -14,8 +14,8 @@
 #define AllocStr(VAR, SIZE, AUTOINIT) VAR = static_cast<char*>(_malloca(SIZE)); if(AUTOINIT && VAR) FillWCharacter(m_Buffer, 0, SIZE / sizeof(char) - 1, '\0')
 #define DeallocStr(VAR) _freea(VAR); VAR = nullptr
 #endif
-#define FillWCharacter(VAR, START, END, CHARACTER) size_t i{ START }; for(; i < END; ++i) VAR[i] = CHARACTER
-#define FillWString(VAR, START, END, STRING) size_t i{ START }; for(; i < END; ++i) VAR[i] = STRING[i]
+#define FillWCharacter(VAR, START, END, CHARACTER) { size_t i{ START }; for(; i < END; ++i) VAR[i] = CHARACTER; }
+#define FillWString(VAR, START, END, STRING) { size_t i{ START }; for(; i < END; ++i) VAR[i] = STRING[i]; }
 #else
 #error _MSVC_LANG macro is required, please refer to https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=msvc-170
 #endif
@@ -410,6 +410,49 @@ namespace Dynamic
 		CONSTEXPR20 const char* const Find(const String& string) const
 		{
 			return Find(string.m_Buffer);
+		}
+
+		/*
+		*
+		*	.Index method
+		*
+		*/
+
+		CONSTEXPR20 size_t Index(const char character) const
+		{
+			for (size_t i{}; i < m_Length; ++i)
+				if (m_Buffer[i] == character)
+					return i;
+
+			return m_Length;
+		}
+
+		CONSTEXPR20 size_t Index(const char* string) const
+		{
+			size_t strLength{ GetCStrLength(string) };
+
+			if (m_Length < strLength)
+				return m_Length;
+
+			for (size_t i{}; i < m_Length; ++i)
+			{
+				size_t i_cpy{ i }, j{};
+				while (j < strLength && m_Buffer[i_cpy] == string[j]) ++i_cpy, ++j;
+
+				if (j == strLength)
+					return i;
+			}
+			return m_Length;
+		}
+
+		CONSTEXPR20 size_t Index(const std::string& string) const
+		{
+			return Index(string.data());
+		}
+
+		CONSTEXPR20 size_t Index(const String& string) const
+		{
+			return Index(string.m_Buffer);
 		}
 
 		/*

@@ -12,9 +12,10 @@ int main()
 {
 	const CTL::Dynamic::String data{ "Hello World" };
 
-	std::cout << data.Find('o') << '\n';
-	std::cout << data.Find("o W") << '\n';
-	std::cout << data.Find("Worl") << '\n';
-	std::cout << data.Find("World") << '\n';
-	//std::cout << data.Find("Worlds") << '\n';
+	PrintStr(data);
+	std::cout << data.Index('o') << '\n';
+	std::cout << data.Index("o W") << '\n';
+	std::cout << data.Index("Worl") << '\n';
+	std::cout << data.Index("World") << '\n';
+	std::cout << data.Index("Worlds") << '\n';
 }
