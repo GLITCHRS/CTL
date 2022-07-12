@@ -674,7 +674,7 @@ namespace Dynamic
 		*
 		*/
 
-		CONSTEXPR20 String operator+(const char character) const
+		NODISCARD17 CONSTEXPR20 String operator+(const char character) const
 		{
 			String newStr{ m_Buffer, (m_Length + sizeof(char) + 1) * sizeof(char) };
 			newStr.append({ character, '\0' });
@@ -682,7 +682,7 @@ namespace Dynamic
 			return newStr;
 		}
 
-		CONSTEXPR20 String operator+(const char* string) const
+		NODISCARD17 CONSTEXPR20 String operator+(const char* string) const
 		{
 			String newStr{ m_Buffer, (m_Length + GetCStrLength(string) + 1) * sizeof(char) };
 			newStr.append(string);
@@ -690,12 +690,12 @@ namespace Dynamic
 			return newStr;
 		}
 
-		CONSTEXPR20 String operator+(const std::string& string) const
+		NODISCARD17 CONSTEXPR20 String operator+(const std::string& string) const
 		{
 			return (*this + string.data());
 		}
 
-		CONSTEXPR20 String operator+(const String& string) const
+		NODISCARD17 CONSTEXPR20 String operator+(const String& string) const
 		{
 			return (*this + string.m_Buffer);
 		}
@@ -706,7 +706,7 @@ namespace Dynamic
 		*
 		*/
 
-		CONSTEXPR20 String operator*(size_t count) const
+		NODISCARD17 CONSTEXPR20 String operator*(size_t count) const
 		{
 			if (m_Length == 0)
 				return String{ 1 };
