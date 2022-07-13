@@ -223,9 +223,10 @@ namespace Dynamic
 			size_t strLength{ GetCStrLength(string) };
 			size_t strSize{ (m_Length + strLength + 1) * sizeof(char) };
 
-			if (m_Length == 0)
+			if (m_Size < strSize)
 			{
-				if (m_Size < strSize)
+
+				if (m_Length == 0)
 				{
 					DeallocStr(m_Buffer);
 					AllocStr(m_Buffer, strSize, false);
@@ -242,34 +243,30 @@ namespace Dynamic
 				}
 				else
 				{
-					FillWString(m_Buffer, 0, strLength, string);
-				}
-			}
-			if (m_Size < strSize)
-			{
-				char* oldStr = m_Buffer;
-				size_t newStrSize{ strSize * 2 - 1 };
+					char* oldStr = m_Buffer;
+					size_t newStrSize{ strSize * 2 - 1 };
 
-				AllocStr(m_Buffer, newStrSize, false);
-				if (m_Buffer)
-				{
-					FillWString(m_Buffer, 0, strLength, oldStr);
+					AllocStr(m_Buffer, newStrSize, false);
+					if (m_Buffer)
+					{
+						FillWString(m_Buffer, 0, m_Length, oldStr);
 
-					size_t i{ m_Length };
-					size_t j{};
+						size_t i{ m_Length };
+						size_t j{};
 
-					m_Length += strLength;
-					for (; i < m_Length; ++i)
-						m_Buffer[i] = string[j++];
-					m_Buffer[m_Length] = '\0';
+						m_Length += strLength;
+						for (; i < m_Length; ++i)
+							m_Buffer[i] = string[j++];
+						m_Buffer[m_Length] = '\0';
 
-					m_Size = newStrSize;
-					DeallocStr(oldStr);
-				}
-				else
-				{
-					DeallocStr(oldStr);
-					throw std::bad_alloc();
+						m_Size = newStrSize;
+						DeallocStr(oldStr);
+					}
+					else
+					{
+						DeallocStr(oldStr);
+						throw std::bad_alloc();
+					}
 				}
 			}
 			else

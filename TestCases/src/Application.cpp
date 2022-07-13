@@ -10,12 +10,9 @@ void PrintStr(const CTL::Dynamic::String& str)
 
 int main()
 {
-	const CTL::Dynamic::String data{ "Hello World" };
+	CTL::Dynamic::String data{ "Ahmed" };
 
-	PrintStr(data);
-	std::cout << data.Index('o') << '\n';
-	std::cout << data.Index("o W") << '\n';
-	std::cout << data.Index("Worl") << '\n';
-	std::cout << data.Index("World") << '\n';
-	std::cout << data.Index("Worlds") << '\n';
+	data.append(" Zaki");
+
+	std::cout << data << '\n';
 }
