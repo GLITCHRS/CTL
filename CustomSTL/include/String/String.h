@@ -14,6 +14,7 @@
 #define AllocStr(VAR, SIZE, AUTOINIT) VAR = static_cast<char*>(_malloca(SIZE)); if(AUTOINIT && VAR) FillWCharacter(m_Buffer, 0, SIZE / sizeof(char) - 1, '\0')
 #define DeallocStr(VAR) _freea(VAR); VAR = nullptr
 #endif
+// if C++17 or later is being used.
 #if _MSVC_LANG >= 201703L
 #define NODISCARD17 [[nodiscard]]
 #else
@@ -377,7 +378,7 @@ namespace Dynamic
 			return Find(string.m_Buffer);
 		}
 
-		CONSTEXPR20 const char* const Find(const char character) const
+		CONSTEXPR20 const char* Find(const char character) const
 		{
 			for (size_t i{}; i < m_Length; ++i)
 				if (m_Buffer[i] == character)
@@ -386,7 +387,7 @@ namespace Dynamic
 			return nullptr;
 		}
 
-		CONSTEXPR20 const char* const Find(const char* string) const
+		CONSTEXPR20 const char* Find(const char* string) const
 		{
 			size_t strLength{ GetCStrLength(string) };
 
@@ -404,12 +405,12 @@ namespace Dynamic
 			return nullptr;
 		}
 
-		CONSTEXPR20 const char* const Find(const std::string& string) const
+		CONSTEXPR20 const char* Find(const std::string& string) const
 		{
 			return Find(string.data());
 		}
 
-		CONSTEXPR20 const char* const Find(const String& string) const
+		CONSTEXPR20 const char* Find(const String& string) const
 		{
 			return Find(string.m_Buffer);
 		}
@@ -809,7 +810,10 @@ namespace Dynamic
 				currentStr[m_Length] = '\0';
 			}
 			else
+			{
+				DeallocStr(currentStr);
 				throw std::bad_alloc();
+			}
 
 			this->reserve(m_Size * count - count);
 
@@ -818,6 +822,8 @@ namespace Dynamic
 				this->append(currentStr);
 				--count;
 			}
+
+			DeallocStr(currentStr);
 		}
 
 		/*
