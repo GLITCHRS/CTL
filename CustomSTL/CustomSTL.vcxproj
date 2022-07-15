@@ -151,6 +151,9 @@
   <ItemGroup>
     <ClInclude Include="include\String\String.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\CTLOverloadedOperators.cpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

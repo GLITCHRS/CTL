@@ -1,7 +1,7 @@
 #include <iostream>
-#include "Tests.h"
+
+#include "String/String.h"
 
 int main()
 {
-	Test4();
 }
