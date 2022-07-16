@@ -571,6 +571,22 @@ namespace CTL
 
 			/*
 			*
+			*	.SubStr method
+			*
+			*/
+
+			CONSTEXPR20 String SubStr(size_t startIndex, size_t endIndex) const
+			{
+				String buffer{ endIndex - startIndex };
+
+				for (size_t i{ startIndex }; i < endIndex; ++i)
+					buffer.append({ m_Buffer[i], '\0' });
+
+				return buffer;
+			}
+
+			/*
+			*
 			*	.StartsWith method
 			*
 			*/
