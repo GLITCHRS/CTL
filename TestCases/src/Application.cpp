@@ -4,7 +4,7 @@
 
 int main()
 {
-	CTL::Dynamic::String a{ "Ahmed" };
+	CTL::Dynamic::String a{ "Name: {} {}" };
 
-	std::cout << a.SubStr(2, 5) << '\n';
+	std::cout << a.Format("Ahmed", "Zaki") << '\n';
 }

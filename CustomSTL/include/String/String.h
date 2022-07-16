@@ -664,7 +664,7 @@ namespace CTL
 			*
 			*/
 			template<typename T, typename... TArgs>
-			CONSTEXPR20 void formatter(String& data, const T& value, TArgs... args)
+			CONSTEXPR20 void formatter(String& data, const T& value)
 			{
 				size_t openBracket{ Index('{') };
 
@@ -678,18 +678,18 @@ namespace CTL
 						return;
 					}
 
-					// data.substr();
-
+					data.append(this->SubStr(0, openBracket));
+					data.append(value);
+					this->operator=(this->SubStr(closeBracket + 1, m_Length));
 				}
-
 			}
 
-
-			template<typename T, typename... TArgs>
-			CONSTEXPR20 String Format(const T& value, TArgs... args)
+			template<typename... TArgs>
+			CONSTEXPR20 String Format(TArgs... args)
 			{
 				String newStr;
-				formatter(newStr, value, args...);
+				(formatter(newStr, args),...);
+				newStr.append(this->Data());
 				return newStr;
 			}
 
