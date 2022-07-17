@@ -5,5 +5,5 @@
 
 int main()
 {
-	Test6();
+	Test7();
 }
