@@ -1,10 +1,9 @@
 #include <iostream>
 
 #include "String/String.h"
+#include "Tests.h"
 
 int main()
 {
-	CTL::Dynamic::String a{ "Name: {} {} 2" };
-	
-	std::cout << a.Format("Ahmed", "Zaki") << '\n';
+	Test5();
 }
