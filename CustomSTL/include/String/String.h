@@ -663,26 +663,6 @@ namespace CTL
 			*	.Format method
 			*
 			*/
-			template<typename T, typename... TArgs>
-			CONSTEXPR20 void formatter(String& data, const T& value)
-			{
-				size_t openBracket{ Index('{') };
-
-				if (openBracket != m_Length)
-				{
-					size_t closeBracket{ Index('}') };
-
-					if (closeBracket == m_Length)
-					{
-						throw std::runtime_error("Missing closing bracket!");
-						return;
-					}
-
-					data.append(this->SubStr(0, openBracket));
-					data.append(value);
-					this->operator=(this->SubStr(closeBracket + 1, m_Length));
-				}
-			}
 
 			template<typename... TArgs>
 			CONSTEXPR20 String Format(TArgs... args)
@@ -1014,6 +994,28 @@ namespace CTL
 			CONSTEXPR20 ~String()
 			{
 				DeallocStr(m_Buffer);
+			}
+
+		private:
+			template<typename T>
+			CONSTEXPR20 void formatter(String& data, const T& value)
+			{
+				size_t openBracket{ Index('{') };
+
+				if (openBracket != m_Length)
+				{
+					size_t closeBracket{ Index('}') };
+
+					if (closeBracket == m_Length)
+					{
+						throw std::runtime_error("Missing closing bracket!");
+						return;
+					}
+
+					data.append(this->SubStr(0, openBracket));
+					data.append(value);
+					this->operator=(this->SubStr(closeBracket + 1, m_Length));
+				}
 			}
 
 		private:
