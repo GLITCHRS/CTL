@@ -575,14 +575,26 @@ namespace CTL
 			*
 			*/
 
-			CONSTEXPR20 String SubStr(size_t startIndex, size_t endIndex) const
+			CONSTEXPR20 char* SubStr(size_t startIndex, size_t endIndex)
 			{
-				String buffer{ endIndex - startIndex };
+				if (endIndex > m_Length)
+					return nullptr;
 
-				for (size_t i{ startIndex }; i < endIndex; ++i)
-					buffer.append({ m_Buffer[i], '\0' });
+				char* data{ m_Buffer + startIndex };
+				data[endIndex - startIndex] = '\0';
 
-				return buffer;
+				return data;
+			}
+
+			CONSTEXPR20 const char* SubStr(size_t startIndex, size_t endIndex) const
+			{
+				if (endIndex > m_Length)
+					return nullptr;
+
+				char* data{ m_Buffer + startIndex };
+				data[endIndex - startIndex] = '\0';
+
+				return data;
 			}
 
 			/*
