@@ -5,9 +5,6 @@
 
 int main()
 {
-	const CTL::Dynamic::String a{ "Ahmed Zaki" };
-	const char* data{ a.SubStr(4, 10) };
-
-	if(data)
-		std::cout << data << '\n';
+	CTL::Dynamic::String data{ "{}" };
+	std::cout << data.Format("Ahmed", "Zaki") << '\n';
 }
