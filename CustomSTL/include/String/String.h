@@ -254,8 +254,8 @@ namespace CTL
 							size_t j{};
 
 							m_Length += strLength;
-							for (; i < m_Length; ++i)
-								m_Buffer[i] = string[j++];
+							for (; i < m_Length; ++j, ++i)
+								m_Buffer[i] = string[j];
 							m_Buffer[m_Length] = '\0';
 
 							m_Size = newStrSize;
@@ -274,8 +274,8 @@ namespace CTL
 					size_t j{};
 
 					m_Length += strLength;
-					for (; i < m_Length; ++i)
-						m_Buffer[i] = string[j++];
+					for (; i < m_Length; ++j, ++i)
+						m_Buffer[i] = string[j];
 					m_Buffer[m_Length] = '\0';
 				}
 			}
@@ -575,13 +575,14 @@ namespace CTL
 			*
 			*/
 
-			CONSTEXPR20 char* SubStr(size_t startIndex, size_t endIndex)
+			CONSTEXPR20 String SubStr(size_t startIndex, size_t endIndex)
 			{
 				if (endIndex > m_Length)
-					return nullptr;
+					return {};
 
-				char* data{ m_Buffer + startIndex };
-				data[endIndex - startIndex] = '\0';
+				String data(endIndex - startIndex);
+				data.append((m_Buffer + startIndex));
+				data.m_Buffer[endIndex - startIndex] = '\0';
 
 				return data;
 			}

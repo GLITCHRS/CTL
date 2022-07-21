@@ -5,6 +5,7 @@
 
 int main()
 {
-	CTL::Dynamic::String data{ "{}" };
-	std::cout << data.Format("Ahmed", "Zaki") << '\n';
+	CTL::Dynamic::String data{ "Creator-K999" };
+	std::cout << data.SubStr(8, data.Length()) << '\n';
+	std::cout << data << '\n';
 }
