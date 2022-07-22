@@ -217,6 +217,42 @@ namespace CTL
 			*	.append method
 			*
 			*/
+			CONSTEXPR20 void Append(const char character)
+			{
+				if ((++m_Length * sizeof(char)) >= m_Size)
+				{
+					char* oldStr{ m_Buffer };
+
+					m_Size *= 2;
+					AllocStr(m_Buffer, m_Size, false);
+
+					if (m_Buffer)
+					{
+						for (size_t i{}; i < m_Length - 1; ++i)
+							m_Buffer[i] = oldStr[i];
+
+						m_Buffer[m_Length - 1] = character;
+						m_Buffer[m_Length] = '\0';
+
+						DeallocStr(oldStr);
+					}
+					else
+					{
+						DeallocStr(oldStr);
+
+						m_Length = 0;
+						m_Size = 0;
+
+						throw std::bad_alloc();
+					}
+				}
+				else
+				{
+					m_Buffer[m_Length - 1] = character;
+					m_Buffer[m_Length] = '\0';
+				}
+			}
+
 			CONSTEXPR20 void Append(const char* string)
 			{
 				size_t strLength{ GetCStrLength(string) };
@@ -686,6 +722,124 @@ namespace CTL
 				(formatter(resultStr, args, bracketCount),...);
 				resultStr.Append(m_Buffer + Index('}', bracketCount - 1) + 1);
 				return resultStr;
+			}
+
+			/*
+			*
+			*	.IsSomething methods
+			*
+			*/
+
+			CONSTEXPR20 bool IsAlnum() const
+			{
+				if (m_Length == 0)
+					return false;
+
+				for (size_t i{}; i < m_Length; ++i)
+				{
+					int characterAsInt{ m_Buffer[i] };
+
+					if (!((47 < characterAsInt && characterAsInt < 58) || (64 < characterAsInt && characterAsInt < 91) || (96 < characterAsInt && characterAsInt < 123)))
+						return false;
+				}
+
+				return true;
+			}
+
+			CONSTEXPR20 bool IsAlpha() const
+			{
+				if (m_Length == 0)
+					return false;
+
+				for (size_t i{}; i < m_Length; ++i)
+				{
+					int characterAsInt{ m_Buffer[i] };
+
+					if (!((64 < characterAsInt && characterAsInt < 91) || (96 < characterAsInt && characterAsInt < 123)))
+						return false;
+				}
+
+				return true;
+			}
+
+			CONSTEXPR20 bool IsDigit() const
+			{
+				if (m_Length == 0)
+					return false;
+
+				for (size_t i{}; i < m_Length; ++i)
+				{
+					int characterAsInt{ m_Buffer[i] };
+
+					if (!(47 < characterAsInt && characterAsInt < 58))
+						return false;
+				}
+
+				return true;
+			}
+
+			CONSTEXPR20 bool IsLower() const
+			{
+				if (m_Length == 0)
+					return false;
+
+				for (size_t i{}; i < m_Length; ++i)
+				{
+					int characterAsInt{ m_Buffer[i] };
+
+					if (!(96 < characterAsInt && characterAsInt < 123))
+						return false;
+				}
+
+				return true;
+			}
+
+			CONSTEXPR20 bool IsUpper() const
+			{
+				if (m_Length == 0)
+					return false;
+
+				for (size_t i{}; i < m_Length; ++i)
+				{
+					int characterAsInt{ m_Buffer[i] };
+
+					if (!(64 < characterAsInt && characterAsInt < 91))
+						return false;
+				}
+
+				return true;
+			}
+
+			CONSTEXPR20 bool IsTitle(bool ignoreNumbers = true) const
+			{
+				if (m_Length == 0)
+					return false;
+
+				if (ignoreNumbers)
+				{
+					bool characterFound{ false };
+
+					for (size_t i{}, lastSpaceOccurrenceIndex{}; i < m_Length; ++lastSpaceOccurrenceIndex, i = Index(' ', lastSpaceOccurrenceIndex) + 1)
+					{
+						if (!(64 < m_Buffer[i] && m_Buffer[i] < 91))
+						{
+							if (!(47 < m_Buffer[i] && m_Buffer[i] < 58))
+								return false;
+						}
+						else
+							characterFound = true;
+					}
+
+					return characterFound;
+				}
+\
+				for (size_t i{}, lastSpaceOccurrenceIndex{}; i < m_Length; ++lastSpaceOccurrenceIndex, i = Index(' ', lastSpaceOccurrenceIndex) + 1)
+				{
+					if (!(64 < m_Buffer[i] && m_Buffer[i] < 91))
+						return false;
+				}
+
+				return true;
 			}
 
 			/*
