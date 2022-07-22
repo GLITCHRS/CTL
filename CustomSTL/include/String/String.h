@@ -873,7 +873,7 @@ namespace CTL
 			NODISCARD17 CONSTEXPR20 String operator+(const char character) const
 			{
 				String newStr{ m_Buffer, (m_Length + sizeof(char) + 1) * sizeof(char) };
-				newStr.Append({ character, '\0' });
+				newStr.Append(character);
 
 				return newStr;
 			}
@@ -969,7 +969,7 @@ namespace CTL
 
 			CONSTEXPR20 void operator+=(const char character)
 			{
-				this->Append({ character, '\0' });
+				this->Append(character);
 			}
 
 			CONSTEXPR20 void operator+=(const char* string)
