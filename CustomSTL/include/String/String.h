@@ -419,16 +419,16 @@ namespace CTL
 			*
 			*/
 
-			CONSTEXPR20 size_t Index(const char character) const
+			CONSTEXPR20 size_t Index(const char character, unsigned int occurrenceNumber = 1u) const
 			{
 				for (size_t i{}; i < m_Length; ++i)
-					if (m_Buffer[i] == character)
+					if (m_Buffer[i] == character && --occurrenceNumber == 0u)
 						return i;
 
 				return m_Length;
 			}
 
-			CONSTEXPR20 size_t Index(const char* string) const
+			CONSTEXPR20 size_t Index(const char* string, unsigned int occurrenceNumber = 1u) const
 			{
 				size_t strLength{ GetCStrLength(string) };
 
@@ -440,20 +440,20 @@ namespace CTL
 					size_t i_cpy{ i }, j{};
 					while (j < strLength && m_Buffer[i_cpy] == string[j]) ++i_cpy, ++j;
 
-					if (j == strLength)
+					if (j == strLength && --occurrenceNumber == 0u)
 						return i;
 				}
 				return m_Length;
 			}
 
-			CONSTEXPR20 size_t Index(const std::string& string) const
+			CONSTEXPR20 size_t Index(const std::string& string, unsigned int occurrenceNumber = 1u) const
 			{
-				return Index(string.data());
+				return Index(string.data(), occurrenceNumber);
 			}
 
-			CONSTEXPR20 size_t Index(const String& string) const
+			CONSTEXPR20 size_t Index(const String& string, unsigned int occurrenceNumber = 1u) const
 			{
-				return Index(string.m_Buffer);
+				return Index(string.m_Buffer, occurrenceNumber);
 			}
 
 			/*
@@ -680,10 +680,12 @@ namespace CTL
 			template<typename... TArgs>
 			CONSTEXPR20 String Format(TArgs... args)
 			{
-				String newStr;
-				(formatter(newStr, args),...);
-				newStr.Append(this->Data());
-				return newStr;
+				String resultStr;
+				size_t bracketCount{ 1 };
+
+				(formatter(resultStr, args, bracketCount),...);
+				resultStr.Append(m_Buffer + Index('}', bracketCount - 1) + 1);
+				return resultStr;
 			}
 
 			/*
@@ -1011,13 +1013,15 @@ namespace CTL
 
 		private:
 			template<typename T>
-			CONSTEXPR20 void formatter(String& data, const T& value)
+			CONSTEXPR20 void formatter(String& resultStr, const T& value, size_t& bracketCount)
 			{
-				size_t openBracket{ Index('{') };
+				static size_t nextStartingPoint{};
+
+				size_t openBracket{ Index('{', bracketCount) };
 
 				if (openBracket != m_Length)
 				{
-					size_t closeBracket{ Index('}') };
+					size_t closeBracket{ Index('}', bracketCount) };
 
 					if (closeBracket == m_Length)
 					{
@@ -1025,9 +1029,11 @@ namespace CTL
 						return;
 					}
 
-					data.Append(this->SubStr(0, openBracket));
-					data.append(value);
-					this->operator=(this->SubStr(closeBracket + 1, m_Length));
+					resultStr.Append(this->SubStr(nextStartingPoint, openBracket));
+					resultStr.Append(value);
+
+					nextStartingPoint = closeBracket + 1;
+					++bracketCount;
 				}
 			}
 

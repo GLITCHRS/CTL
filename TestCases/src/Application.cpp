@@ -5,7 +5,7 @@
 
 int main()
 {
-	CTL::Dynamic::String data{ "Creator-{}-Data" };
+	CTL::Dynamic::String data{ "Creator-{}" };
 	std::cout << data.Format("K999") << '\n';
 	std::cout << data << '\n';
 }
