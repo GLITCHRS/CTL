@@ -5,7 +5,7 @@
 
 int main()
 {
-	CTL::Dynamic::String data{ "Creator-K999" };
-	std::cout << data.SubStr(8, data.Length()) << '\n';
+	CTL::Dynamic::String data{ "Creator-{}-Data" };
+	std::cout << data.Format("K999") << '\n';
 	std::cout << data << '\n';
 }

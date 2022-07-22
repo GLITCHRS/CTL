@@ -172,7 +172,7 @@ namespace CTL
 			*	.reserve method
 			*
 			*/
-			CONSTEXPR20 void reserve(const size_t size)
+			CONSTEXPR20 void Reserve(const size_t size)
 			{
 				if (size <= m_Size)
 					return;
@@ -217,7 +217,7 @@ namespace CTL
 			*	.append method
 			*
 			*/
-			CONSTEXPR20 void append(const char* string)
+			CONSTEXPR20 void Append(const char* string)
 			{
 				size_t strLength{ GetCStrLength(string) };
 				size_t strSize{ (m_Length + strLength + 1) * sizeof(char) };
@@ -280,14 +280,14 @@ namespace CTL
 				}
 			}
 
-			CONSTEXPR20 void append(const std::string& string)
+			CONSTEXPR20 void Append(const std::string& string)
 			{
-				append(string.data());
+				Append(string.data());
 			}
 
-			CONSTEXPR20 void append(const String& string)
+			CONSTEXPR20 void Append(const String& string)
 			{
-				append(string.m_Buffer);
+				Append(string.m_Buffer);
 			}
 
 			/*
@@ -581,7 +581,7 @@ namespace CTL
 					return {};
 
 				String data(endIndex - startIndex);
-				data.append((m_Buffer + startIndex));
+				data.Append((m_Buffer + startIndex));
 				data.m_Buffer[endIndex - startIndex] = '\0';
 
 				return data;
@@ -682,7 +682,7 @@ namespace CTL
 			{
 				String newStr;
 				(formatter(newStr, args),...);
-				newStr.append(this->Data());
+				newStr.Append(this->Data());
 				return newStr;
 			}
 
@@ -717,7 +717,7 @@ namespace CTL
 			NODISCARD17 CONSTEXPR20 String operator+(const char character) const
 			{
 				String newStr{ m_Buffer, (m_Length + sizeof(char) + 1) * sizeof(char) };
-				newStr.append({ character, '\0' });
+				newStr.Append({ character, '\0' });
 
 				return newStr;
 			}
@@ -725,7 +725,7 @@ namespace CTL
 			NODISCARD17 CONSTEXPR20 String operator+(const char* string) const
 			{
 				String newStr{ m_Buffer, (m_Length + GetCStrLength(string) + 1) * sizeof(char) };
-				newStr.append(string);
+				newStr.Append(string);
 
 				return newStr;
 			}
@@ -755,7 +755,7 @@ namespace CTL
 				char* thisStr{ this->m_Buffer };
 
 				while (count-- > 0)
-					newStr.append(thisStr);
+					newStr.Append(thisStr);
 
 				return newStr;
 			}
@@ -813,22 +813,22 @@ namespace CTL
 
 			CONSTEXPR20 void operator+=(const char character)
 			{
-				this->append({ character, '\0' });
+				this->Append({ character, '\0' });
 			}
 
 			CONSTEXPR20 void operator+=(const char* string)
 			{
-				this->append(string);
+				this->Append(string);
 			}
 
 			CONSTEXPR20 void operator+=(const std::string& string)
 			{
-				return this->append(string.data());
+				return this->Append(string.data());
 			}
 
 			CONSTEXPR20 void operator+=(const String& string)
 			{
-				return this->append(string.m_Buffer);
+				return this->Append(string.m_Buffer);
 			}
 
 			/*
@@ -852,10 +852,10 @@ namespace CTL
 					return;
 				}
 
-				this->reserve((m_Size - 1) * count + 1);
+				this->Reserve((m_Size - 1) * count + 1);
 
 				while (--count > 0)
-					this->append(currentStr);
+					this->Append(currentStr);
 
 				DeallocStr(currentStr);
 			}
@@ -1025,7 +1025,7 @@ namespace CTL
 						return;
 					}
 
-					data.append(this->SubStr(0, openBracket));
+					data.Append(this->SubStr(0, openBracket));
 					data.append(value);
 					this->operator=(this->SubStr(closeBracket + 1, m_Length));
 				}
