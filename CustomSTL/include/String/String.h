@@ -177,9 +177,10 @@ namespace CTL
 
 			/*
 			*
-			*	.reserve method
+			*	.Reserve method
 			*
 			*/
+
 			CONSTEXPR20 void Reserve(const size_t size)
 			{
 				if (size <= m_Size)
@@ -222,9 +223,10 @@ namespace CTL
 
 			/*
 			*
-			*	.append method
+			*	.Append method
 			*
 			*/
+
 			CONSTEXPR20 void Append(const char character)
 			{
 				if ((++m_Length * sizeof(char)) >= m_Size)
