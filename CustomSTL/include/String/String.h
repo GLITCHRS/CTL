@@ -971,6 +971,19 @@ namespace CTL
 				return this->operator=(string.m_Buffer);
 			}
 
+			CONSTEXPR20 String& operator=(String&& other) noexcept
+			{
+				m_Buffer = other.m_Buffer;
+				m_Length = other.m_Length;
+				m_Size = other.m_Size;
+
+				other.m_Size = 15 * sizeof(char);
+				AllocStr(other.m_Buffer, other.m_Size, true);
+				other.m_Length = 0;
+
+				return *this;
+			}
+
 			/*
 			*
 			*	operator+=(string)
