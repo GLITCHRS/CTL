@@ -930,7 +930,7 @@ namespace CTL
 			*
 			*/
 
-			CONSTEXPR20 void operator=(const char* string)
+			CONSTEXPR20 String& operator=(const char* string)
 			{
 				size_t strLength{ GetCStrLength(string) };
 				size_t strSize{ (strLength + 1) * sizeof(char) };
@@ -950,21 +950,23 @@ namespace CTL
 						m_Length = 0;
 						m_Size = 0;
 						throw std::bad_alloc();
-						return;
+						return *this;
 					}
 				}
 
 				m_Length = strLength;
 				FillWString(m_Buffer, 0, m_Length, string);
 				m_Buffer[m_Length] = '\0';
+
+				return *this;
 			}
 
-			CONSTEXPR20 void operator=(const std::string& string)
+			CONSTEXPR20 String& operator=(const std::string& string)
 			{
 				return this->operator=(string.data());
 			}
 
-			CONSTEXPR20 void operator=(const String& string)
+			CONSTEXPR20 String& operator=(const String& string)
 			{
 				return this->operator=(string.m_Buffer);
 			}
