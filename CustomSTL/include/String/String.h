@@ -966,6 +966,19 @@ namespace CTL
 
 			/*
 			*
+			*	.Title method
+			*
+			*/
+
+			CONSTEXPR20 void Swap(String& other)
+			{
+				String temp{ std::move(other) };
+				other = std::move(*this);
+				*this = std::move(temp);
+			}
+
+			/*
+			*
 			*	operator[](index)
 			*
 			*/

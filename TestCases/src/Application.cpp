@@ -5,9 +5,11 @@
 
 int main()
 {
-	CTL::Dynamic::String data{ "\nh\thello% 180 hi" };
+	CTL::Dynamic::String data1{ "\nh\thello% 180 hi" };
+	CTL::Dynamic::String data2{ "NewStr" };
 
-	LOGStr(data);
-	LOGStr(data.Title());
-	LOGStr(data);
+	data1.Swap(data2);
+
+	LOGStr(data1);
+	LOGStr(data2);
 }
