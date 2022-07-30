@@ -915,6 +915,22 @@ namespace CTL
 
 			/*
 			*
+			*	.Capitalize method
+			*
+			*/
+
+			CONSTEXPR20 String& Capitalize()
+			{
+				int characterAsInt{ m_Buffer[0] };
+
+				if (64 < characterAsInt && characterAsInt < 91)
+					m_Buffer[0] -= 32;
+
+				return *this;
+			}
+
+			/*
+			*
 			*	operator[](index)
 			*
 			*/
