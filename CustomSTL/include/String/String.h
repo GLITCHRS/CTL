@@ -1,6 +1,3 @@
-// This is a personal academic project. Dear PVS-Studio, please check it.
-// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: https://pvs-studio.com
-
 #pragma once
 
 #ifdef _MSVC_LANG
@@ -49,6 +46,17 @@ namespace CTL
 
 		class String
 		{
+			/*
+			*
+			*	operator<<(cout)
+			*
+			*/
+
+			friend std::ostream& operator<<(std::ostream& stream, const CTL::Dynamic::String& data)
+			{
+				stream << data.Data();
+				return stream;
+			}
 
 		public:
 			/*
@@ -640,12 +648,12 @@ namespace CTL
 			*
 			*/
 
-			CONSTEXPR20 const size_t StartsWith(const char character) const
+			CONSTEXPR20 const bool StartsWith(const char character) const
 			{
 				return m_Buffer[0] == character;
 			}
 
-			CONSTEXPR20 const size_t StartsWith(const char* string) const
+			CONSTEXPR20 const bool StartsWith(const char* string) const
 			{
 				size_t strLength{ GetCStrLength(string) };
 
@@ -659,12 +667,12 @@ namespace CTL
 				return true;
 			}
 
-			CONSTEXPR20 const size_t StartsWith(const std::string& string) const
+			CONSTEXPR20 const bool StartsWith(const std::string& string) const
 			{
 				return StartsWith(string.data());
 			}
 
-			CONSTEXPR20 const size_t StartsWith(const String& string) const
+			CONSTEXPR20 const bool StartsWith(const String& string) const
 			{
 				return StartsWith(string.m_Buffer);
 			}
@@ -675,12 +683,12 @@ namespace CTL
 			*
 			*/
 
-			CONSTEXPR20 const size_t EndsWith(const char character) const
+			CONSTEXPR20 const bool EndsWith(const char character) const
 			{
 				return m_Buffer[m_Length - 1] == character;
 			}
 
-			CONSTEXPR20 const size_t EndsWith(const char* string) const
+			CONSTEXPR20 const bool EndsWith(const char* string) const
 			{
 				size_t strLength{ GetCStrLength(string) };
 
@@ -697,12 +705,12 @@ namespace CTL
 				return (m_Buffer[startFrom] == string[j]);
 			}
 
-			CONSTEXPR20 const size_t EndsWith(const std::string& string) const
+			CONSTEXPR20 const bool EndsWith(const std::string& string) const
 			{
 				return EndsWith(string.data());
 			}
 
-			CONSTEXPR20 const size_t EndsWith(const String& string) const
+			CONSTEXPR20 const bool EndsWith(const String& string) const
 			{
 				return EndsWith(string.m_Buffer);
 			}
@@ -1198,8 +1206,6 @@ namespace CTL
 		};
 	};
 };
-
-std::ostream& operator<<(std::ostream& stream, const CTL::Dynamic::String& data);
 
 NODISCARD17 CONSTEXPR20 CTL::Dynamic::String operator""_DS(const char* string, size_t strLength)
 {
