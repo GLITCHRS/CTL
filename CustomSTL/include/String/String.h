@@ -923,7 +923,7 @@ namespace CTL
 			{
 				int characterAsInt{ m_Buffer[0] };
 
-				if (64 < characterAsInt && characterAsInt < 91)
+				if (96 < characterAsInt && characterAsInt < 123)
 					m_Buffer[0] -= 32;
 
 				return *this;

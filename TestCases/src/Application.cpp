@@ -5,9 +5,9 @@
 
 int main()
 {
-	CTL::Dynamic::String data{ "15 hello% 180" };
+	CTL::Dynamic::String data{ "Hello% 180" };
 
 	LOGStr(data);
-	LOGStr(data.ToUpper());
+	LOGStr(data.Capitalize());
 	LOGStr(data);
 }
