@@ -8,7 +8,7 @@
 #define DeallocStr(VAR) delete[] VAR; VAR = nullptr
 #else
 #define CONSTEXPR20 inline
-#define AllocStr(VAR, SIZE, AUTOINIT) VAR = static_cast<char*>(_malloca(SIZE)); if(AUTOINIT && VAR) FillWCharacter(m_Buffer, 0, SIZE / sizeof(char) - 1, '\0')
+#define AllocStr(VAR, SIZE, AUTOINIT) VAR = static_cast<char*>(_malloca(SIZE)); if(AUTOINIT && VAR) FillWCharacter(VAR, 0, SIZE / sizeof(char) - 1, '\0')
 #define DeallocStr(VAR) _freea(VAR); VAR = nullptr
 #endif
 // if C++17 or later is being used.
@@ -849,6 +849,68 @@ namespace CTL
 				}
 
 				return true;
+			}
+
+			/*
+			*
+			*	.Upper/Lower methods
+			*
+			*/
+
+			CONSTEXPR20 String& ToUpper()
+			{
+				for (size_t i{}; i < m_Length; ++i)
+				{
+					int characterAsInt{ m_Buffer[i] };
+
+					if (96 < characterAsInt && characterAsInt < 123)
+						m_Buffer[i] -= 32;
+				}
+
+				return *this;
+			}
+
+			CONSTEXPR20 String Upper() const
+			{
+				String upperStr{ *this };
+
+				for (size_t i{}; i < m_Length; ++i)
+				{
+					int characterAsInt{ upperStr[i] };
+
+					if (96 < characterAsInt && characterAsInt < 123)
+						upperStr[i] -= 32;
+				}
+
+				return upperStr;
+			}
+
+			CONSTEXPR20 String& ToLower()
+			{
+				for (size_t i{}; i < m_Length; ++i)
+				{
+					int characterAsInt{ m_Buffer[i] };
+
+					if (64 < characterAsInt && characterAsInt < 91)
+						m_Buffer[i] += 32;
+				}
+
+				return *this;
+			}
+
+			CONSTEXPR20 String Lower() const
+			{
+				String lowerStr{ *this };
+
+				for (size_t i{}; i < m_Length; ++i)
+				{
+					int characterAsInt{ lowerStr[i] };
+
+					if (64 < characterAsInt && characterAsInt < 91)
+						lowerStr[i] += 32;
+				}
+
+				return lowerStr;
 			}
 
 			/*
