@@ -7,13 +7,9 @@ int main()
 {
 	CTL::Dynamic::String data{ "Hello" };
 
-	std::cout << data << '\n';
-	std::cout << data.Length() << '\n';
-	std::cout << data.Size() << '\n';
+	LOGStr(data);
 
 	data.Append('c');
 
-	std::cout << data << '\n';
-	std::cout << data.Length() << '\n';
-	std::cout << data.Size() << '\n';
+	LOGStr(data);
 }
