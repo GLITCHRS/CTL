@@ -921,10 +921,45 @@ namespace CTL
 
 			CONSTEXPR20 String& Capitalize()
 			{
+				if (m_Length == 0)
+					return *this;
+
 				int characterAsInt{ m_Buffer[0] };
 
 				if (96 < characterAsInt && characterAsInt < 123)
 					m_Buffer[0] -= 32;
+
+				return *this;
+			}
+
+			/*
+			*
+			*	.Title method
+			*
+			*/
+
+			CONSTEXPR20 String& Title()
+			{
+				if (m_Length == 0)
+					return *this;
+
+				int characterAsInt{ m_Buffer[0] };
+
+				if (96 < characterAsInt && characterAsInt < 123)
+					m_Buffer[0] -= 32;
+
+				for (size_t i{}; i < m_Length; ++i)
+				{
+					characterAsInt = m_Buffer[i];
+
+					if (characterAsInt == 32 || characterAsInt == 9 || characterAsInt == 10)
+					{
+						characterAsInt = m_Buffer[i + 1];
+
+						if (96 < characterAsInt && characterAsInt < 123)
+							m_Buffer[++i] -= 32;
+					}
+				}
 
 				return *this;
 			}
