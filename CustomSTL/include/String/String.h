@@ -966,7 +966,7 @@ namespace CTL
 
 			/*
 			*
-			*	.Title method
+			*	.Swap method
 			*
 			*/
 
