@@ -643,6 +643,19 @@ namespace CTL
 				return data;
 			}
 
+			CONSTEXPR20 String SubStrC(size_t startIndex, size_t count)
+			{
+				if (count > GetCStrLength(m_Buffer + startIndex))
+					return {};
+
+				String resultStr{ count };
+				
+				for (size_t i{ startIndex }; i < (startIndex + count); ++i)
+					resultStr.Append(m_Buffer[i]);
+
+				return resultStr;
+			}
+
 			/*
 			*
 			*	.StartsWith method
