@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 #ifdef _MSVC_LANG
 // if C++20 or later is being used.
 #if _MSVC_LANG >= 202002L
@@ -333,6 +335,21 @@ namespace CTL
 			CONSTEXPR20 void Append(const String& string)
 			{
 				Append(string.m_Buffer);
+			}
+
+			/*
+			* 
+			*	AppendAll
+			* 
+			*/
+
+			template<typename... T>
+			CONSTEXPR20 void AppendAll(T... Strings)
+			{
+				static_assert((std::is_same_v<T, const char*>&&...), "Error");
+
+				Reserve(((GetCStrLength(Strings) + ...) + m_Length + 1) * sizeof(char));
+				(Append(Strings),...);
 			}
 
 			/*
