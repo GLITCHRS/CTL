@@ -33,17 +33,22 @@ namespace CTL
 	{
 
 		/*
+		* 
+		*	FORWARD DECS
+		* 
+		*/
+
+		class String;
+
+		/*
 		*
-		*	length function
+		*	length functions
 		*
 		*/
-		CONSTEXPR20 size_t GetCStrLength(const char* str)
-		{
-			size_t i{};
-			while (str[i++] != '\0');
 
-			return i - 1;
-		}
+		CONSTEXPR20 size_t GetStrLen(const char* str);
+		CONSTEXPR20 size_t GetStrLen(const std::string& str);
+		CONSTEXPR20 size_t GetStrLen(const String& str);
 
 		class String
 		{
@@ -96,7 +101,7 @@ namespace CTL
 
 			CONSTEXPR20 explicit String(const char* string, const size_t requiredSize = 0)
 			{
-				m_Length = GetCStrLength(string);
+				m_Length = GetStrLen(string);
 				size_t stringSize{ (m_Length + 1) * sizeof(char) };
 				m_Size = (requiredSize != 0) ? requiredSize : stringSize;
 
@@ -266,7 +271,7 @@ namespace CTL
 
 			CONSTEXPR20 void Append(const char* string)
 			{
-				size_t strLength{ GetCStrLength(string) };
+				size_t strLength{ GetStrLen(string) };
 				size_t strSize{ (m_Length + strLength + 1) * sizeof(char) };
 
 				if (m_Size < strSize)
@@ -343,13 +348,19 @@ namespace CTL
 			* 
 			*/
 
-			template<typename... T>
-			CONSTEXPR20 void AppendAll(T... Strings)
+			template<typename... Strings>
+			CONSTEXPR20 void AppendAll(const Strings&... VarStrings)
 			{
-				static_assert((std::is_same_v<T, const char*>&&...), "Error");
+				static_assert
+				(
+					(std::is_same_v<Strings, char*>||...) ||
+					(std::is_same_v<Strings, std::string>||...) ||
+					(std::is_same_v<Strings, String>||...),
+					"AppendAll only accepts (char*, std::string, and CTL::Dynamic::String)!"
+				);
 
-				Reserve(((GetCStrLength(Strings) + ...) + m_Length + 1) * sizeof(char));
-				(Append(Strings),...);
+				Reserve(((GetStrLen(VarStrings) + ...) + (m_Length + 1)) * sizeof(char));
+				(Append(VarStrings),...);
 			}
 
 			/*
@@ -369,7 +380,7 @@ namespace CTL
 
 			CONSTEXPR20 bool Has(const char* string) const
 			{
-				size_t strLength{ GetCStrLength(string) };
+				size_t strLength{ GetStrLen(string) };
 
 				if (m_Length < strLength)
 					return false;
@@ -412,7 +423,7 @@ namespace CTL
 
 			CONSTEXPR20 char* Find(const char* string)
 			{
-				size_t strLength{ GetCStrLength(string) };
+				size_t strLength{ GetStrLen(string) };
 
 				if (m_Length < strLength)
 					return nullptr;
@@ -449,7 +460,7 @@ namespace CTL
 
 			CONSTEXPR20 const char* Find(const char* string) const
 			{
-				size_t strLength{ GetCStrLength(string) };
+				size_t strLength{ GetStrLen(string) };
 
 				if (m_Length < strLength)
 					return nullptr;
@@ -492,7 +503,7 @@ namespace CTL
 
 			CONSTEXPR20 size_t Index(const char* string, unsigned int occurrenceNumber = 1u) const
 			{
-				size_t strLength{ GetCStrLength(string) };
+				size_t strLength{ GetStrLen(string) };
 
 				if (m_Length < strLength)
 					return m_Length;
@@ -537,7 +548,7 @@ namespace CTL
 
 			CONSTEXPR20 unsigned int Count(const char* string) const
 			{
-				size_t strLength{ GetCStrLength(string) };
+				size_t strLength{ GetStrLen(string) };
 
 				if (m_Length < strLength)
 					return 0;
@@ -651,7 +662,7 @@ namespace CTL
 
 			CONSTEXPR20 String SubStrC(size_t startIndex, size_t count) const
 			{
-				if (count > GetCStrLength(m_Buffer + startIndex))
+				if (count > GetStrLen(m_Buffer + startIndex))
 					return {};
 
 				String resultStr{ count };
@@ -675,7 +686,7 @@ namespace CTL
 
 			CONSTEXPR20 const bool StartsWith(const char* string) const
 			{
-				size_t strLength{ GetCStrLength(string) };
+				size_t strLength{ GetStrLen(string) };
 
 				if (strLength > m_Length)
 					return false;
@@ -710,7 +721,7 @@ namespace CTL
 
 			CONSTEXPR20 const bool EndsWith(const char* string) const
 			{
-				size_t strLength{ GetCStrLength(string) };
+				size_t strLength{ GetStrLen(string) };
 
 				if (strLength > m_Length)
 					return false;
@@ -1086,7 +1097,7 @@ namespace CTL
 
 			NODISCARD17 CONSTEXPR20 String operator+(const char* string) const
 			{
-				String newStr{ m_Buffer, (m_Length + GetCStrLength(string) + 1) * sizeof(char) };
+				String newStr{ m_Buffer, (m_Length + GetStrLen(string) + 1) * sizeof(char) };
 				newStr.Append(string);
 
 				return newStr;
@@ -1130,7 +1141,7 @@ namespace CTL
 
 			CONSTEXPR20 String& operator=(const char* string)
 			{
-				size_t strLength{ GetCStrLength(string) };
+				size_t strLength{ GetStrLen(string) };
 				size_t strSize{ (strLength + 1) * sizeof(char) };
 
 				if (strSize > m_Size)
@@ -1245,7 +1256,7 @@ namespace CTL
 
 			CONSTEXPR20 bool operator==(const char* string) const
 			{
-				if (m_Length != GetCStrLength(string)) return false;
+				if (m_Length != GetStrLen(string)) return false;
 
 				for (size_t i{}; i < m_Length; ++i)
 					if (m_Buffer[i] != string[i])
@@ -1386,6 +1397,22 @@ namespace CTL
 				DeallocStr(m_Buffer);
 			}
 
+			/*
+			*
+			*	operator std::string()
+			*
+			*/
+
+			operator std::string()
+			{
+				return std::string{ m_Buffer };
+			}
+
+			operator const char*()
+			{
+				return m_Buffer;
+			}
+
 		private:
 			template<typename T>
 			CONSTEXPR20 void formatter(String& resultStr, const T& value, size_t& bracketCount)
@@ -1417,6 +1444,31 @@ namespace CTL
 			size_t m_Size;
 			char* m_Buffer;
 		};
+
+		/*
+		*
+		*	length functions
+		*
+		*/
+
+		CONSTEXPR20 size_t GetStrLen(const char* str)
+		{
+			size_t i{};
+			while (str[i++] != '\0');
+
+			return i - 1;
+		}
+
+		CONSTEXPR20 size_t GetStrLen(const std::string& str)
+		{
+			return str.length();
+		}
+
+		CONSTEXPR20 size_t GetStrLen(const String& str)
+		{
+			return str.Length();
+		}
+
 	};
 };
 

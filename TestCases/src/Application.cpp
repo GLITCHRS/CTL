@@ -8,6 +8,6 @@ int main()
 	CTL::Dynamic::String data{ "Hello World!" };
 
 	LOGStr(data);
-	data.AppendAll("String1", "String2");
+	data.AppendAll("String1"_DS, "Data");
 	LOGStr(data);
 }
