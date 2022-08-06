@@ -5,9 +5,11 @@
 
 int main()
 {
-	CTL::Dynamic::String data{ "Hello World!" };
+	CTL::Dynamic::String data{ "Hello {}{}" };
 
 	LOGStr(data);
-	data.AppendAll("String1"_DS, "Data");
+	LOGStr(data.Format("World", "!"));
+	LOGStr(data);
+	LOGStr(data.Format("World", "!"));
 	LOGStr(data);
 }

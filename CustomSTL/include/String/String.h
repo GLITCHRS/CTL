@@ -757,8 +757,9 @@ namespace CTL
 			{
 				String resultStr;
 				size_t bracketCount{ 1 };
+				size_t nextStartingPoint{};
 
-				(formatter(resultStr, args, bracketCount),...);
+				(formatter(resultStr, args, bracketCount, nextStartingPoint),...);
 				resultStr.Append(m_Buffer + Index('}', bracketCount - 1) + 1);
 				return resultStr;
 			}
@@ -1410,10 +1411,8 @@ namespace CTL
 
 		private:
 			template<typename T>
-			CONSTEXPR20 void formatter(String& resultStr, const T& value, size_t& bracketCount)
+			CONSTEXPR20 void formatter(String& resultStr, const T& value, size_t& bracketCount, size_t& nextStartingPoint)
 			{
-				static size_t nextStartingPoint{};
-
 				size_t openBracket{ Index('{', bracketCount) };
 
 				if (openBracket != m_Length)
