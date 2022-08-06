@@ -1408,11 +1408,6 @@ namespace CTL
 				return std::string{ m_Buffer };
 			}
 
-			operator const char*()
-			{
-				return m_Buffer;
-			}
-
 		private:
 			template<typename T>
 			CONSTEXPR20 void formatter(String& resultStr, const T& value, size_t& bracketCount)
