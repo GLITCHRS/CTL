@@ -8,6 +8,12 @@ int main()
 	CTL::Dynamic::String data{ "Hello World!" };
 
 	LOGStr(data);
-	LOGStr(data.SubStrC(6, 7));
+	data.Reserve(100);
+	LOGStr(data);
+	data.Shrink(12);
+	LOGStr(data);
+	data.Shrink(50);
+	LOGStr(data);
+	data.ShrinkToFit();
 	LOGStr(data);
 }

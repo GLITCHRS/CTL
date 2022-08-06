@@ -620,7 +620,7 @@ namespace CTL
 			*
 			*/
 
-			CONSTEXPR20 String SubStr(size_t startIndex, size_t endIndex)
+			CONSTEXPR20 String SubStr(size_t startIndex, size_t endIndex) const
 			{
 				if (endIndex > m_Length)
 					return {};
@@ -632,18 +632,7 @@ namespace CTL
 				return data;
 			}
 
-			CONSTEXPR20 const char* SubStr(size_t startIndex, size_t endIndex) const
-			{
-				if (endIndex > m_Length)
-					return nullptr;
-
-				char* data{ m_Buffer + startIndex };
-				data[endIndex - startIndex] = '\0';
-
-				return data;
-			}
-
-			CONSTEXPR20 String SubStrC(size_t startIndex, size_t count)
+			CONSTEXPR20 String SubStrC(size_t startIndex, size_t count) const
 			{
 				if (count > GetCStrLength(m_Buffer + startIndex))
 					return {};
@@ -988,6 +977,58 @@ namespace CTL
 				String temp{ std::move(other) };
 				other = std::move(*this);
 				*this = std::move(temp);
+			}
+
+			/*
+			*
+			*	.ShrinkToFit method
+			*
+			*/
+			
+			CONSTEXPR20 void ShrinkToFit()
+			{
+				if ((m_Size / sizeof(char) - 1) == m_Length)
+					return;
+
+				char* data{ m_Buffer };
+				size_t newSize{ (m_Length + 1) * sizeof(char) };
+				
+				AllocStr(m_Buffer, newSize, false);
+
+				if (m_Buffer)
+				{
+					m_Size = newSize;
+					for (size_t i{}; i < m_Length; ++i)
+						m_Buffer[i] = data[i];
+
+					m_Buffer[m_Length] = '\0';
+
+					DeallocStr(data);
+				}
+				else
+					m_Buffer = data;
+			}
+
+			CONSTEXPR20 void Shrink(size_t newSize)
+			{
+				if (newSize < ((m_Length + 1) * sizeof(char)))
+					return;
+
+				char* data{ m_Buffer };
+				AllocStr(m_Buffer, newSize, false);
+
+				if (m_Buffer)
+				{
+					m_Size = newSize;
+					for (size_t i{}; i < m_Length; ++i)
+						m_Buffer[i] = data[i];
+
+					m_Buffer[m_Length] = '\0';
+
+					DeallocStr(data);
+				}
+				else
+					m_Buffer = data;
 			}
 
 			/*
