@@ -1,15 +1,14 @@
 #include <iostream>
+#include <string>
 
 #include "String/String.h"
 #include "Tests.h"
 
 int main()
 {
-	CTL::Dynamic::String data{ "Hello {}{}" };
+	CTL::Dynamic::String data{ "abcde" };
 
 	LOGStr(data);
-	LOGStr(data.Format("World", "!"));
-	LOGStr(data);
-	LOGStr(data.Format("World", "!"));
+	data.InPlaceReplace("bc", "ph");
 	LOGStr(data);
 }

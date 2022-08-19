@@ -426,7 +426,7 @@ namespace CTL
 				size_t strLength{ GetStrLen(string) };
 
 				if (m_Length < strLength)
-					return nullptr;
+					return (m_Buffer + m_Length);
 
 				for (size_t i{}; i < m_Length; ++i)
 				{
@@ -436,7 +436,7 @@ namespace CTL
 					if (j == strLength)
 						return (m_Buffer + i);
 				}
-				return nullptr;
+				return (m_Buffer + m_Length);
 			}
 
 			CONSTEXPR20 char* Find(const std::string& string)
@@ -1010,7 +1010,7 @@ namespace CTL
 
 			/*
 			*
-			*	.ShrinkToFit method
+			*	.Shrinking methods
 			*
 			*/
 			
@@ -1059,6 +1059,110 @@ namespace CTL
 				else
 					m_Buffer = data;
 			}
+
+			/*
+			*
+			*	.Replace method
+			*
+			*/
+
+			CONSTEXPR20 void InPlaceReplace(char charA, char charB)
+			{
+				char* charPos{ Find(charA) };
+
+				if (charPos)
+					charPos[0] = charB;
+			}
+
+			CONSTEXPR20 void InPlaceReplace(const char* toFindStr, const char* toReplStr)
+			{
+				size_t toFindStrLen{ GetStrLen(toFindStr) };
+				size_t toReplStrLen{ GetStrLen(toReplStr) };
+
+				size_t stringPos{ Index(toFindStr) };
+
+				if (stringPos == m_Length)
+					return;
+
+				if (toFindStrLen == toReplStrLen)
+				{
+					for (size_t i{ stringPos }, j{}; i < (stringPos + toFindStrLen); ++j, ++i)
+						m_Buffer[i] = toReplStr[j];
+
+					return;
+				}
+
+				char* tempHolder{ m_Buffer };
+
+				if (toFindStrLen > toReplStrLen)
+				{
+					replacer(m_Buffer, tempHolder, toReplStr, stringPos, toFindStrLen, toReplStrLen);
+					m_Length -= (toFindStrLen - toReplStrLen);
+					return;
+				}
+
+				size_t newLen{ m_Length + toReplStrLen - toFindStrLen };
+				m_Size = (newLen + 1) * sizeof(char);
+				AllocStr(m_Buffer, m_Size, false);
+
+				if (m_Buffer)
+				{
+					size_t i{};
+					while (i < stringPos)
+					{
+						m_Buffer[i] = tempHolder[i];
+						++i;
+					}
+
+					replacer(m_Buffer, tempHolder, toReplStr, i, toFindStrLen, toReplStrLen);
+
+					m_Length = newLen;
+					m_Buffer[m_Length] = '\0';
+
+					DeallocStr(tempHolder);
+				}
+				else
+				{
+					DeallocStr(tempHolder);
+					m_Length = 0;
+					m_Size = 0;
+
+					throw std::bad_alloc();
+				}
+			}
+
+			//CONSTEXPR20 void InPlaceReplace(const std::string& toFindStr, const std::string& toReplStr)
+			//{
+			//	size_t toFindStrLen{ toFindStr.length() };
+			//	size_t toReplStrLen{ toReplStr.length() };
+
+			//	char* strPos{ Find(toFindStr.data()) };
+
+			//	if (strPos)
+			//	{
+			//		if (toFindStrLen == toReplStrLen)
+			//		{
+			//			for (size_t i{}; i < toFindStrLen; ++i)
+			//				strPos[i] = toReplStr[i];
+
+			//		}
+			//		else if (toFindStrLen > toReplStrLen)
+			//		{
+			//			size_t i{};
+			//			for (; i < toReplStrLen; ++i)
+			//				strPos[i] = toReplStr[i];
+
+			//			if ((i + toFindStrLen - 1) == m_Length)
+			//				// continue from here
+			//				;
+			//		}
+			//	}
+			//}
+
+			/*CONSTEXPR20 void InPlaceReplace(const String& toFindStr, const String& toReplStr)
+			{
+				InPlaceReplace(std::string{ toFindStr.Data() }, std::string{ toReplStr.Data() });
+			}*/
 
 			/*
 			*
@@ -1433,6 +1537,21 @@ namespace CTL
 				}
 			}
 
+			CONSTEXPR20 void replacer(char* m_Buffer, char* tempHolder, const char* toReplStr, size_t i, size_t toFindStrLen, size_t toReplStrLen)
+			{
+				size_t stringPos{ i };
+
+				for (size_t j{}; j < toReplStrLen; ++i, ++j)
+					m_Buffer[i] = toReplStr[j];
+
+				size_t h{ stringPos + toFindStrLen };
+				while (h < (m_Length + 1))
+				{
+					m_Buffer[i] = tempHolder[h];
+					++h, ++i;
+				}
+			}
+
 		private:
 			size_t m_Length;
 			size_t m_Size;
@@ -1468,5 +1587,5 @@ namespace CTL
 
 NODISCARD17 CONSTEXPR20 CTL::Dynamic::String operator""_DS(const char* string, size_t strLength)
 {
-	return CTL::Dynamic::String{ string, (strLength + 1) * sizeof(char) };
+	return CTL::Dynamic::String{ string };
 }
