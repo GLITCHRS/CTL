@@ -31,7 +31,6 @@ namespace CTL
 {
 	namespace Dynamic
 	{
-
 		/*
 		* 
 		*	FORWARD DECS
@@ -1074,8 +1073,18 @@ namespace CTL
 					charPos[0] = charB;
 			}
 
-			CONSTEXPR20 void InPlaceReplace(const char* toFindStr, const char* toReplStr)
+			template<typename T, typename H>
+			CONSTEXPR20 void InPlaceReplace(const T& toFindStr, const H& toReplStr)
 			{
+				static_assert(
+					(std::is_array_v<T> || std::is_same_v<T, const char*> || std::is_same_v<T, std::string> || std::is_same_v<T, String>) &&
+					(std::is_array_v<H> || std::is_same_v<H, const char*> || std::is_same_v<H, std::string> || std::is_same_v<H, String>),
+					"This method only accepts any of (const char*, std::string, or CTL::Dynamic::String) types."
+				);
+
+				if (&toReplStr == this)
+					throw std::logic_error("Cannot replace with same object (conflicts detected!)");
+
 				size_t toFindStrLen{ GetStrLen(toFindStr) };
 				size_t toReplStrLen{ GetStrLen(toReplStr) };
 
@@ -1131,38 +1140,38 @@ namespace CTL
 				}
 			}
 
-			//CONSTEXPR20 void InPlaceReplace(const std::string& toFindStr, const std::string& toReplStr)
-			//{
-			//	size_t toFindStrLen{ toFindStr.length() };
-			//	size_t toReplStrLen{ toReplStr.length() };
-
-			//	char* strPos{ Find(toFindStr.data()) };
-
-			//	if (strPos)
-			//	{
-			//		if (toFindStrLen == toReplStrLen)
-			//		{
-			//			for (size_t i{}; i < toFindStrLen; ++i)
-			//				strPos[i] = toReplStr[i];
-
-			//		}
-			//		else if (toFindStrLen > toReplStrLen)
-			//		{
-			//			size_t i{};
-			//			for (; i < toReplStrLen; ++i)
-			//				strPos[i] = toReplStr[i];
-
-			//			if ((i + toFindStrLen - 1) == m_Length)
-			//				// continue from here
-			//				;
-			//		}
-			//	}
-			//}
-
-			/*CONSTEXPR20 void InPlaceReplace(const String& toFindStr, const String& toReplStr)
+			template<typename T, typename H>
+			CONSTEXPR20 String Replace(const T& toFindStr, const H& toReplStr)
 			{
-				InPlaceReplace(std::string{ toFindStr.Data() }, std::string{ toReplStr.Data() });
-			}*/
+				// review this method.
+
+				static_assert(
+					(std::is_array_v<T> || std::is_same_v<T, const char*> || std::is_same_v<T, std::string> || std::is_same_v<T, String>) &&
+					(std::is_array_v<H> || std::is_same_v<H, const char*> || std::is_same_v<H, std::string> || std::is_same_v<H, String>),
+					"This method only accepts any of (const char*, std::string, or CTL::Dynamic::String) types."
+					);
+
+				size_t toFindStrLen{ GetStrLen(toFindStr) };
+				size_t toReplStrLen{ GetStrLen(toReplStr) };
+
+				size_t stringPos{ Index(toFindStr) };
+
+				String resultStr{ m_Length + toReplStrLen - toFindStrLen + 1 };
+				resultStr.m_Length = m_Length + toReplStrLen - toFindStrLen + 1;
+
+				size_t i{};
+				for (; i < stringPos; ++i)
+					resultStr[i] = m_Buffer[i];
+
+				for (size_t j{}; j < toReplStrLen; ++i, ++j)
+					resultStr[i] = toReplStr[j];
+
+				for (size_t j{ stringPos + toFindStrLen }; j < m_Length; ++i, ++j)
+					resultStr[i] = m_Buffer[j];
+
+				std::cout << resultStr[i] << '\n';
+				return resultStr;
+			}
 
 			/*
 			*
@@ -1537,7 +1546,8 @@ namespace CTL
 				}
 			}
 
-			CONSTEXPR20 void replacer(char* m_Buffer, char* tempHolder, const char* toReplStr, size_t i, size_t toFindStrLen, size_t toReplStrLen)
+			template<typename T, typename H>
+			CONSTEXPR20 void replacer(T& m_Buffer, T& tempHolder, H& toReplStr, size_t i, size_t toFindStrLen, size_t toReplStrLen)
 			{
 				size_t stringPos{ i };
 
