@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 
-#include "String/String.h"
 #include "Tests.h"
 
 int main()
@@ -12,4 +11,5 @@ int main()
 	LOGStr(data);
 	LOGStr(data2);
 	LOGStr(data);
+	std::cout << data.Index(data) << '\n';
 }
