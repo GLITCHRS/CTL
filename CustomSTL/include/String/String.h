@@ -38,7 +38,7 @@ public:
 
 	CONSTEXPR20 String() : m_Length(0), m_Size(sizeof(char) * 15)
 	{
-		AllocInit(char, m_Buffer, 15);
+		AllocIterableInit(char, m_Buffer, m_Size);
 	}
 
 	/*
@@ -49,7 +49,7 @@ public:
 
 	CONSTEXPR20 explicit String(const size_t length) : m_Length(0), m_Size(sizeof(char)* (length + 1))
 	{
-		AllocInit(char, m_Buffer, length + 1);
+		AllocIterableInit(char, m_Buffer, m_Size);
 	}
 
 	CONSTEXPR20 explicit String(const char* string, const size_t size = 0)
@@ -66,17 +66,15 @@ public:
 		}
 		else
 		{
-			Alloc(char, m_Buffer, m_Size);
-			FillWIterable(m_Buffer, 0, m_Length, string);
-			m_Buffer[m_Length] = '\0';
+			AllocIterable(char, m_Buffer, m_Size);
+			FillWIterable(m_Buffer, 0, m_Length + 1, string); // m_Length + 1 to include '\0'
 		}
 	}
 
 	CONSTEXPR20 explicit String(const std::string& string) : m_Length(string.size()), m_Size((m_Length + 1) * sizeof(char))
 	{
-		Alloc(char, m_Buffer, m_Size);
-		FillWIterable(m_Buffer, 0, m_Length, string);
-		m_Buffer[m_Length] = '\0';
+		AllocIterable(char, m_Buffer, m_Size);
+		FillWIterable(m_Buffer, 0, m_Length + 1, string); // m_Length + 1 to include '\0'
 	}
 
 	/*
@@ -87,19 +85,8 @@ public:
 
 	CONSTEXPR20 String(const String& string) : m_Length(string.m_Length), m_Size(string.m_Size)
 	{
-		Alloc(m_Buffer, m_Size, false);
-
-		if (m_Buffer)
-		{
-			FillWIterable(m_Buffer, 0, m_Length, string);
-			m_Buffer[m_Length] = '\0';
-		}
-		else
-		{
-			m_Length = 0;
-			m_Size = 0;
-			throw std::bad_alloc();
-		}
+		AllocIterable(char, m_Buffer, m_Size);
+		FillWIterable(m_Buffer, 0, m_Length + 1, string.m_Buffer); // m_Length + 1 to include '\0'
 	}
 
 	/*
@@ -110,7 +97,8 @@ public:
 
 	CONSTEXPR20 String(String&& string) noexcept : m_Length(string.m_Length), m_Size(string.m_Size), m_Buffer(string.m_Buffer)
 	{
-		Alloc(string.m_Buffer, 15 * sizeof(char), true);
+		string.m_Size = 15 * sizeof(char);
+		AllocIterableInit(char, string.m_Buffer, string.m_Size);
 		string.m_Length = 0;
 	}
 
@@ -120,44 +108,27 @@ public:
 	*
 	*/
 
-	CONSTEXPR20 void Reserve(const size_t size)
+	CONSTEXPR20 bool Reserve(const size_t size)
 	{
 		if (size <= m_Size)
-			return;
+			return false;
 
-		if (m_Length == 0)
+		char* oldBuffer{ m_Buffer };
+
+		try
 		{
-			Dealloc(m_Buffer);
-			Alloc(m_Buffer, size, true);
-
-			if (m_Buffer)
-				m_Size = size;
-			else
-			{
-				m_Size = 0;
-				throw std::bad_alloc();
-			}
+			AllocIterable(char, m_Buffer, size);
 		}
-		else
+		catch (const std::bad_alloc&)
 		{
-			char* oldStr{ m_Buffer };
-			Alloc(m_Buffer, size, false);
-
-			if (m_Buffer)
-			{
-				FillWIterable(m_Buffer, 0, m_Length, oldStr);
-				m_Buffer[m_Length] = '\0';
-				m_Size = size;
-				Dealloc(oldStr);
-			}
-			else
-			{
-				m_Length = 0;
-				m_Size = 0;
-				Dealloc(oldStr);
-				throw std::bad_alloc();
-			}
+			m_Buffer = oldBuffer;
+			return false;
 		}
+
+		FillWIterable(m_Buffer, 0, m_Length + 1, oldBuffer); // m_Length + 1 to include '\0'
+		Dealloc(oldBuffer);
+		m_Size = size;
+		return true;
 	}
 
 	/*
@@ -168,101 +139,38 @@ public:
 
 	CONSTEXPR20 void Append(const char character)
 	{
-		if ((++m_Length * sizeof(char)) >= m_Size)
+		if (IsFilled())
 		{
-			char* oldStr{ m_Buffer };
-
+			char* oldBuffer{ m_Buffer };
 			m_Size *= 2;
-			Alloc(m_Buffer, m_Size, false);
 
-			if (m_Buffer)
-			{
-				for (size_t i{}; i < m_Length - 1; ++i)
-					m_Buffer[i] = oldStr[i];
-
-				m_Buffer[m_Length - 1] = character;
-				m_Buffer[m_Length] = '\0';
-
-				Dealloc(oldStr);
-			}
-			else
-			{
-				Dealloc(oldStr);
-
-				m_Length = 0;
-				m_Size = 0;
-
-				throw std::bad_alloc();
-			}
+			AllocIterable(char, m_Buffer, m_Size);
+			FillWIterable(m_Buffer, 0, m_Length, oldBuffer);
+			Dealloc(oldBuffer);
 		}
-		else
-		{
-			m_Buffer[m_Length - 1] = character;
-			m_Buffer[m_Length] = '\0';
-		}
+
+		m_Buffer[m_Length] = character;
+		m_Buffer[++m_Length] = '\0';
 	}
 
 	CONSTEXPR20 void Append(const char* string)
 	{
 		size_t strLength{ GetStrLen(string) };
-		size_t strSize{ (m_Length + strLength + 1) * sizeof(char) };
+		size_t newLen{ m_Length + strLength };
+		size_t combinedStrSize{ (newLen + 1) * sizeof(char) };
 
-		if (m_Size < strSize)
+		if (m_Size < combinedStrSize)
 		{
+			char* oldBuffer{ m_Buffer };
+			m_Size = combinedStrSize * 2;
 
-			if (m_Length == 0)
-			{
-				Dealloc(m_Buffer);
-				Alloc(m_Buffer, strSize, false);
-
-				if (m_Buffer)
-				{
-					FillWIterable(m_Buffer, 0, strLength, string);
-				}
-				else
-				{
-					m_Size = 0;
-					throw std::bad_alloc();
-				}
-			}
-			else
-			{
-				char* oldStr = m_Buffer;
-				size_t newStrSize{ strSize * 2 - 1 };
-
-				Alloc(m_Buffer, newStrSize, false);
-				if (m_Buffer)
-				{
-					FillWIterable(m_Buffer, 0, m_Length, oldStr);
-
-					size_t i{ m_Length };
-					size_t j{};
-
-					m_Length += strLength;
-					for (; i < m_Length; ++j, ++i)
-						m_Buffer[i] = string[j];
-					m_Buffer[m_Length] = '\0';
-
-					m_Size = newStrSize;
-					Dealloc(oldStr);
-				}
-				else
-				{
-					Dealloc(oldStr);
-					throw std::bad_alloc();
-				}
-			}
+			AllocIterable(char, m_Buffer, m_Size);
+			FillWIterable(m_Buffer, 0, m_Length, oldBuffer);
+			Dealloc(oldBuffer);
 		}
-		else
-		{
-			size_t i{ m_Length };
-			size_t j{};
+		FillWIterable((m_Buffer + m_Length), 0, strLength + 1, string);
 
-			m_Length += strLength;
-			for (; i < m_Length; ++j, ++i)
-				m_Buffer[i] = string[j];
-			m_Buffer[m_Length] = '\0';
-		}
+		m_Length = newLen;
 	}
 
 	CONSTEXPR20 void Append(const std::string& string)
@@ -281,18 +189,25 @@ public:
 	* 
 	*/
 
+	template<typename T>
+	CONSTEXPR20 bool IsString()
+	{
+		return
+			std::is_same_v<T, char*> ||
+			std::is_same_v<T, std::string> ||
+			std::is_same_v<T, String>;
+	}
+
 	template<typename... Strings>
 	CONSTEXPR20 void AppendAll(const Strings&... VarStrings)
 	{
 		static_assert
 		(
-			(std::is_same_v<Strings, char*>||...) ||
-			(std::is_same_v<Strings, std::string>||...) ||
-			(std::is_same_v<Strings, String>||...),
+			(IsString<Strings>()&&...),
 			"AppendAll only accepts (char*, std::string, and CTL::Dynamic::String)!"
 		);
 
-		Reserve(((GetStrLen(VarStrings) + ...) + (m_Length + 1)) * sizeof(char));
+		Reserve(((GetStrLen(VarStrings) + ...) + m_Length + 1) * sizeof(char) * 2);
 		(Append(VarStrings),...);
 	}
 
@@ -703,6 +618,16 @@ public:
 	*
 	*/
 
+	CONSTEXPR20 bool IsFilled() const
+	{
+		return ((m_Length + 1) * sizeof(char)) == m_Size;
+	}
+
+	CONSTEXPR20 bool IsEmpty() const
+	{
+		return m_Length == 0;
+	}
+
 	CONSTEXPR20 bool IsAlnum() const
 	{
 		if (m_Length == 0)
@@ -954,8 +879,8 @@ public:
 
 		char* data{ m_Buffer };
 		size_t newSize{ (m_Length + 1) * sizeof(char) };
-				
-		Alloc(m_Buffer, newSize, false);
+
+		AllocIterable(char, m_Buffer, newSize);
 
 		if (m_Buffer)
 		{
@@ -977,7 +902,7 @@ public:
 			return;
 
 		char* data{ m_Buffer };
-		Alloc(m_Buffer, newSize, false);
+		AllocIterable(char, m_Buffer, newSize);
 
 		if (m_Buffer)
 		{
@@ -1046,7 +971,7 @@ public:
 
 		size_t newLen{ m_Length + toReplStrLen - toFindStrLen };
 		m_Size = (newLen + 1) * sizeof(char);
-		Alloc(m_Buffer, m_Size, false);
+		AllocIterable(char, m_Buffer, m_Size);
 
 		if (m_Buffer)
 		{
@@ -1196,7 +1121,7 @@ public:
 		{
 			size_t sizeToAlloc{ strSize * 2 - 1 };
 			Dealloc(m_Buffer);
-			Alloc(m_Buffer, sizeToAlloc, false);
+			AllocIterable(char, m_Buffer, sizeToAlloc);
 
 			if (m_Buffer)
 			{
@@ -1235,7 +1160,7 @@ public:
 		m_Size = other.m_Size;
 
 		other.m_Size = 15 * sizeof(char);
-		Alloc(other.m_Buffer, other.m_Size, true);
+		AllocIterableInit(char, other.m_Buffer, other.m_Size);
 		other.m_Length = 0;
 
 		return *this;
@@ -1275,7 +1200,7 @@ public:
 	CONSTEXPR20 void operator*=(size_t count)
 	{
 		char* currentStr;
-		Alloc(currentStr, m_Size, false);
+		AllocIterable(char, currentStr, m_Size);
 
 		if (currentStr)
 		{
