@@ -6,4 +6,7 @@
 int main()
 {
 	Test4();
+	/*CTL::Dynamic::String a{};
+
+	a.AppendAll(1);*/
 }

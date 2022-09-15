@@ -30,11 +30,7 @@ CONSTEXPR20 size_t GetStrLen(const CTL::Dynamic::String & str);
 template<typename T, typename... H>
 struct is_any_of
 {
-	static inline constexpr bool value = ((
-		std::is_same_v<T, H> ||
-		std::is_same_v<T, H> ||
-		std::is_same_v<T, H>
-		)&&...);
+	static inline constexpr bool value = ((std::is_same_v<T, H>)||...);
 };
 
 class CTL::Dynamic::String
@@ -203,7 +199,7 @@ public:
 	template<typename... Strings>
 	CONSTEXPR20 void AppendAll(const Strings&... VarStrings)
 	{
-		if constexpr (((is_any_of<Strings, char*, std::string, CTL::Dynamic::String>::value)&&...))
+		if constexpr (!(((is_any_of<Strings, char*, std::string, CTL::Dynamic::String>::value) || std::is_array_v<Strings>)&&...))
 		{
 			throw std::logic_error("AppendAll only accepts (char*, std::string, and CTL::Dynamic::String)!");
 		}
