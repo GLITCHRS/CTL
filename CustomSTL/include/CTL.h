@@ -11,7 +11,7 @@
 
 	#define CONSTEXPR20 constexpr
 	#define AllocIterable(T, VAR, SIZE) VAR = new (std::nothrow) T[SIZE / sizeof(T)]; _VerifyAlloc(VAR)
-	#define AllocInit(T, VAR, SIZE) VAR = new (std::nothrow) T[SIZE / sizeof(T)]{}; _VerifyAlloc(VAR)
+	#define AllocIterableInit(T, VAR, SIZE) VAR = new (std::nothrow) T[SIZE / sizeof(T)]{}; _VerifyAlloc(VAR)
 	#define Dealloc(VAR) delete[] VAR; VAR = nullptr
 
 #else
@@ -25,9 +25,7 @@
 
 #define _VerifyAlloc(VAR) if (!VAR) { throw std::bad_alloc(); }
 
-#define GetVar(x) #x
-
 #define NODISCARD17 [[nodiscard]]
 #define FillWItem(VAR, START, END, CHARACTER) { for(size_t i{ START }; i < END; ++i) VAR[i] = CHARACTER; }
-#define FillWIterable(VAR, START, END, STRING) { for(size_t i{ START }; i < END; ++i) VAR[i] = STRING[i]; }
-#define FillWIterableCustom(VAR, VAR_START, STRING, STRING_START, VAR_END, END) { for(size_t i{ VAR_START }, j{ STRING_START }; VAR_END < END; ++j, ++i) VAR[i] = STRING[i]; }
+#define FillWIterable(VAR, START, END, ITERABLE) { for(size_t i{ START }; i < END; ++i) VAR[i] = ITERABLE[i]; }
+#define FillWIterableCustom(VAR, VAR_START, ITERABLE, ITERABLE_START, VAR_END, END) { for(size_t i{ VAR_START }, j{ ITERABLE_START }; VAR_END < END; ++j, ++i) VAR[i] = ITERABLE[j]; }

@@ -3,6 +3,7 @@
 #include "CTL.h"
 
 #include <iostream>
+#include <algorithm>
 #include <type_traits>
 
 #ifndef _MSVC_LANG
@@ -14,19 +15,29 @@
 #error C++17 or later is required for CTL to function!
 #endif
 
-_CTLBEGIN
-
 // Foward Decl
+_CTLBEGIN
+_DYNAMICBEGIN
 class String;
+_DYNAMICEND
+_CTLEND
 
 // GetStrLen functions Decls
 CONSTEXPR20 size_t GetStrLen(const char* str);
 CONSTEXPR20 size_t GetStrLen(const std::string& str);
-CONSTEXPR20 size_t GetStrLen(const String& str);
+CONSTEXPR20 size_t GetStrLen(const CTL::Dynamic::String & str);
 
-_DYNAMICBEGIN
+template<typename T, typename... H>
+struct is_any_of
+{
+	static inline constexpr bool value = ((
+		std::is_same_v<T, H> ||
+		std::is_same_v<T, H> ||
+		std::is_same_v<T, H>
+		)&&...);
+};
 
-class String
+class CTL::Dynamic::String
 {
 public:
 
@@ -71,7 +82,7 @@ public:
 		}
 	}
 
-	CONSTEXPR20 explicit String(const std::string& string) : m_Length(string.size()), m_Size((m_Length + 1) * sizeof(char))
+	CONSTEXPR20 explicit String(const std::string& string) : m_Length(string.length()), m_Size((m_Length + 1) * sizeof(char))
 	{
 		AllocIterable(char, m_Buffer, m_Size);
 		FillWIterable(m_Buffer, 0, m_Length + 1, string); // m_Length + 1 to include '\0'
@@ -189,23 +200,13 @@ public:
 	* 
 	*/
 
-	template<typename T>
-	CONSTEXPR20 bool IsString()
-	{
-		return
-			std::is_same_v<T, char*> ||
-			std::is_same_v<T, std::string> ||
-			std::is_same_v<T, String>;
-	}
-
 	template<typename... Strings>
 	CONSTEXPR20 void AppendAll(const Strings&... VarStrings)
 	{
-		static_assert
-		(
-			(IsString<Strings>()&&...),
-			"AppendAll only accepts (char*, std::string, and CTL::Dynamic::String)!"
-		);
+		if constexpr (((is_any_of<Strings, char*, std::string, CTL::Dynamic::String>::value)&&...))
+		{
+			throw std::logic_error("AppendAll only accepts (char*, std::string, and CTL::Dynamic::String)!");
+		}
 
 		Reserve(((GetStrLen(VarStrings) + ...) + m_Length + 1) * sizeof(char) * 2);
 		(Append(VarStrings),...);
@@ -941,8 +942,9 @@ public:
 			"This method only accepts any of (const char*, std::string, or CTL::Dynamic::String) types."
 		);
 
-		if (&toReplStr == this)
-			throw std::logic_error("Cannot replace with same object (conflicts detected!)");
+		if constexpr(std::is_same_v<H, String>)
+			if constexpr(this == &toReplStr)
+				throw std::logic_error("Cannot replace with same object (conflicts detected!)");
 
 		size_t toFindStrLen{ GetStrLen(toFindStr) };
 		size_t toReplStrLen{ GetStrLen(toReplStr) };
@@ -1433,12 +1435,10 @@ private:
 *
 */
 
-__forceinline std::ostream& operator<<(std::ostream& stream, const String& data)
+__forceinline std::ostream& operator<<(std::ostream& stream, const CTL::Dynamic::String& data)
 {
 	return stream << data.Data();
 }
-
-_DYNAMICEND
 
 /*
 *
@@ -1459,12 +1459,10 @@ CONSTEXPR20 size_t GetStrLen(const std::string& str)
 	return str.length();
 }
 
-CONSTEXPR20 size_t GetStrLen(const Dynamic::String& str)
+CONSTEXPR20 size_t GetStrLen(const CTL::Dynamic::String& str)
 {
 	return str.Length();
 }
-
-_CTLEND
 
 NODISCARD17 CONSTEXPR20 CTL::Dynamic::String operator""_DS(const char* string, size_t strLength)
 {
