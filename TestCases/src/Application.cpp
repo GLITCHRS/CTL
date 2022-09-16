@@ -5,8 +5,6 @@
 
 int main()
 {
-	Test4();
-	/*CTL::Dynamic::String a{};
-
-	a.AppendAll(1);*/
+	CTL::Dynamic::String a{ "Hello" };
+	std::cout << a.Index("l", 3) << '\n';
 }

@@ -199,136 +199,10 @@ public:
 	template<typename... Strings>
 	CONSTEXPR20 void AppendAll(const Strings&... VarStrings)
 	{
-		if constexpr (!(((is_any_of<Strings, char*, std::string, CTL::Dynamic::String>::value) || std::is_array_v<Strings>)&&...))
-		{
-			throw std::logic_error("AppendAll only accepts (char*, std::string, and CTL::Dynamic::String)!");
-		}
-
+		/*if constexpr (!(((is_any_of<Strings, char*, std::string, CTL::Dynamic::String>::value) || std::is_array_v<Strings>)&&...))
+			throw std::logic_error("AppendAll only accepts (char*, std::string, and CTL::Dynamic::String)!");*/
 		Reserve(((GetStrLen(VarStrings) + ...) + m_Length + 1) * sizeof(char) * 2);
 		(Append(VarStrings),...);
-	}
-
-	/*
-	*
-	*	.Has method
-	*
-	*/
-
-	CONSTEXPR20 bool Has(const char character) const
-	{
-		for (size_t i{}; i < m_Length; ++i)
-			if (m_Buffer[i] == character)
-				return true;
-
-		return false;
-	}
-
-	CONSTEXPR20 bool Has(const char* string) const
-	{
-		size_t strLength{ GetStrLen(string) };
-
-		if (m_Length < strLength)
-			return false;
-
-		for (size_t i{}; i < m_Length; ++i)
-		{
-			size_t i_cpy{ i }, j{};
-			while (j < strLength && m_Buffer[i_cpy] == string[j]) ++i_cpy, ++j;
-
-			if (j == strLength)
-				return true;
-		}
-		return false;
-	}
-
-	CONSTEXPR20 bool Has(const std::string& string) const
-	{
-		return Has(string.data());
-	}
-
-	CONSTEXPR20 bool Has(const String& string) const
-	{
-		return Has(string.m_Buffer);
-	}
-
-	/*
-	*
-	*	.Find method
-	*
-	*/
-
-	CONSTEXPR20 char* Find(const char character)
-	{
-		for (size_t i{}; i < m_Length; ++i)
-			if (m_Buffer[i] == character)
-				return (m_Buffer + i);
-
-		return nullptr;
-	}
-
-	CONSTEXPR20 char* Find(const char* string)
-	{
-		size_t strLength{ GetStrLen(string) };
-
-		if (m_Length < strLength)
-			return (m_Buffer + m_Length);
-
-		for (size_t i{}; i < m_Length; ++i)
-		{
-			size_t i_cpy{ i }, j{};
-			while (j < strLength && m_Buffer[i_cpy] == string[j]) ++i_cpy, ++j;
-
-			if (j == strLength)
-				return (m_Buffer + i);
-		}
-		return (m_Buffer + m_Length);
-	}
-
-	CONSTEXPR20 char* Find(const std::string& string)
-	{
-		return Find(string.data());
-	}
-
-	CONSTEXPR20 char* Find(const String& string)
-	{
-		return Find(string.m_Buffer);
-	}
-
-	CONSTEXPR20 const char* Find(const char character) const
-	{
-		for (size_t i{}; i < m_Length; ++i)
-			if (m_Buffer[i] == character)
-				return (m_Buffer + i);
-
-		return nullptr;
-	}
-
-	CONSTEXPR20 const char* Find(const char* string) const
-	{
-		size_t strLength{ GetStrLen(string) };
-
-		if (m_Length < strLength)
-			return nullptr;
-
-		for (size_t i{}; i < m_Length; ++i)
-		{
-			size_t i_cpy{ i }, j{};
-			while (j < strLength && m_Buffer[i_cpy] == string[j]) ++i_cpy, ++j;
-
-			if (j == strLength)
-				return (m_Buffer + i);
-		}
-		return nullptr;
-	}
-
-	CONSTEXPR20 const char* Find(const std::string& string) const
-	{
-		return Find(string.data());
-	}
-
-	CONSTEXPR20 const char* Find(const String& string) const
-	{
-		return Find(string.m_Buffer);
 	}
 
 	/*
@@ -355,12 +229,13 @@ public:
 
 		for (size_t i{}; i < m_Length; ++i)
 		{
-			size_t i_cpy{ i }, j{};
-			while (j < strLength && m_Buffer[i_cpy] == string[j]) ++i_cpy, ++j;
+			size_t j{};
+			for (size_t i_cpy{ i }; j < strLength && m_Buffer[i_cpy] == string[j]; ++j, ++i_cpy);
 
 			if (j == strLength && --occurrenceNumber == 0u)
 				return i;
 		}
+
 		return m_Length;
 	}
 
@@ -372,6 +247,78 @@ public:
 	CONSTEXPR20 size_t Index(const String& string, unsigned int occurrenceNumber = 1u) const
 	{
 		return Index(string.m_Buffer, occurrenceNumber);
+	}
+
+	/*
+	*
+	*	.Find method
+	*
+	*/
+
+	CONSTEXPR20 char* Find(const char character, unsigned int occurrenceNumber = 1u)
+	{
+		return m_Buffer + Index(character, occurrenceNumber);
+	}
+
+	CONSTEXPR20 char* Find(const char* string, unsigned int occurrenceNumber = 1u)
+	{
+		return m_Buffer + Index(string, occurrenceNumber);
+	}
+
+	CONSTEXPR20 char* Find(const std::string& string, unsigned int occurrenceNumber = 1u)
+	{
+		return m_Buffer + Index(string.data(), occurrenceNumber);
+	}
+
+	CONSTEXPR20 char* Find(const String& string, unsigned int occurrenceNumber = 1u)
+	{
+		return m_Buffer + Index(string.m_Buffer, occurrenceNumber);
+	}
+
+	CONSTEXPR20 const char* Find(const char character, unsigned int occurrenceNumber = 1u) const
+	{
+		return m_Buffer + Index(character, occurrenceNumber);
+	}
+
+	CONSTEXPR20 const char* Find(const char* string, unsigned int occurrenceNumber = 1u) const
+	{
+		return m_Buffer + Index(string, occurrenceNumber);
+	}
+
+	CONSTEXPR20 const char* Find(const std::string& string, unsigned int occurrenceNumber = 1u) const
+	{
+		return m_Buffer + Index(string.data(), occurrenceNumber);
+	}
+
+	CONSTEXPR20 const char* Find(const String& string, unsigned int occurrenceNumber = 1u) const
+	{
+		return m_Buffer + Index(string.Data(), occurrenceNumber);
+	}
+
+	/*
+	*
+	*	.Has method
+	*
+	*/
+
+	CONSTEXPR20 bool Has(const char character) const
+	{
+		return Index(character) != m_Length;
+	}
+
+	CONSTEXPR20 bool Has(const char* string) const
+	{
+		return Index(string) != m_Length;
+	}
+
+	CONSTEXPR20 bool Has(const std::string& string) const
+	{
+		return Index(string.data()) != m_Length;
+	}
+
+	CONSTEXPR20 bool Has(const String& string) const
+	{
+		return Index(string.m_Buffer) != m_Length;
 	}
 
 	/*
@@ -467,7 +414,7 @@ public:
 
 	/*
 	*
-	*	.Length method
+	*	.Length/.Size methods
 	*
 	*/
 
@@ -475,12 +422,6 @@ public:
 	{
 		return m_Length;
 	}
-
-	/*
-	*
-	*	.Size method
-	*
-	*/
 
 	CONSTEXPR20 const size_t Size() const
 	{
@@ -495,10 +436,10 @@ public:
 
 	CONSTEXPR20 String SubStr(size_t startIndex, size_t endIndex) const
 	{
-		if (endIndex > m_Length)
+		if (startIndex > m_Length || endIndex > m_Length || startIndex > endIndex)
 			return {};
 
-		String data(endIndex - startIndex);
+		String data{ endIndex - startIndex + 1 };
 		data.Append((m_Buffer + startIndex));
 		data.m_Buffer[endIndex - startIndex] = '\0';
 
