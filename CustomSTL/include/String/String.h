@@ -23,7 +23,7 @@ _DYNAMICEND
 _CTLEND
 
 // GetStrLen functions Decls
-CONSTEXPR20 size_t GetStrLen(const char* str);
+constexpr size_t GetStrLen(const char* str);
 CONSTEXPR20 size_t GetStrLen(const std::string& str);
 CONSTEXPR20 size_t GetStrLen(const CTL::Dynamic::String & str);
 
@@ -436,27 +436,43 @@ public:
 
 	CONSTEXPR20 String SubStr(size_t startIndex, size_t endIndex) const
 	{
-		if (startIndex > m_Length || endIndex > m_Length || startIndex > endIndex)
-			return {};
+		String data{ endIndex - startIndex };
 
-		String data{ endIndex - startIndex + 1 };
-		data.Append((m_Buffer + startIndex));
-		data.m_Buffer[endIndex - startIndex] = '\0';
+		size_t i{};
+		for (size_t j{ startIndex }; j < endIndex; ++j, ++i)
+			data[i] = m_Buffer[j];
+
+		return data;
+	}
+
+	CONSTEXPR20 String SubStrS(size_t startIndex, size_t endIndex) const
+	{
+		if(startIndex > m_Length)
+			throw std::logic_error("Start Index is larger than m_Length!");
+
+		if (endIndex > m_Length)
+			throw std::logic_error("End Index is larger than m_Length!");
+
+		if(startIndex > endIndex)
+			throw std::logic_error("Start Index is larger than End Index!");
+
+		String data{ endIndex - startIndex };
+
+		size_t i{};
+		for (size_t j{ startIndex }; j < endIndex; ++j, ++i)
+			data[i] = m_Buffer[j];
 
 		return data;
 	}
 
 	CONSTEXPR20 String SubStrC(size_t startIndex, size_t count) const
 	{
-		if (count > GetStrLen(m_Buffer + startIndex))
-			return {};
+		return SubStr(startIndex, startIndex + count);
+	}
 
-		String resultStr{ count };
-				
-		for (size_t i{ startIndex }; i < (startIndex + count); ++i)
-			resultStr.Append(m_Buffer[i]);
-
-		return resultStr;
+	CONSTEXPR20 String SubStrCS(size_t startIndex, size_t count) const
+	{
+		return SubStrS(startIndex, startIndex + count);
 	}
 
 	/*
@@ -512,14 +528,11 @@ public:
 		if (strLength > m_Length)
 			return false;
 
-		size_t j{ strLength - 1 };
-		size_t startFrom{ m_Length - 1 };
-
-		for (; j > 0; --startFrom, --j)
-			if (m_Buffer[startFrom] != string[j])
+		for (size_t i{ m_Length - strLength }, j{}; j < strLength; ++i, ++j)
+			if (m_Buffer[i] != string[j])
 				return false;
 
-		return (m_Buffer[startFrom] == string[j]);
+		return true;
 	}
 
 	CONSTEXPR20 const bool EndsWith(const std::string& string) const
@@ -972,12 +985,12 @@ public:
 	}
 
 	/*
-	*
-	*	operator[](index)
-	*
+	* 
+	*	.At method
+	* 
 	*/
 
-	CONSTEXPR20 char& operator[](size_t index)
+	CONSTEXPR20 char& At(size_t index)
 	{
 		if (m_Length > index)
 			return m_Buffer[index];
@@ -985,12 +998,28 @@ public:
 		throw std::out_of_range("Index out of bounds!");
 	}
 
-	CONSTEXPR20 const char operator[](size_t index) const
+	CONSTEXPR20 const char At(size_t index) const
 	{
 		if (m_Length > index)
 			return m_Buffer[index];
 
 		throw std::out_of_range("Index out of bounds!");
+	}
+
+	/*
+	*
+	*	operator[](index)
+	*
+	*/
+
+	CONSTEXPR20 char& operator[](size_t index)
+	{
+		return m_Buffer[index];
+	}
+
+	CONSTEXPR20 const char operator[](size_t index) const
+	{
+		return m_Buffer[index];
 	}
 
 	/*
@@ -1336,7 +1365,7 @@ private:
 				return;
 			}
 
-			resultStr.Append(this->SubStr(nextStartingPoint, openBracket));
+			resultStr.Append(SubStr(nextStartingPoint, openBracket));
 			resultStr.Append(value);
 
 			nextStartingPoint = closeBracket + 1;
@@ -1383,7 +1412,7 @@ __forceinline std::ostream& operator<<(std::ostream& stream, const CTL::Dynamic:
 *
 */
 
-CONSTEXPR20 size_t GetStrLen(const char* str)
+constexpr size_t GetStrLen(const char* str)
 {
 	size_t i{};
 	while (str[i++] != '\0');
