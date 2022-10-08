@@ -5,6 +5,6 @@
 
 int main()
 {
-	CTL::Dynamic::String a{ "Hello {} HH" };
+	CTL::Dynamic::String a{ "Hello } HH {}" };
 	std::cout << a.Format("Hi") << '\n';
 }

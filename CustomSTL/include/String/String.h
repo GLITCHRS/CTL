@@ -15,6 +15,10 @@
 #error C++17 or later is required for CTL to function!
 #endif
 
+#define IsNum(INT) (47 < INT && INT < 58)
+#define IsLowerCharacter(INT) (96 < INT && INT < 123)
+#define IsUpperCharacter(INT) (64 < INT && INT < 91)
+
 // Foward Decl
 _CTLBEGIN
 _DYNAMICBEGIN
@@ -247,6 +251,25 @@ public:
 	CONSTEXPR20 size_t Index(const String& string, unsigned int occurrenceNumber = 1u) const
 	{
 		return Index(string.m_Buffer, occurrenceNumber);
+	}
+
+	/*
+	*
+	*	.ReverseIndex method
+	*
+	*/
+
+	CONSTEXPR20 size_t ReverseIndex(const char character, unsigned int occurrenceNumber = 1u) const
+	{
+		size_t i{ m_Length };
+		while (i > 0)
+		{
+			--i;
+			if (m_Buffer[i] == character && --occurrenceNumber == 0u)
+				return i;
+		}
+
+		return m_Length;
 	}
 
 	/*
@@ -555,11 +578,11 @@ public:
 	CONSTEXPR20 String Format(TArgs... args)
 	{
 		String resultStr;
-		size_t bracketCount{ 1 };
-		size_t nextStartingPoint{};
+		size_t nextStartingPoint{}, bracketCount{ 1 };
 
-		(formatter(resultStr, args, bracketCount, nextStartingPoint),...);
-		resultStr.Append(m_Buffer + Index('}', bracketCount - 1) + 1);
+		(formatter(resultStr, args, bracketCount, nextStartingPoint), ...);
+		resultStr.Append(m_Buffer + nextStartingPoint);
+
 		return resultStr;
 	}
 
@@ -588,7 +611,7 @@ public:
 		{
 			int characterAsInt{ m_Buffer[i] };
 
-			if (!((47 < characterAsInt && characterAsInt < 58) || (64 < characterAsInt && characterAsInt < 91) || (96 < characterAsInt && characterAsInt < 123)))
+			if (!(IsNum(characterAsInt) || IsUpperCharacter(characterAsInt) || IsLowerCharacter(characterAsInt)))
 				return false;
 		}
 
@@ -604,7 +627,7 @@ public:
 		{
 			int characterAsInt{ m_Buffer[i] };
 
-			if (!((64 < characterAsInt && characterAsInt < 91) || (96 < characterAsInt && characterAsInt < 123)))
+			if (!(IsUpperCharacter(characterAsInt) || IsLowerCharacter(characterAsInt)))
 				return false;
 		}
 
@@ -620,7 +643,7 @@ public:
 		{
 			int characterAsInt{ m_Buffer[i] };
 
-			if (!(47 < characterAsInt && characterAsInt < 58))
+			if (!IsNum(characterAsInt))
 				return false;
 		}
 
@@ -636,7 +659,7 @@ public:
 		{
 			int characterAsInt{ m_Buffer[i] };
 
-			if (!(96 < characterAsInt && characterAsInt < 123))
+			if (!IsLowerCharacter(characterAsInt))
 				return false;
 		}
 
@@ -652,7 +675,7 @@ public:
 		{
 			int characterAsInt{ m_Buffer[i] };
 
-			if (!(64 < characterAsInt && characterAsInt < 91))
+			if (!IsUpperCharacter(characterAsInt))
 				return false;
 		}
 
@@ -670,9 +693,11 @@ public:
 
 			for (size_t i{}, lastSpaceOccurrenceIndex{}; i < m_Length; ++lastSpaceOccurrenceIndex, i = Index(' ', lastSpaceOccurrenceIndex) + 1)
 			{
-				if (!(64 < m_Buffer[i] && m_Buffer[i] < 91))
+				int characterAsInt{ m_Buffer[i] };
+
+				if (!IsUpperCharacter(characterAsInt))
 				{
-					if (!(47 < m_Buffer[i] && m_Buffer[i] < 58))
+					if (!IsNum(characterAsInt))
 						return false;
 				}
 				else
@@ -681,10 +706,12 @@ public:
 
 			return characterFound;
 		}
-\
+
 		for (size_t i{}, lastSpaceOccurrenceIndex{}; i < m_Length; ++lastSpaceOccurrenceIndex, i = Index(' ', lastSpaceOccurrenceIndex) + 1)
 		{
-			if (!(64 < m_Buffer[i] && m_Buffer[i] < 91))
+			int characterAsInt{ m_Buffer[i] };
+
+			if (!IsUpperCharacter(characterAsInt))
 				return false;
 		}
 
@@ -1357,19 +1384,18 @@ private:
 
 		if (openBracket != m_Length)
 		{
-			size_t closeBracket{ Index('}', bracketCount) };
+			size_t closeBracket{ openBracket + 1 };
+			size_t condition{ m_Buffer[closeBracket] == '}' };
 
-			if (closeBracket == m_Length)
-			{
-				throw std::runtime_error("Missing closing bracket!");
-				return;
-			}
+			resultStr.Append(SubStr(nextStartingPoint, openBracket + condition).m_Buffer);
 
-			resultStr.Append(SubStr(nextStartingPoint, openBracket));
-			resultStr.Append(value);
-
-			nextStartingPoint = closeBracket + 1;
 			++bracketCount;
+			nextStartingPoint = closeBracket + condition;
+
+			if (condition)
+				resultStr.Append(value);
+			else
+				formatter(resultStr, value, bracketCount, nextStartingPoint);
 		}
 	}
 

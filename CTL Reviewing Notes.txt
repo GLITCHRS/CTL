@@ -1,0 +1,17 @@
+1. Make all "namespace"s macros-replaced instead of direct. (Done)
+2. Display a compiler error if user is compiling with C++ version older than C++17. (Done)
+3. Create an Insert method.
+4. Create a IsFilled(), and IsEmpty() (Done)
+5. try to find a shortcut for the constructor that takes a string and an optional size.
+6. Make a FindAll method.
+7. Review compiler error message in AppendAll method if data type is wrong.
+8. Support char* casting operator.
+9. Try to make it possible to have the string on stack under certain circumstances (on Experimental Branch)
+{
+	For example,
+	if string constructor has been called, we just copy the pointer.
+}
+
+Stopped at: CONSTEXPR20 bool IsTitle(bool ignoreNumbers = true) const
+
+//FillWIterableCustom(m_Buffer, oldLen, string, 0, i, m_Length + 1);
