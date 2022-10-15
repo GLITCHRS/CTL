@@ -18,6 +18,7 @@
 #define IsNum(INT) (47 < INT && INT < 58)
 #define IsLowerCharacter(INT) (96 < INT && INT < 123)
 #define IsUpperCharacter(INT) (64 < INT && INT < 91)
+#define IsCharacter(INT) (IsLowerCharacter(INT) || IsUpperCharacter(INT))
 
 // Foward Decl
 _CTLBEGIN
@@ -34,7 +35,7 @@ CONSTEXPR20 size_t GetStrLen(const CTL::Dynamic::String & str);
 template<typename T, typename... H>
 struct is_any_of
 {
-	static inline constexpr bool value = ((std::is_same_v<T, H>)||...);
+	static constexpr bool value = ((std::is_same_v<T, H>)||...);
 };
 
 class CTL::Dynamic::String
@@ -689,25 +690,18 @@ public:
 
 		if (ignoreNumbers)
 		{
-			bool characterFound{ false };
-
-			for (size_t i{}, lastSpaceOccurrenceIndex{}; i < m_Length; ++lastSpaceOccurrenceIndex, i = Index(' ', lastSpaceOccurrenceIndex) + 1)
+			for (size_t i{}, lastSpaceOccurrence{}; i < m_Length; ++lastSpaceOccurrence, i = Index(' ', lastSpaceOccurrence) + 1)
 			{
 				int characterAsInt{ m_Buffer[i] };
 
-				if (!IsUpperCharacter(characterAsInt))
-				{
-					if (!IsNum(characterAsInt))
-						return false;
-				}
-				else
-					characterFound = true;
+				if (!(IsUpperCharacter(characterAsInt) || IsNum(characterAsInt)))
+					return false;
 			}
 
-			return characterFound;
+			return true;
 		}
 
-		for (size_t i{}, lastSpaceOccurrenceIndex{}; i < m_Length; ++lastSpaceOccurrenceIndex, i = Index(' ', lastSpaceOccurrenceIndex) + 1)
+		for (size_t i{}, lastSpaceOccurrence{}; i < m_Length; ++lastSpaceOccurrence, i = Index(' ', lastSpaceOccurrence) + 1)
 		{
 			int characterAsInt{ m_Buffer[i] };
 
@@ -730,7 +724,7 @@ public:
 		{
 			int characterAsInt{ m_Buffer[i] };
 
-			if (96 < characterAsInt && characterAsInt < 123)
+			if (IsLowerCharacter(characterAsInt))
 				m_Buffer[i] -= 32;
 		}
 
@@ -739,17 +733,7 @@ public:
 
 	CONSTEXPR20 String Upper() const
 	{
-		String upperStr{ *this };
-
-		for (size_t i{}; i < m_Length; ++i)
-		{
-			int characterAsInt{ upperStr[i] };
-
-			if (96 < characterAsInt && characterAsInt < 123)
-				upperStr[i] -= 32;
-		}
-
-		return upperStr;
+		return String{ *this }.ToUpper();
 	}
 
 	CONSTEXPR20 String& ToLower()
@@ -758,7 +742,7 @@ public:
 		{
 			int characterAsInt{ m_Buffer[i] };
 
-			if (64 < characterAsInt && characterAsInt < 91)
+			if (IsUpperCharacter(characterAsInt))
 				m_Buffer[i] += 32;
 		}
 
@@ -767,17 +751,7 @@ public:
 
 	CONSTEXPR20 String Lower() const
 	{
-		String lowerStr{ *this };
-
-		for (size_t i{}; i < m_Length; ++i)
-		{
-			int characterAsInt{ lowerStr[i] };
-
-			if (64 < characterAsInt && characterAsInt < 91)
-				lowerStr[i] += 32;
-		}
-
-		return lowerStr;
+		return String{ *this }.ToLower();
 	}
 
 	/*
@@ -793,7 +767,7 @@ public:
 
 		int characterAsInt{ m_Buffer[0] };
 
-		if (96 < characterAsInt && characterAsInt < 123)
+		if (IsLowerCharacter(characterAsInt))
 			m_Buffer[0] -= 32;
 
 		return *this;
@@ -812,18 +786,23 @@ public:
 
 		int characterAsInt{ m_Buffer[0] };
 
-		if (96 < characterAsInt && characterAsInt < 123)
+		size_t i{};
+		if (IsLowerCharacter(characterAsInt))
+		{
 			m_Buffer[0] -= 32;
+			++i;
+		}
 
-		for (size_t i{}; i < m_Length; ++i)
+		for (; i < m_Length; ++i)
 		{
 			characterAsInt = m_Buffer[i];
 
-			if (characterAsInt == 32 || characterAsInt == 9 || characterAsInt == 10)
+			// If Is White Space Character (space, \n, tab)
+			if (characterAsInt == 32 || characterAsInt == 10 || characterAsInt == 9)
 			{
-				characterAsInt = m_Buffer[i + 1];
+				characterAsInt = m_Buffer[i + 1u];
 
-				if (96 < characterAsInt && characterAsInt < 123)
+				if (IsLowerCharacter(characterAsInt))
 					m_Buffer[++i] -= 32;
 			}
 		}
@@ -852,48 +831,43 @@ public:
 			
 	CONSTEXPR20 void ShrinkToFit()
 	{
-		if ((m_Size / sizeof(char) - 1) == m_Length)
+		if (IsFilled())
 			return;
 
 		char* data{ m_Buffer };
-		size_t newSize{ (m_Length + 1) * sizeof(char) };
+		size_t newSize{ (m_Length + 1u) * sizeof(char) };
 
-		AllocIterable(char, m_Buffer, newSize);
-
-		if (m_Buffer)
+		try
 		{
-			m_Size = newSize;
-			for (size_t i{}; i < m_Length; ++i)
-				m_Buffer[i] = data[i];
-
-			m_Buffer[m_Length] = '\0';
-
+			AllocIterable(char, m_Buffer, newSize);
+			FillWIterable(m_Buffer, 0u, m_Length + 1u, data);
 			Dealloc(data);
+			m_Size = newSize;
 		}
-		else
+		catch (std::bad_alloc)
+		{
 			m_Buffer = data;
+		}
 	}
 
 	CONSTEXPR20 void Shrink(size_t newSize)
 	{
-		if (newSize < ((m_Length + 1) * sizeof(char)))
+		if (((m_Length + 1u) * sizeof(char)) >= newSize)
 			return;
 
 		char* data{ m_Buffer };
-		AllocIterable(char, m_Buffer, newSize);
 
-		if (m_Buffer)
+		try
 		{
-			m_Size = newSize;
-			for (size_t i{}; i < m_Length; ++i)
-				m_Buffer[i] = data[i];
-
-			m_Buffer[m_Length] = '\0';
-
+			AllocIterable(char, m_Buffer, newSize);
+			FillWIterable(m_Buffer, 0u, m_Length + 1u, data);
 			Dealloc(data);
+			m_Size = newSize;
 		}
-		else
+		catch (std::bad_alloc)
+		{
 			m_Buffer = data;
+		}
 	}
 
 	/*
@@ -906,7 +880,7 @@ public:
 	{
 		char* charPos{ Find(charA) };
 
-		if (charPos)
+		if (*charPos != '\0')
 			charPos[0] = charB;
 	}
 

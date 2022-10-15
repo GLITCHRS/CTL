@@ -11,7 +11,13 @@
 	For example,
 	if string constructor has been called, we just copy the pointer.
 }
+10. Try to figure out a shortcut for .IsSomething() methods (asem's request - tried already and failed)
+11. "Possibly" create an Index method that takes multiple arguments and returns the index of the first one of them found (if done, remember to review .Title() method too).
+12. Replace all m_Buffer[0] with *m_Buffer where possible.
+13. Review your macros names
+14. "think of" creating a ChangeIterableSize()
 
-Stopped at: CONSTEXPR20 bool IsTitle(bool ignoreNumbers = true) const
+Stopped at: template<typename T, typename H>
+CONSTEXPR20 void InPlaceReplace(const T& toFindStr, const H& toReplStr)
 
 //FillWIterableCustom(m_Buffer, oldLen, string, 0, i, m_Length + 1);
