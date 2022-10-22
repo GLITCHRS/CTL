@@ -5,9 +5,7 @@
 
 int main()
 {
-	CTL::Dynamic::String a{ "ahmed" };
+	CTL::Dynamic::String a{ "ahmed {} {}" };
 
-	a.Reserve(100);
-
-	a.Shrink(6);
+	LOGStr(a.Replace("{}", "Hello!"));
 }

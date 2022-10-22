@@ -4,16 +4,6 @@
 
 #include <iostream>
 #include <algorithm>
-#include <type_traits>
-
-#ifndef _MSVC_LANG
-#error _MSVC_LANG macro is required, please refer to https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=msvc-170
-#endif
-
-// if C++14 or earlier is being used.
-#if _MSVC_LANG < 201703L
-#error C++17 or later is required for CTL to function!
-#endif
 
 #define IsNum(INT) (47 < INT && INT < 58)
 #define IsLowerCharacter(INT) (96 < INT && INT < 123)
@@ -31,12 +21,6 @@ _CTLEND
 constexpr size_t GetStrLen(const char* str);
 CONSTEXPR20 size_t GetStrLen(const std::string& str);
 CONSTEXPR20 size_t GetStrLen(const CTL::Dynamic::String & str);
-
-template<typename T, typename... H>
-struct is_any_of
-{
-	static constexpr bool value = ((std::is_same_v<T, H>)||...);
-};
 
 class CTL::Dynamic::String
 {
@@ -180,8 +164,8 @@ public:
 			FillWIterable(m_Buffer, 0, m_Length, oldBuffer);
 			Dealloc(oldBuffer);
 		}
-		FillWIterable((m_Buffer + m_Length), 0, strLength + 1, string);
 
+		FillWIterable((m_Buffer + m_Length), 0, strLength + 1, string);
 		m_Length = newLen;
 	}
 
@@ -888,28 +872,27 @@ public:
 	CONSTEXPR20 void InPlaceReplace(const T& toFindStr, const H& toReplStr)
 	{
 		static_assert(
-			(std::is_array_v<T> || std::is_same_v<T, const char*> || std::is_same_v<T, std::string> || std::is_same_v<T, String>) &&
-			(std::is_array_v<H> || std::is_same_v<H, const char*> || std::is_same_v<H, std::string> || std::is_same_v<H, String>),
+			(std::is_array_v<T> || is_any_of<T, char*, const char*, std::string, String>::value) &&
+			(std::is_array_v<H> || is_any_of<H, char*, const char*, std::string, String>::value),
 			"This method only accepts any of (const char*, std::string, or CTL::Dynamic::String) types."
 		);
 
 		if constexpr(std::is_same_v<H, String>)
-			if constexpr(this == &toReplStr)
+			if (this == &toReplStr)
 				throw std::logic_error("Cannot replace with same object (conflicts detected!)");
-
-		size_t toFindStrLen{ GetStrLen(toFindStr) };
-		size_t toReplStrLen{ GetStrLen(toReplStr) };
 
 		size_t stringPos{ Index(toFindStr) };
 
 		if (stringPos == m_Length)
 			return;
 
+		size_t toFindStrLen{ GetStrLen(toFindStr) };
+		size_t toReplStrLen{ GetStrLen(toReplStr) };
+
 		if (toFindStrLen == toReplStrLen)
 		{
-			for (size_t i{ stringPos }, j{}; i < (stringPos + toFindStrLen); ++j, ++i)
-				m_Buffer[i] = toReplStr[j];
-
+			char* stringStart{ m_Buffer + stringPos };
+			FillWIterable(stringStart, 0, toFindStrLen, toReplStr);
 			return;
 		}
 
@@ -958,30 +941,35 @@ public:
 		// review this method.
 
 		static_assert(
-			(std::is_array_v<T> || std::is_same_v<T, const char*> || std::is_same_v<T, std::string> || std::is_same_v<T, String>) &&
-			(std::is_array_v<H> || std::is_same_v<H, const char*> || std::is_same_v<H, std::string> || std::is_same_v<H, String>),
+			(std::is_array_v<T> || is_any_of<T, char*, const char*, std::string, String>::value) &&
+			(std::is_array_v<H> || is_any_of<H, char*, const char*, std::string, String>::value),
 			"This method only accepts any of (const char*, std::string, or CTL::Dynamic::String) types."
 			);
 
 		size_t toFindStrLen{ GetStrLen(toFindStr) };
 		size_t toReplStrLen{ GetStrLen(toReplStr) };
 
-		size_t stringPos{ Index(toFindStr) };
+		String resultStr{ m_Length + (toReplStrLen - toFindStrLen) * Count(toFindStr) + 1};
+		//resultStr.m_Length = m_Length + toReplStrLen - toFindStrLen + 1;
 
-		String resultStr{ m_Length + toReplStrLen - toFindStrLen + 1 };
-		resultStr.m_Length = m_Length + toReplStrLen - toFindStrLen + 1;
+		size_t lastStrPos;
+		size_t nextStartingPoint{};
 
-		size_t i{};
-		for (; i < stringPos; ++i)
-			resultStr[i] = m_Buffer[i];
+		for (size_t i{ 1 }, stringPos; (stringPos = Index(toFindStr, i)) != m_Length; ++i)
+		{
+			char* tempResultBuffer{ resultStr.m_Buffer + stringPos };
 
-		for (size_t j{}; j < toReplStrLen; ++i, ++j)
-			resultStr[i] = toReplStr[j];
+			FillWIterable(resultStr.m_Buffer, nextStartingPoint, stringPos, m_Buffer);
+			 FillWIterable(tempResultBuffer, 0, toReplStrLen, toReplStr);
+			//resultStr.Append(toReplStr);
 
-		for (size_t j{ stringPos + toFindStrLen }; j < m_Length; ++i, ++j)
-			resultStr[i] = m_Buffer[j];
+			nextStartingPoint += stringPos - nextStartingPoint + toReplStrLen;
+			lastStrPos = stringPos;
+		}
 
-		std::cout << resultStr[i] << '\n';
+		char* tempBuffer{ m_Buffer + lastStrPos };
+		FillWIterable(resultStr, nextStartingPoint, resultStr.m_Length, tempBuffer);
+
 		return resultStr;
 	}
 
@@ -1067,7 +1055,7 @@ public:
 			return String();
 
 		String newStr{ count * m_Length };
-		char* thisStr{ this->m_Buffer };
+		char* thisStr{ m_Buffer };
 
 		while (count-- > 0)
 			newStr.Append(thisStr);
@@ -1359,17 +1347,17 @@ private:
 		if (openBracket != m_Length)
 		{
 			size_t closeBracket{ openBracket + 1 };
-			size_t condition{ m_Buffer[closeBracket] == '}' };
+			size_t condition{ m_Buffer[closeBracket] != '}' };
 
 			resultStr.Append(SubStr(nextStartingPoint, openBracket + condition).m_Buffer);
 
 			++bracketCount;
-			nextStartingPoint = closeBracket + condition;
+			nextStartingPoint = closeBracket + (condition ^ 1);
 
 			if (condition)
-				resultStr.Append(value);
-			else
 				formatter(resultStr, value, bracketCount, nextStartingPoint);
+			else
+				resultStr.Append(value);
 		}
 	}
 

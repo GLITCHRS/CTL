@@ -1,5 +1,16 @@
 #pragma once
 
+#include <type_traits>
+
+#ifndef _MSVC_LANG
+#error _MSVC_LANG macro is required, please refer to https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=msvc-170
+#endif
+
+// if C++14 or earlier is being used.
+#if _MSVC_LANG < 201703L
+#error C++17 or later is required for CTL to function!
+#endif
+
 #define _CTLBEGIN namespace CTL {
 #define _CTLEND }
 
@@ -29,3 +40,9 @@
 #define FillWItem(VAR, START, END, CHARACTER) { for(size_t i{ START }; i < END; ++i) VAR[i] = CHARACTER; }
 #define FillWIterable(VAR, START, END, ITERABLE) { for(size_t i{ START }; i < END; ++i) VAR[i] = ITERABLE[i]; }
 #define FillWIterableCustom(VAR, VAR_START, ITERABLE, ITERABLE_START, VAR_END, END) { for(size_t i{ VAR_START }, j{ ITERABLE_START }; VAR_END < END; ++j, ++i) VAR[i] = ITERABLE[j]; }
+
+template<typename T, typename... H>
+struct is_any_of
+{
+	static constexpr bool value = ((std::is_same_v<T, H>) || ...);
+};

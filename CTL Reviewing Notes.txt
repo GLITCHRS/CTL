@@ -3,7 +3,7 @@
 3. Create an Insert method.
 4. Create a IsFilled(), and IsEmpty() (Done)
 5. try to find a shortcut for the constructor that takes a string and an optional size.
-6. Make a FindAll method.
+6. Make a FindAll method. (later phase)
 7. Review compiler error message in AppendAll method if data type is wrong.
 8. Support char* casting operator.
 9. Try to make it possible to have the string on stack under certain circumstances (on Experimental Branch)
@@ -16,8 +16,9 @@
 12. Replace all m_Buffer[0] with *m_Buffer where possible.
 13. Review your macros names
 14. "think of" creating a ChangeIterableSize()
+15. After Creating Array Class, re-review the InPlaceReplace in Dynamic::String class!
 
-Stopped at: template<typename T, typename H>
-CONSTEXPR20 void InPlaceReplace(const T& toFindStr, const H& toReplStr)
+Stopped at but didn't finish: template<typename T, typename H>
+CONSTEXPR20 String Replace(const T& toFindStr, const H& toReplStr)
 
 //FillWIterableCustom(m_Buffer, oldLen, string, 0, i, m_Length + 1);
