@@ -17,6 +17,7 @@
 13. Review your macros names
 14. "think of" creating a ChangeIterableSize()
 15. After Creating Array Class, re-review the InPlaceReplace in Dynamic::String class!
+16. Re-order member methods in alphabetical order.
 
 Stopped at but didn't finish: template<typename T, typename H>
 CONSTEXPR20 String Replace(const T& toFindStr, const H& toReplStr)

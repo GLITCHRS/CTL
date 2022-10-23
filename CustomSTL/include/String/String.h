@@ -1125,35 +1125,10 @@ public:
 
 	/*
 	*
-	*	operator+=(string)
-	*
-	*/
-
-	CONSTEXPR20 void operator+=(const char character)
-	{
-		this->Append(character);
-	}
-
-	CONSTEXPR20 void operator+=(const char* string)
-	{
-		this->Append(string);
-	}
-
-	CONSTEXPR20 void operator+=(const std::string& string)
-	{
-		return this->Append(string.data());
-	}
-
-	CONSTEXPR20 void operator+=(const String& string)
-	{
-		return this->Append(string.m_Buffer);
-	}
-
-	/*
-	*
 	*	operator*=()
 	*
 	*/
+
 	CONSTEXPR20 void operator*=(size_t count)
 	{
 		char* currentStr;
@@ -1333,7 +1308,7 @@ public:
 	*
 	*/
 
-	operator std::string()
+	operator std::string() const
 	{
 		return std::string{ m_Buffer };
 	}
