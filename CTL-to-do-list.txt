@@ -1,0 +1,26 @@
+Version of append that takes more than one argument!
+
+{
+	#include <iostream>
+
+	template<typename T>
+	void GeneralPrinter(T data)
+	{
+		std::cout << data << '\n';
+	}
+
+	template<typename... T>
+	void PrintData(T... data)
+	{
+		static_assert((std::is_same_v<T, const char*>,...) || (std::is_same_v<T, int>, ...), "Error LOL");
+
+		(GeneralPrinter(data),...);
+	}
+
+	int main()
+	{
+		PrintData("Hi", "LOL", 145, 13, 13.);
+	}
+}
+
+Version of SubStr that takes just the start, and another version that takes start, count (call it SubStrCount) or something.

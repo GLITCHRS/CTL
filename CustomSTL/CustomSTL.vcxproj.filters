@@ -18,5 +18,16 @@
     <ClInclude Include="include\String\String.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\CTL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\CTLOverloadedOperators.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="include\cpp.hint" />
   </ItemGroup>
 </Project>

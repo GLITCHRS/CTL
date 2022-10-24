@@ -1,0 +1,27 @@
+String
+{
+	1. Make all "namespace"s macros-replaced instead of direct. (Done)
+	2. Display a compiler error if user is compiling with C++ version older than C++17. (Done)
+	3. Create an Insert method.
+	4. Create a IsFilled(), and IsEmpty() (Done)
+	5. try to find a shortcut for the constructor that takes a string and an optional size.
+	6. Make a FindAll method. (later phase)
+	7. Review compiler error message in AppendAll method if data type is wrong.
+	8. Try to make it possible to have the string on stack under certain circumstances (on Experimental Branch)
+	{
+		For example,
+		if string constructor has been called, we just copy the pointer.
+	}
+	9. Try to figure out a shortcut for .IsSomething() methods (asem's request - tried already and failed)
+	10. "Possibly" create an Index method that takes multiple arguments and returns the index of the first one of them found (if done, remember to review .Title() method too).
+	11. Replace all m_Buffer[0] with *m_Buffer where possible.
+	12. Review your macros names
+	13. "think of" creating a ChangeIterableSize() macro
+	14. After Creating Array Class, re-review the InPlaceReplace in Dynamic::String class!
+	15. Re-order member methods in alphabetical order.
+
+	Stopped at but didn't finish: template<typename T, typename H>
+	CONSTEXPR20 String Replace(const T& toFindStr, const H& toReplStr)
+
+	# Finished Notes taking !
+}

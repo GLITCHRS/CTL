@@ -1,0 +1,5 @@
+#define _CTLBEGIN namespace CTL {
+#define _CTLEND }
+
+#define _DYNAMICBEGIN namespace Dynamic{
+#define _DYNAMICEND }
