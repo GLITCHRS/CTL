@@ -1,6 +1,15 @@
 #pragma once
 
-#include "CTL.h"
+#if _HAS_CXX20
+#define CONSTEXPR20 constexpr
+#define AllocStr(VAR, SIZE, AUTOINIT) if(AUTOINIT) VAR = new char[SIZE]{}; else VAR = new char[SIZE];
+#define DeallocStr(VAR) delete[] VAR; VAR = nullptr
+#else
+#define CONSTEXPR20 inline
+#define AllocStr(VAR, SIZE, AUTOINIT) VAR = static_cast<char*>(_malloca(SIZE)); if(AUTOINIT && VAR) \
+for(size_t i{}; i < (SIZE / sizeof(char)); ++i) VAR[i] = '\0';
+#define DeallocStr(VAR) _freea(VAR); VAR = nullptr
+#endif
 
 #include <iostream>
 #include <algorithm>
