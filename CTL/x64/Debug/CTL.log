@@ -1,9 +1,0 @@
-﻿  CTLOverloadedOperators.cpp
-C:\DEV\C++\CustomSTL (Pre-release)\CustomSTL\include\String\String.h(686,48): error C2760: syntax error: '...' was unexpected here; expected 'expression'
-C:\DEV\C++\CustomSTL (Pre-release)\CustomSTL\include\String\String.h(681,23): message : This diagnostic occurred in the compiler generated function 'CTL::Dynamic::String CTL::Dynamic::String::Format(TArgs...)'
-C:\DEV\C++\CustomSTL (Pre-release)\CustomSTL\include\String\String.h(686,48): error C2760: syntax error: '...' was unexpected here; expected ';'
-C:\DEV\C++\CustomSTL (Pre-release)\CustomSTL\include\String\String.h(681,23): message : This diagnostic occurred in the compiler generated function 'CTL::Dynamic::String CTL::Dynamic::String::Format(TArgs...)'
-C:\DEV\C++\CustomSTL (Pre-release)\CustomSTL\include\String\String.h(686,48): error C3878: syntax error: unexpected token '...' following 'expression_statement'
-C:\DEV\C++\CustomSTL (Pre-release)\CustomSTL\include\String\String.h(681,23): message : This diagnostic occurred in the compiler generated function 'CTL::Dynamic::String CTL::Dynamic::String::Format(TArgs...)'
-C:\DEV\C++\CustomSTL (Pre-release)\CustomSTL\include\String\String.h(686,48): message : error recovery skipped: '... )'
-C:\DEV\C++\CustomSTL (Pre-release)\CustomSTL\include\String\String.h(681,23): message : This diagnostic occurred in the compiler generated function 'CTL::Dynamic::String CTL::Dynamic::String::Format(TArgs...)'
