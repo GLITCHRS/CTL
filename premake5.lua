@@ -49,7 +49,8 @@ project "TestCases"
 
 	files
 	{
-		"%{prj.name}/src/**.cpp"
+		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/src/**.h",
 	}
 
 	includedirs
