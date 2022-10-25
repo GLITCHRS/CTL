@@ -960,7 +960,7 @@ public:
 			char* tempResultBuffer{ resultStr.m_Buffer + stringPos };
 
 			FillWIterable(resultStr.m_Buffer, nextStartingPoint, stringPos, m_Buffer);
-			 FillWIterable(tempResultBuffer, 0, toReplStrLen, toReplStr);
+			FillWIterable(tempResultBuffer, 0, toReplStrLen, toReplStr);
 			//resultStr.Append(toReplStr);
 
 			nextStartingPoint += stringPos - nextStartingPoint + toReplStrLen;
