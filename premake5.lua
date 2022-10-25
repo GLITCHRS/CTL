@@ -20,7 +20,7 @@ project "CTL"
 	files
 	{
 		"%{prj.name}/include/**",
-		"%{prj.name}/src/**.cpp"
+		"%{prj.name}/src/**.cpp",
 	}
 
 	includedirs
@@ -49,8 +49,7 @@ project "TestCases"
 
 	files
 	{
-		"%{prj.name}/src/**.cpp",
-		"%{prj.name}/src/**.h"
+		"%{prj.name}/src/**"
 	}
 
 	includedirs
