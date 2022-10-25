@@ -1,11 +1,9 @@
 #include <iostream>
 #include <string>
 
-#include "Tests.h"
+#include "String/String.h"
 
 int main()
 {
 	CTL::Dynamic::String a{ "ahmed {} {}" };
-
-	LOGStr(a.Replace("{}", "Hello!"));
 }
