@@ -1,0 +1,2 @@
+﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\Microsoft.Common.CurrentVersion.targets(2066,5): warning : The referenced project '..\CustomSTL\CustomSTL.vcxproj' does not exist.
+  TestCases.vcxproj -> C:\DEV\C++\CTL (Pre-release)\Debug\TestCases.exe
