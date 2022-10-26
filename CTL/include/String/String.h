@@ -938,37 +938,33 @@ public:
 	template<typename T, typename H>
 	CONSTEXPR20 String Replace(const T& toFindStr, const H& toReplStr)
 	{
-		// review this method.
-
 		static_assert(
 			(std::is_array_v<T> || is_any_of<T, char*, const char*, std::string, String>::value) &&
 			(std::is_array_v<H> || is_any_of<H, char*, const char*, std::string, String>::value),
 			"This method only accepts any of (const char*, std::string, or CTL::Dynamic::String) types."
 			);
 
-		size_t toFindStrLen{ GetStrLen(toFindStr) };
-		size_t toReplStrLen{ GetStrLen(toReplStr) };
+		int toFindStrLen( GetStrLen(toFindStr) );
+		int toReplStrLen( GetStrLen(toReplStr) );
 
-		String resultStr{ m_Length + (toReplStrLen - toFindStrLen) * Count(toFindStr) + 1};
-		//resultStr.m_Length = m_Length + toReplStrLen - toFindStrLen + 1;
+		String resultStr{ m_Length + Count(toFindStr) * (toReplStrLen - toFindStrLen) };
+		char* tempResultBuffer{ resultStr.m_Buffer };
 
-		size_t lastStrPos;
-		size_t nextStartingPoint{};
+		size_t end{ Index(toFindStr) };
+		char* tempBuffer{ m_Buffer };
 
-		for (size_t i{ 1 }, stringPos; (stringPos = Index(toFindStr, i)) != m_Length; ++i)
+		for (size_t src{end}, oldSrc{}, occurence{ 1 }; src != m_Length; ++occurence, oldSrc = src + toFindStrLen, src = Index(toFindStr, occurence), end = src - oldSrc, tempBuffer = m_Buffer + oldSrc)
 		{
-			char* tempResultBuffer{ resultStr.m_Buffer + stringPos };
+			FillWIterable(tempResultBuffer, 0, end, tempBuffer);
 
-			FillWIterable(resultStr.m_Buffer, nextStartingPoint, stringPos, m_Buffer);
+			tempResultBuffer += end;
+
 			FillWIterable(tempResultBuffer, 0, toReplStrLen, toReplStr);
-			//resultStr.Append(toReplStr);
 
-			nextStartingPoint += stringPos - nextStartingPoint + toReplStrLen;
-			lastStrPos = stringPos;
+			tempResultBuffer += toReplStrLen;
 		}
 
-		char* tempBuffer{ m_Buffer + lastStrPos };
-		FillWIterable(resultStr, nextStartingPoint, resultStr.m_Length, tempBuffer);
+		FillWIterable(tempResultBuffer, 0, end, tempBuffer);
 
 		return resultStr;
 	}
@@ -1019,8 +1015,9 @@ public:
 
 	NODISCARD17 CONSTEXPR20 String operator+(const char character) const
 	{
-		String newStr{ m_Buffer, (m_Length + sizeof(char) + 1) * sizeof(char) };
-		newStr.Append(character);
+		String newStr{ m_Buffer, (m_Length + 2) * sizeof(char) };
+		newStr[m_Length] = character;
+		newStr[m_Length + 1] = '\0';
 
 		return newStr;
 	}
