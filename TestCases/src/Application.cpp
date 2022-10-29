@@ -5,7 +5,17 @@
 
 int main()
 {
-	CTL::Dynamic::String a{ "ahmed Hi khalid {}" };
+	CTL::Dynamic::String a{ "Hi" };
 
-	std::cout << a + 'h' << '\n';
+	a.Reserve(10);
+
+	std::cout << a << '\n';
+	std::cout << a.Length() << '\n';
+	std::cout << a.Size() << '\n';
+
+	a *= 1;
+
+	std::cout << a << '\n';
+	std::cout << a.Length() << '\n';
+	std::cout << a.Size() << '\n';
 }

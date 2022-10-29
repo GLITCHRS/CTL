@@ -165,7 +165,8 @@ public:
 			Dealloc(oldBuffer);
 		}
 
-		FillWIterable((m_Buffer + m_Length), 0, strLength + 1, string);
+		char* tempBuffer{ m_Buffer + m_Length };
+		FillWIterable(tempBuffer, 0, strLength + 1, string);
 		m_Length = newLen;
 	}
 
@@ -971,6 +972,27 @@ public:
 
 	/*
 	* 
+	*	.Reset() method
+	* 
+	*/
+
+	CONSTEXPR20 void ReAlloc() noexcept
+	{
+		m_Length = 0;
+		m_Size = 15 * sizeof(char);
+		AllocIterableInit(char, m_Buffer, m_Size);
+	}
+
+	CONSTEXPR20 void Reset() noexcept
+	{
+		Dealloc(m_Buffer);
+		m_Length = 0;
+		m_Size = 15 * sizeof(char);
+		AllocIterableInit(char, m_Buffer, m_Size);
+	}
+
+	/*
+	* 
 	*	.At method
 	* 
 	*/
@@ -1017,27 +1039,31 @@ public:
 	{
 		String newStr{ m_Buffer, (m_Length + 2) * sizeof(char) };
 		newStr[m_Length] = character;
-		newStr[m_Length + 1] = '\0';
+		newStr[++newStr.m_Length] = '\0';
 
 		return newStr;
 	}
 
 	NODISCARD17 CONSTEXPR20 String operator+(const char* string) const
 	{
-		String newStr{ m_Buffer, (m_Length + GetStrLen(string) + 1) * sizeof(char) };
-		newStr.Append(string);
+		size_t strCount{ GetStrLen(string) + 1 };
+		String newStr{ m_Buffer, (m_Length + strCount) * sizeof(char) };
 
+		char* tempNewStrBuffer{ newStr.m_Buffer + m_Length };
+		FillWIterable(tempNewStrBuffer, 0, strCount, string);
+
+		newStr.m_Length += strCount - 1;
 		return newStr;
 	}
 
 	NODISCARD17 CONSTEXPR20 String operator+(const std::string& string) const
 	{
-		return (*this + string.data());
+		return (*this + string.data()); // i.e. this->operator+(string.data());
 	}
 
 	NODISCARD17 CONSTEXPR20 String operator+(const String& string) const
 	{
-		return (*this + string.m_Buffer);
+		return (*this + string.m_Buffer); // i.e. this->operator+(string.m_Buffer);
 	}
 
 	/*
@@ -1049,14 +1075,20 @@ public:
 	NODISCARD17 CONSTEXPR20 String operator*(size_t count) const
 	{
 		if (m_Length == 0)
-			return String();
+			return {};
 
-		String newStr{ count * m_Length };
-		char* thisStr{ m_Buffer };
+		size_t requiredLen{ count * m_Length };
+		String newStr{ requiredLen };
+		char* tempNewStrBuffer{ newStr.m_Buffer };
 
-		while (count-- > 0)
-			newStr.Append(thisStr);
+		while (count > 0)
+		{
+			FillWIterable(tempNewStrBuffer, 0, m_Length, m_Buffer);
+			tempNewStrBuffer += m_Length;
+			--count;
+		}
 
+		newStr.m_Length = requiredLen;
 		return newStr;
 	}
 
@@ -1068,43 +1100,28 @@ public:
 
 	CONSTEXPR20 String& operator=(const char* string)
 	{
-		size_t strLength{ GetStrLen(string) };
-		size_t strSize{ (strLength + 1) * sizeof(char) };
+		m_Length = GetStrLen(string);
+		size_t strSize{ (m_Length + 1) * sizeof(char) };
 
 		if (strSize > m_Size)
 		{
-			size_t sizeToAlloc{ strSize * 2 - 1 };
+			m_Size = strSize * 2;
 			Dealloc(m_Buffer);
-			AllocIterable(char, m_Buffer, sizeToAlloc);
-
-			if (m_Buffer)
-			{
-				m_Size = sizeToAlloc;
-			}
-			else
-			{
-				m_Length = 0;
-				m_Size = 0;
-				throw std::bad_alloc();
-				return *this;
-			}
+			AllocIterable(char, m_Buffer, m_Size);
 		}
 
-		m_Length = strLength;
-		FillWIterable(m_Buffer, 0, m_Length, string);
-		m_Buffer[m_Length] = '\0';
-
+		FillWIterable(m_Buffer, 0, m_Length + 1, string);
 		return *this;
 	}
 
 	CONSTEXPR20 String& operator=(const std::string& string)
 	{
-		return this->operator=(string.data());
+		return *this = string.data(); // i.e. this->operator=(string.data());
 	}
 
 	CONSTEXPR20 String& operator=(const String& string)
 	{
-		return this->operator=(string.m_Buffer);
+		return *this = string.m_Buffer; // i.e. this->operator=(string.m_Buffer);
 	}
 
 	CONSTEXPR20 String& operator=(String&& other) noexcept
@@ -1113,10 +1130,7 @@ public:
 		m_Length = other.m_Length;
 		m_Size = other.m_Size;
 
-		other.m_Size = 15 * sizeof(char);
-		AllocIterableInit(char, other.m_Buffer, other.m_Size);
-		other.m_Length = 0;
-
+		other.ReAlloc();
 		return *this;
 	}
 
@@ -1126,28 +1140,28 @@ public:
 	*
 	*/
 
-	CONSTEXPR20 void operator*=(size_t count)
+	CONSTEXPR20 void operator*=(const size_t count)
 	{
-		char* currentStr;
-		AllocIterable(char, currentStr, m_Size);
-
-		if (currentStr)
+		if (count == 0)
 		{
-			FillWIterable(currentStr, 0, m_Length, m_Buffer);
-			currentStr[m_Length] = '\0';
-		}
-		else
-		{
-			throw std::bad_alloc();
+			FillWItem(m_Buffer, 0, m_Length, '\0');
+			m_Length = 0;
 			return;
 		}
 
-		this->Reserve((m_Size - 1) * count + 1);
+		Reserve((m_Length * count + 1) * sizeof(char));
 
-		while (--count > 0)
-			this->Append(currentStr);
+		{
+			char* tempBuffer{ m_Buffer + m_Length };
+			for (size_t i{ 1 }; i < count; ++i)
+			{
+				FillWIterable(tempBuffer, 0, m_Length, m_Buffer);
+				tempBuffer += m_Length;
+			}
+		}
 
-		Dealloc(currentStr);
+		m_Length *= count;
+		m_Buffer[m_Length] = '\0';
 	}
 
 	/*
@@ -1169,12 +1183,12 @@ public:
 
 	CONSTEXPR20 bool operator==(const std::string& string) const
 	{
-		return this->operator==(string.data());
+		return *this == string.data(); // i.e. this->operator==(string.data());
 	}
 
 	CONSTEXPR20 bool operator==(const String& string) const
 	{
-		return this->operator==(string.m_Buffer);
+		return *this == string.m_Buffer; // i.e. this->operator==(string.m_Buffer)
 	}
 
 	/*
@@ -1185,17 +1199,23 @@ public:
 
 	CONSTEXPR20 bool operator!=(const char* string) const
 	{
-		return !(*this == string);
+		if (m_Length != GetStrLen(string)) return true;
+
+		for (size_t i{}; i < m_Length; ++i)
+			if (m_Buffer[i] != string[i])
+				return true;
+
+		return false;
 	}
 
 	CONSTEXPR20 bool operator!=(const std::string& string) const
 	{
-		return !(*this == string.data());
+		return *this != string.data(); // i.e. this->operator!=(string.data())
 	}
 
 	CONSTEXPR20 bool operator!=(const String& string) const
 	{
-		return !(*this == string.m_Buffer);
+		return *this != string.m_Buffer; // i.e. this->operator!=(string.m_Buffer)
 	}
 
 	/*
@@ -1207,7 +1227,7 @@ public:
 	CONSTEXPR20 bool operator>(const char* string) const
 	{
 		for (size_t i{}; i < m_Length; ++i)
-			if (m_Buffer[i] < string[i])
+			if (m_Buffer[i] <= string[i])
 				return false;
 
 		return true;
@@ -1215,12 +1235,12 @@ public:
 
 	CONSTEXPR20 bool operator>(const std::string& string) const
 	{
-		return this->operator>(string.data());
+		return *this > string.data(); // i.e. this->operator>(string.data())
 	}
 
 	CONSTEXPR20 bool operator>(const String& string) const
 	{
-		return this->operator>(string.m_Buffer);
+		return *this > string.m_Buffer; // i.e. this->operator>(string.m_Buffer)
 	}
 
 	/*
@@ -1231,17 +1251,21 @@ public:
 
 	CONSTEXPR20 bool operator<(const char* string) const
 	{
-		return !this->operator>=(string);
+		for (size_t i{}; i < m_Length; ++i)
+			if (m_Buffer[i] >= string[i])
+				return false;
+
+		return true;
 	}
 
 	CONSTEXPR20 bool operator<(const std::string& string) const
 	{
-		return !this->operator>=(string.data());
+		return *this < string.data(); // i.e. this->operator<(string.data())
 	}
 
 	CONSTEXPR20 bool operator<(const String& string) const
 	{
-		return !this->operator>=(string.m_Buffer);
+		return *this < string.m_Buffer; // i.e. this->operator<(string.m_Buffer)
 	}
 
 	/*
@@ -1252,25 +1276,21 @@ public:
 
 	CONSTEXPR20 bool operator>=(const char* string) const
 	{
-		const String& self{ *this };
+		for (size_t i{}; i < m_Length; ++i)
+			if (m_Buffer[i] < string[i])
+				return false;
 
-		return (self > string || self == string);
+		return true;
 	}
 
 	CONSTEXPR20 bool operator>=(const std::string& string) const
 	{
-		const String& self{ *this };
-		const char* stringData{ string.data() };
-
-		return (self > stringData || self == stringData);
+		return *this >= string.data(); // i.e. this->operator>=(string.data())
 	}
 
 	CONSTEXPR20 bool operator>=(const String& string) const
 	{
-		const String& self{ *this };
-		const char* stringData{ string.m_Buffer };
-
-		return (self > stringData || self == stringData);
+		return *this >= string.m_Buffer; // i.e. this->operator>=(string.m_Buffer)
 	}
 
 	/*
