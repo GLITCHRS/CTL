@@ -6,16 +6,7 @@
 int main()
 {
 	CTL::Dynamic::String a{ "Hi" };
+	CTL::Dynamic::String b{ "Hi" };
 
-	a.Reserve(10);
-
-	std::cout << a << '\n';
-	std::cout << a.Length() << '\n';
-	std::cout << a.Size() << '\n';
-
-	a *= 1;
-
-	std::cout << a << '\n';
-	std::cout << a.Length() << '\n';
-	std::cout << a.Size() << '\n';
+	std::cout << (a < b) << '\n';
 }

@@ -1,14 +1,7 @@
 #pragma once
 
 #include "CTL.h"
-
 #include <iostream>
-#include <algorithm>
-
-#define IsNum(INT) (47 < INT && INT < 58)
-#define IsLowerCharacter(INT) (96 < INT && INT < 123)
-#define IsUpperCharacter(INT) (64 < INT && INT < 91)
-#define IsCharacter(INT) (IsLowerCharacter(INT) || IsUpperCharacter(INT))
 
 // Foward Decl
 _CTLBEGIN
@@ -63,14 +56,14 @@ public:
 		else
 		{
 			AllocIterable(char, m_Buffer, m_Size);
-			FillWIterable(m_Buffer, 0, m_Length + 1, string); // m_Length + 1 to include '\0'
+			CopyIterable(m_Buffer, 0, m_Length + 1, string); // m_Length + 1 to include '\0'
 		}
 	}
 
 	CONSTEXPR20 explicit String(const std::string& string) : m_Length(string.length()), m_Size((m_Length + 1) * sizeof(char))
 	{
 		AllocIterable(char, m_Buffer, m_Size);
-		FillWIterable(m_Buffer, 0, m_Length + 1, string); // m_Length + 1 to include '\0'
+		CopyIterable(m_Buffer, 0, m_Length + 1, string); // m_Length + 1 to include '\0'
 	}
 
 	/*
@@ -82,7 +75,7 @@ public:
 	CONSTEXPR20 String(const String& string) : m_Length(string.m_Length), m_Size(string.m_Size)
 	{
 		AllocIterable(char, m_Buffer, m_Size);
-		FillWIterable(m_Buffer, 0, m_Length + 1, string.m_Buffer); // m_Length + 1 to include '\0'
+		CopyIterable(m_Buffer, 0, m_Length + 1, string.m_Buffer); // m_Length + 1 to include '\0'
 	}
 
 	/*
@@ -121,8 +114,8 @@ public:
 			return false;
 		}
 
-		FillWIterable(m_Buffer, 0, m_Length + 1, oldBuffer); // m_Length + 1 to include '\0'
-		Dealloc(oldBuffer);
+		CopyIterable(m_Buffer, 0, m_Length + 1, oldBuffer); // m_Length + 1 to include '\0'
+		DeAlloc(oldBuffer);
 		m_Size = size;
 		return true;
 	}
@@ -141,8 +134,8 @@ public:
 			m_Size *= 2;
 
 			AllocIterable(char, m_Buffer, m_Size);
-			FillWIterable(m_Buffer, 0, m_Length, oldBuffer);
-			Dealloc(oldBuffer);
+			CopyIterable(m_Buffer, 0, m_Length, oldBuffer);
+			DeAlloc(oldBuffer);
 		}
 
 		m_Buffer[m_Length] = character;
@@ -161,12 +154,12 @@ public:
 			m_Size = combinedStrSize * 2;
 
 			AllocIterable(char, m_Buffer, m_Size);
-			FillWIterable(m_Buffer, 0, m_Length, oldBuffer);
-			Dealloc(oldBuffer);
+			CopyIterable(m_Buffer, 0, m_Length, oldBuffer);
+			DeAlloc(oldBuffer);
 		}
 
 		char* tempBuffer{ m_Buffer + m_Length };
-		FillWIterable(tempBuffer, 0, strLength + 1, string);
+		CopyIterable(tempBuffer, 0, strLength + 1, string);
 		m_Length = newLen;
 	}
 
@@ -189,7 +182,7 @@ public:
 	template<typename... Strings>
 	CONSTEXPR20 void AppendAll(const Strings&... VarStrings)
 	{
-		/*if constexpr (!(((is_any_of<Strings, char*, std::string, CTL::Dynamic::String>::value) || std::is_array_v<Strings>)&&...))
+		/*if constexpr (!(((IsAnyOf<Strings, char*, std::string, CTL::Dynamic::String>::value) || std::is_array_v<Strings>)&&...))
 			throw std::logic_error("AppendAll only accepts (char*, std::string, and CTL::Dynamic::String)!");*/
 		Reserve(((GetStrLen(VarStrings) + ...) + m_Length + 1) * sizeof(char) * 2);
 		(Append(VarStrings),...);
@@ -492,7 +485,7 @@ public:
 
 	CONSTEXPR20 const bool StartsWith(const char character) const
 	{
-		return m_Buffer[0] == character;
+		return *m_Buffer == character;
 	}
 
 	CONSTEXPR20 const bool StartsWith(const char* string) const
@@ -750,10 +743,10 @@ public:
 		if (m_Length == 0)
 			return *this;
 
-		int characterAsInt{ m_Buffer[0] };
+		int characterAsInt{ *m_Buffer };
 
 		if (IsLowerCharacter(characterAsInt))
-			m_Buffer[0] -= 32;
+			*m_Buffer -= 32;
 
 		return *this;
 	}
@@ -769,12 +762,12 @@ public:
 		if (m_Length == 0)
 			return *this;
 
-		int characterAsInt{ m_Buffer[0] };
+		int characterAsInt{ *m_Buffer };
 
 		size_t i{};
 		if (IsLowerCharacter(characterAsInt))
 		{
-			m_Buffer[0] -= 32;
+			*m_Buffer -= 32;
 			++i;
 		}
 
@@ -825,8 +818,8 @@ public:
 		try
 		{
 			AllocIterable(char, m_Buffer, newSize);
-			FillWIterable(m_Buffer, 0u, m_Length + 1u, data);
-			Dealloc(data);
+			CopyIterable(m_Buffer, 0u, m_Length + 1u, data);
+			DeAlloc(data);
 			m_Size = newSize;
 		}
 		catch (std::bad_alloc)
@@ -845,8 +838,8 @@ public:
 		try
 		{
 			AllocIterable(char, m_Buffer, newSize);
-			FillWIterable(m_Buffer, 0u, m_Length + 1u, data);
-			Dealloc(data);
+			CopyIterable(m_Buffer, 0u, m_Length + 1u, data);
+			DeAlloc(data);
 			m_Size = newSize;
 		}
 		catch (std::bad_alloc)
@@ -873,8 +866,8 @@ public:
 	CONSTEXPR20 void InPlaceReplace(const T& toFindStr, const H& toReplStr)
 	{
 		static_assert(
-			(std::is_array_v<T> || is_any_of<T, char*, const char*, std::string, String>::value) &&
-			(std::is_array_v<H> || is_any_of<H, char*, const char*, std::string, String>::value),
+			(std::is_array_v<T> || IsAnyOf<T, char*, const char*, std::string, String>::value) &&
+			(std::is_array_v<H> || IsAnyOf<H, char*, const char*, std::string, String>::value),
 			"This method only accepts any of (const char*, std::string, or CTL::Dynamic::String) types."
 		);
 
@@ -893,7 +886,7 @@ public:
 		if (toFindStrLen == toReplStrLen)
 		{
 			char* stringStart{ m_Buffer + stringPos };
-			FillWIterable(stringStart, 0, toFindStrLen, toReplStr);
+			CopyIterable(stringStart, 0, toFindStrLen, toReplStr);
 			return;
 		}
 
@@ -924,11 +917,11 @@ public:
 			m_Length = newLen;
 			m_Buffer[m_Length] = '\0';
 
-			Dealloc(tempHolder);
+			DeAlloc(tempHolder);
 		}
 		else
 		{
-			Dealloc(tempHolder);
+			DeAlloc(tempHolder);
 			m_Length = 0;
 			m_Size = 0;
 
@@ -940,8 +933,8 @@ public:
 	CONSTEXPR20 String Replace(const T& toFindStr, const H& toReplStr)
 	{
 		static_assert(
-			(std::is_array_v<T> || is_any_of<T, char*, const char*, std::string, String>::value) &&
-			(std::is_array_v<H> || is_any_of<H, char*, const char*, std::string, String>::value),
+			(std::is_array_v<T> || IsAnyOf<T, char*, const char*, std::string, String>::value) &&
+			(std::is_array_v<H> || IsAnyOf<H, char*, const char*, std::string, String>::value),
 			"This method only accepts any of (const char*, std::string, or CTL::Dynamic::String) types."
 			);
 
@@ -956,16 +949,16 @@ public:
 
 		for (size_t src{end}, oldSrc{}, occurence{ 1 }; src != m_Length; ++occurence, oldSrc = src + toFindStrLen, src = Index(toFindStr, occurence), end = src - oldSrc, tempBuffer = m_Buffer + oldSrc)
 		{
-			FillWIterable(tempResultBuffer, 0, end, tempBuffer);
+			CopyIterable(tempResultBuffer, 0, end, tempBuffer);
 
 			tempResultBuffer += end;
 
-			FillWIterable(tempResultBuffer, 0, toReplStrLen, toReplStr);
+			CopyIterable(tempResultBuffer, 0, toReplStrLen, toReplStr);
 
 			tempResultBuffer += toReplStrLen;
 		}
 
-		FillWIterable(tempResultBuffer, 0, end, tempBuffer);
+		CopyIterable(tempResultBuffer, 0, end, tempBuffer);
 
 		return resultStr;
 	}
@@ -985,7 +978,7 @@ public:
 
 	CONSTEXPR20 void Reset() noexcept
 	{
-		Dealloc(m_Buffer);
+		DeAlloc(m_Buffer);
 		m_Length = 0;
 		m_Size = 15 * sizeof(char);
 		AllocIterableInit(char, m_Buffer, m_Size);
@@ -1050,7 +1043,7 @@ public:
 		String newStr{ m_Buffer, (m_Length + strCount) * sizeof(char) };
 
 		char* tempNewStrBuffer{ newStr.m_Buffer + m_Length };
-		FillWIterable(tempNewStrBuffer, 0, strCount, string);
+		CopyIterable(tempNewStrBuffer, 0, strCount, string);
 
 		newStr.m_Length += strCount - 1;
 		return newStr;
@@ -1083,7 +1076,7 @@ public:
 
 		while (count > 0)
 		{
-			FillWIterable(tempNewStrBuffer, 0, m_Length, m_Buffer);
+			CopyIterable(tempNewStrBuffer, 0, m_Length, m_Buffer);
 			tempNewStrBuffer += m_Length;
 			--count;
 		}
@@ -1106,11 +1099,11 @@ public:
 		if (strSize > m_Size)
 		{
 			m_Size = strSize * 2;
-			Dealloc(m_Buffer);
+			DeAlloc(m_Buffer);
 			AllocIterable(char, m_Buffer, m_Size);
 		}
 
-		FillWIterable(m_Buffer, 0, m_Length + 1, string);
+		CopyIterable(m_Buffer, 0, m_Length + 1, string);
 		return *this;
 	}
 
@@ -1144,7 +1137,7 @@ public:
 	{
 		if (count == 0)
 		{
-			FillWItem(m_Buffer, 0, m_Length, '\0');
+			FillItem(m_Buffer, 0, m_Length, '\0');
 			m_Length = 0;
 			return;
 		}
@@ -1155,7 +1148,7 @@ public:
 			char* tempBuffer{ m_Buffer + m_Length };
 			for (size_t i{ 1 }; i < count; ++i)
 			{
-				FillWIterable(tempBuffer, 0, m_Length, m_Buffer);
+				CopyIterable(tempBuffer, 0, m_Length, m_Buffer);
 				tempBuffer += m_Length;
 			}
 		}
@@ -1227,10 +1220,10 @@ public:
 	CONSTEXPR20 bool operator>(const char* string) const
 	{
 		for (size_t i{}; i < m_Length; ++i)
-			if (m_Buffer[i] <= string[i])
-				return false;
+			if (string[i] <= m_Buffer[i]) // i.e. m_Buffer[i] >= string[i]
+				return true;
 
-		return true;
+		return false;
 	}
 
 	CONSTEXPR20 bool operator>(const std::string& string) const
@@ -1252,10 +1245,10 @@ public:
 	CONSTEXPR20 bool operator<(const char* string) const
 	{
 		for (size_t i{}; i < m_Length; ++i)
-			if (m_Buffer[i] >= string[i])
-				return false;
+			if (string[i] >= m_Buffer[i]) // i.e. m_Buffer[i] <= string[i]
+				return true;
 
-		return true;
+		return false;
 	}
 
 	CONSTEXPR20 bool operator<(const std::string& string) const
@@ -1277,10 +1270,10 @@ public:
 	CONSTEXPR20 bool operator>=(const char* string) const
 	{
 		for (size_t i{}; i < m_Length; ++i)
-			if (m_Buffer[i] < string[i])
-				return false;
+			if (m_Buffer[i] >= string[i])
+				return true;
 
-		return true;
+		return false;
 	}
 
 	CONSTEXPR20 bool operator>=(const std::string& string) const
@@ -1301,22 +1294,26 @@ public:
 
 	CONSTEXPR20 bool operator<=(const char* string) const
 	{
-		return !this->operator>(string);
+		for (size_t i{}; i < m_Length; ++i)
+			if (m_Buffer[i] <= string[i])
+				return false;
+
+		return true;
 	}
 
 	CONSTEXPR20 bool operator<=(const std::string& string) const
 	{
-		return !this->operator>(string.data());
+		return *this <= string.data(); // i.e. this->operator<=(string.data())
 	}
 
 	CONSTEXPR20 bool operator<=(const String& string) const
 	{
-		return !this->operator>(string.m_Buffer);
+		return *this <= string.m_Buffer; // i.e. this->operator<=(string.m_Buffer)
 	}
 
 	CONSTEXPR20 ~String()
 	{
-		Dealloc(m_Buffer);
+		DeAlloc(m_Buffer);
 	}
 
 	/*

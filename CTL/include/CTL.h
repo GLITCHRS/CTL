@@ -23,26 +23,31 @@
 	#define CONSTEXPR20 constexpr
 	#define AllocIterable(T, VAR, SIZE) VAR = new (std::nothrow) T[SIZE / sizeof(T)]; _VerifyAlloc(VAR)
 	#define AllocIterableInit(T, VAR, SIZE) VAR = new (std::nothrow) T[SIZE / sizeof(T)]{}; _VerifyAlloc(VAR)
-	#define Dealloc(VAR) delete[] VAR; VAR = nullptr
+	#define DeAlloc(VAR) delete[] VAR; VAR = nullptr
 
 #else
 
 	#define CONSTEXPR20 inline
 	#define AllocIterable(T, VAR, SIZE) VAR = static_cast<T*>(_malloca(SIZE)); _VerifyAlloc(VAR)
-	#define AllocIterableInit(T, VAR, SIZE) VAR = static_cast<T*>(_malloca(SIZE)); _VerifyAlloc(VAR); FillWItem(VAR, 0, SIZE / sizeof(T), T{})
-	#define Dealloc(VAR) _freea(VAR); VAR = nullptr
+	#define AllocIterableInit(T, VAR, SIZE) VAR = static_cast<T*>(_malloca(SIZE)); _VerifyAlloc(VAR); FillItem(VAR, 0, SIZE / sizeof(T), T{})
+	#define DeAlloc(VAR) _freea(VAR); VAR = nullptr
 
 #endif
 
 #define _VerifyAlloc(VAR) if (!VAR) { throw std::bad_alloc(); }
 
 #define NODISCARD17 [[nodiscard]]
-#define FillWItem(VAR, START, END, CHARACTER) { for(size_t i{ START }; i < END; ++i) VAR[i] = CHARACTER; }
-#define FillWIterable(VAR, START, END, ITERABLE) { for(size_t i{ START }; i < END; ++i) VAR[i] = ITERABLE[i]; }
-#define FillWIterableCustom(VAR, VAR_START, ITERABLE, ITERABLE_START, VAR_END, END) { for(size_t i{ VAR_START }, j{ ITERABLE_START }; VAR_END < END; ++j, ++i) VAR[i] = ITERABLE[j]; }
+#define FillItem(VAR, START, END, CHARACTER) { for(size_t i{ START }; i < END; ++i) VAR[i] = CHARACTER; }
+#define CopyIterable(VAR, START, END, ITERABLE) { for(size_t i{ START }; i < END; ++i) VAR[i] = ITERABLE[i]; }
+#define CopyIterableCustom(VAR, VAR_START, ITERABLE, ITERABLE_START, VAR_END, END) { for(size_t i{ VAR_START }, j{ ITERABLE_START }; VAR_END < END; ++j, ++i) VAR[i] = ITERABLE[j]; }
+
+#define IsNum(INT) (47 < INT && INT < 58)
+#define IsLowerCharacter(INT) (96 < INT && INT < 123)
+#define IsUpperCharacter(INT) (64 < INT && INT < 91)
+#define IsCharacter(INT) (IsLowerCharacter(INT) || IsUpperCharacter(INT))
 
 template<typename T, typename... H>
-struct is_any_of
+struct IsAnyOf
 {
 	static constexpr bool value = ((std::is_same_v<T, H>) || ...);
 };
