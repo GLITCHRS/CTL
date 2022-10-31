@@ -81,9 +81,9 @@ public:
 	}
 
 	/*
-	* 
+	*
 	*	.Methods()
-	* 
+	*
 	*/
 
 	// .Append()
@@ -345,6 +345,34 @@ public:
 	CONSTEXPR20 size_t Index(const String& string, unsigned int occurrenceNumber = 1u) const
 	{
 		return Index(string.m_Buffer, occurrenceNumber);
+	}
+
+	// .Insert()
+
+	CONSTEXPR20 void Insert(const char character, const size_t index)
+	{
+		char* tempBuffer{ m_Buffer };
+		bool reAllocated{ false };
+
+		if (IsFilled())
+		{
+			reAllocated = true;
+			m_Size *= 2;
+			AllocIterable(char, m_Buffer, m_Size);
+		}
+		++m_Length;
+
+		CopyIterable(m_Buffer, 0, index, tempBuffer);
+		m_Buffer[index] = character;
+
+		char* tempBuffer2{ m_Buffer + index + 1 };
+		tempBuffer += index;
+
+		CopyIterable(tempBuffer2, 0, m_Length, tempBuffer);
+		tempBuffer -= index;
+
+		if(reAllocated)
+			DeAlloc(tempBuffer);
 	}
 
 	// .InPlaceReplace()

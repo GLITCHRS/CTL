@@ -39,7 +39,7 @@
 #define NODISCARD17 [[nodiscard]]
 #define FillItem(VAR, START, END, CHARACTER) { for(size_t i{ START }; i < END; ++i) VAR[i] = CHARACTER; }
 #define CopyIterable(VAR, START, END, ITERABLE) { for(size_t i{ START }; i < END; ++i) VAR[i] = ITERABLE[i]; }
-#define CopyIterableCustom(VAR, VAR_START, ITERABLE, ITERABLE_START, VAR_END, END) { for(size_t i{ VAR_START }, j{ ITERABLE_START }; VAR_END < END; ++j, ++i) VAR[i] = ITERABLE[j]; }
+#define CopyIterableCustom(VAR, VAR_START, ITERABLE, ITERABLE_START, VAR_END) { for(size_t i{ VAR_START }, j{ ITERABLE_START }; VAR_START < VAR_END; ++j, ++i) VAR[i] = ITERABLE[j]; }
 
 #define IsNum(INT) (47 < INT && INT < 58)
 #define IsLowerCharacter(INT) (96 < INT && INT < 123)
