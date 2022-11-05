@@ -40,11 +40,11 @@ public:
 		AllocIterableInit(char, m_Buffer, m_Size);
 	}
 
-	CONSTEXPR20 explicit String(const char* string, const size_t size = 0)
+	CONSTEXPR20 explicit String(const char* string, const size_t length = 0)
 	{
 		m_Length = GetStrLen(string);
 		size_t stringSize{ (m_Length + 1) * sizeof(char) };
-		m_Size = (size > 0) ? size : stringSize;
+		m_Size = (length > 0) ? ((length + 1) * sizeof(char)) : stringSize;
 
 		if (m_Size < stringSize)
 		{
@@ -108,7 +108,7 @@ public:
 	{
 		static_assert(
 			IsAnyOf<T, char*, const char*, std::string, CTL::Dynamic::String>::value || (std::is_same_v<std::remove_all_extents_t<T>, char> && std::is_array_v<T>),
-			"Append only accepts (char*, const char*, std::string, and CTL::Dynamic::String)!"
+			"Append only accepts (char*, const char*, char[], std::string, and CTL::Dynamic::String)!"
 			);
 
 		size_t strLength{ GetStrLen(string) };
@@ -348,31 +348,47 @@ public:
 	}
 
 	// .Insert()
-
 	CONSTEXPR20 void Insert(const char character, const size_t index)
 	{
-		char* tempBuffer{ m_Buffer };
-		bool reAllocated{ false };
-
-		if (IsFilled())
+		if (index > m_Length)
 		{
-			reAllocated = true;
-			m_Size *= 2;
-			AllocIterable(char, m_Buffer, m_Size);
+			throw std::logic_error("index is out of bounds!");
+			return;
 		}
+
 		++m_Length;
-
-		CopyIterable(m_Buffer, 0, index, tempBuffer);
+		Reserve(m_Length);
+		STR(m_Buffer, index, m_Length, 1);
 		m_Buffer[index] = character;
+	}
 
-		char* tempBuffer2{ m_Buffer + index + 1 };
-		tempBuffer += index;
+	CONSTEXPR20 void Insert(const char* string, const size_t index)
+	{
+		if (index > m_Length)
+		{
+			throw std::logic_error("index is out of bounds!");
+			return;
+		}
 
-		CopyIterable(tempBuffer2, 0, m_Length, tempBuffer);
-		tempBuffer -= index;
+		size_t stringLen{ GetStrLen(string) };
+		size_t bufferCount{ m_Length + 1 };
+		Reserve(stringLen + m_Length);
 
-		if(reAllocated)
-			DeAlloc(tempBuffer);
+		char* tempBuffer{ m_Buffer + index };
+
+		STR(m_Buffer, index, bufferCount, stringLen);
+		CopyIterable(tempBuffer, 0, stringLen, string);
+		m_Length += stringLen;
+	}
+
+	CONSTEXPR20 void Insert(const std::string& string, const size_t index)
+	{
+		Insert(string.data(), index);
+	}
+
+	CONSTEXPR20 void Insert(const String& string, const size_t index)
+	{
+		Insert(string.m_Buffer, index);
 	}
 
 	// .InPlaceReplace()
@@ -578,16 +594,18 @@ public:
 	}
 
 	// .Reserve()
-	CONSTEXPR20 bool Reserve(const size_t size)
+	CONSTEXPR20 bool Reserve(const size_t length)
 	{
-		if (size <= m_Size)
+		size_t newSize{ (length + 1) * sizeof(char) };
+
+		if (newSize <= m_Size)
 			return false;
 
 		char* oldBuffer{ m_Buffer };
 
 		try
 		{
-			AllocIterable(char, m_Buffer, size);
+			AllocIterable(char, m_Buffer, newSize);
 		}
 		catch (const std::bad_alloc&)
 		{
@@ -597,7 +615,7 @@ public:
 
 		CopyIterable(m_Buffer, 0, m_Length + 1, oldBuffer); // m_Length + 1 to include '\0'
 		DeAlloc(oldBuffer);
-		m_Size = size;
+		m_Size = newSize;
 		return true;
 	}
 
@@ -1262,17 +1280,17 @@ constexpr size_t GetStrLen(const T str)
 constexpr size_t GetStrLen(char* str)
 {
 	size_t i{};
-	while (str[i++] != '\0');
+	while (str[i] != '\0') ++i;
 
-	return i - 1;
+	return i;
 }
 
 constexpr size_t GetStrLen(const char* str)
 {
 	size_t i{};
-	while (str[i++] != '\0');
+	while (str[i] != '\0') ++i;
 
-	return i - 1;
+	return i;
 }
 
 CONSTEXPR20 size_t GetStrLen(const std::string& str)

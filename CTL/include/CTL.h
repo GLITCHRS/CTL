@@ -41,6 +41,9 @@
 #define CopyIterable(VAR, START, END, ITERABLE) { for(size_t i{ START }; i < END; ++i) VAR[i] = ITERABLE[i]; }
 #define CopyIterableCustom(VAR, VAR_START, ITERABLE, ITERABLE_START, VAR_END) { for(size_t i{ VAR_START }, j{ ITERABLE_START }; VAR_START < VAR_END; ++j, ++i) VAR[i] = ITERABLE[j]; }
 
+#define STL(VAR, START, END, STEPS) { for(size_t i{ START }; i < END; ++i) VAR[i - STEPS] = VAR[i]; }
+#define STR(VAR, START, END, STEPS) { for(size_t i{ END - 1 }; i > START; --i) VAR[i + STEPS] = VAR[i]; VAR[START + STEPS] = VAR[START]; }
+
 #define IsNum(INT) (47 < INT && INT < 58)
 #define IsLowerCharacter(INT) (96 < INT && INT < 123)
 #define IsUpperCharacter(INT) (64 < INT && INT < 91)
