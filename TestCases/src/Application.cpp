@@ -6,8 +6,14 @@
 int main()
 {
 	CTL::Dynamic::String a{ "Hi" };
-	a.Insert('a', 2);
+	
+	std::string b{ a.Data(), 1 };
+
 	std::cout << a << '\n';
 	std::cout << a.Length() << '\n';
 	std::cout << a.Size() << '\n';
+
+	std::cout << b << '\n';
+	std::cout << b.length() << '\n';
+	std::cout << b.capacity() << '\n';
 }

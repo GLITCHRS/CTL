@@ -31,52 +31,56 @@ public:
 	// IMPLICIT
 	CONSTEXPR20 String() : m_Length(0), m_Size(sizeof(char) * 15)
 	{
-		AllocIterableInit(char, m_Buffer, m_Size);
+		AllocIterableInit(char, m_Buffer, 15);
 	}
 
 	// EXPLICIT
 	CONSTEXPR20 explicit String(const size_t length) : m_Length(0), m_Size(sizeof(char)* (length + 1))
 	{
-		AllocIterableInit(char, m_Buffer, m_Size);
+		AllocIterableInit(char, m_Buffer, length);
 	}
 
-	CONSTEXPR20 explicit String(const char* string, const size_t length = 0)
+	CONSTEXPR20 explicit String(const char* string)
 	{
 		m_Length = GetStrLen(string);
-		size_t stringSize{ (m_Length + 1) * sizeof(char) };
-		m_Size = (length > 0) ? ((length + 1) * sizeof(char)) : stringSize;
+		m_Size = (m_Length + 1) * sizeof(char);
 
-		if (m_Size < stringSize)
-		{
-			m_Length = 0;
-			m_Size = 0;
-			throw std::bad_array_new_length();
-		}
-		else
-		{
-			AllocIterable(char, m_Buffer, m_Size);
-			CopyIterable(m_Buffer, 0, m_Length + 1, string); // m_Length + 1 to include '\0'
-		}
+		AllocIterable(char, m_Buffer, m_Length);
+		CopyIterable(m_Buffer, 0, m_Length, string);
+		m_Buffer[m_Length] = '\0';
+	}
+
+	CONSTEXPR20 explicit String(const char* string, const size_t length)
+	{
+		const size_t strLen{ GetStrLen(string) };
+
+		m_Length = (length >= strLen) ? length : strLen;
+		m_Size = (m_Length + 1) * sizeof(char);
+		AllocIterable(char, m_Buffer, m_Length);
+		CopyIterable(m_Buffer, 0, m_Length, string);
+		m_Buffer[m_Length] = '\0';
 	}
 
 	CONSTEXPR20 explicit String(const std::string& string) : m_Length(string.length()), m_Size((m_Length + 1) * sizeof(char))
 	{
-		AllocIterable(char, m_Buffer, m_Size);
-		CopyIterable(m_Buffer, 0, m_Length + 1, string); // m_Length + 1 to include '\0'
+		AllocIterable(char, m_Buffer, m_Length);
+		CopyIterable(m_Buffer, 0, m_Length, string);
+		m_Buffer[m_Length] = '\0';
 	}
 
 	// COPY
 	CONSTEXPR20 String(const String& string) : m_Length(string.m_Length), m_Size(string.m_Size)
 	{
-		AllocIterable(char, m_Buffer, m_Size);
-		CopyIterable(m_Buffer, 0, m_Length + 1, string.m_Buffer); // m_Length + 1 to include '\0'
+		AllocIterable(char, m_Buffer, m_Length);
+		CopyIterable(m_Buffer, 0, m_Length, string.m_Buffer);
+		m_Buffer[m_Length] = '\0';
 	}
 
 	// MOVE
 	CONSTEXPR20 String(String&& string) noexcept : m_Length(string.m_Length), m_Size(string.m_Size), m_Buffer(string.m_Buffer)
 	{
 		string.m_Size = 15 * sizeof(char);
-		AllocIterableInit(char, string.m_Buffer, string.m_Size);
+		AllocIterableInit(char, string.m_Buffer, 15);
 		string.m_Length = 0;
 	}
 
@@ -91,12 +95,8 @@ public:
 	{
 		if (IsFilled())
 		{
-			char* oldBuffer{ m_Buffer };
-			m_Size *= 2;
-
-			AllocIterable(char, m_Buffer, m_Size);
-			CopyIterable(m_Buffer, 0, m_Length, oldBuffer);
-			DeAlloc(oldBuffer);
+			m_Size = m_Size * 2 - sizeof(char);
+			ReAllocIterable(char, m_Buffer, m_Length, (m_Length * 2));
 		}
 
 		m_Buffer[m_Length] = character;
@@ -117,16 +117,13 @@ public:
 
 		if (m_Size < combinedStrSize)
 		{
-			char* oldBuffer{ m_Buffer };
-			m_Size = combinedStrSize * 2;
-
-			AllocIterable(char, m_Buffer, m_Size);
-			CopyIterable(m_Buffer, 0, m_Length, oldBuffer);
-			DeAlloc(oldBuffer);
+			m_Size = combinedStrSize * 2 - sizeof(char);
+			ReAllocIterable(char, m_Buffer, m_Length, (newLen * 2));
 		}
 
 		char* tempBuffer{ m_Buffer + m_Length };
-		CopyIterable(tempBuffer, 0, strLength + 1, string);
+		CopyIterable(tempBuffer, 0, strLength, string);
+		tempBuffer[strLength] = '\0';
 		m_Length = newLen;
 	}
 
@@ -150,7 +147,7 @@ public:
 
 		int characterAsInt{ *m_Buffer };
 
-		if (IsLowerCharacter(characterAsInt))
+		if (IsLowerChar(characterAsInt))
 			*m_Buffer -= 32;
 
 		return *this;
@@ -358,7 +355,7 @@ public:
 
 		++m_Length;
 		Reserve(m_Length);
-		STR(m_Buffer, index, m_Length, 1);
+		ShiftToRight(m_Buffer, index, m_Length, 1);
 		m_Buffer[index] = character;
 	}
 
@@ -376,7 +373,7 @@ public:
 
 		char* tempBuffer{ m_Buffer + index };
 
-		STR(m_Buffer, index, bufferCount, stringLen);
+		ShiftToRight(m_Buffer, index, bufferCount, stringLen);
 		CopyIterable(tempBuffer, 0, stringLen, string);
 		m_Length += stringLen;
 	}
@@ -409,62 +406,7 @@ public:
 			"This method only accepts any of (const char*, std::string, or CTL::Dynamic::String) types."
 			);
 
-		if constexpr (std::is_same_v<H, String>)
-			if (this == &toReplStr)
-				throw std::logic_error("Cannot replace with same object (conflicts detected!)");
-
-		size_t stringPos{ Index(toFindStr) };
-
-		if (stringPos == m_Length)
-			return;
-
-		size_t toFindStrLen{ GetStrLen(toFindStr) };
-		size_t toReplStrLen{ GetStrLen(toReplStr) };
-
-		if (toFindStrLen == toReplStrLen)
-		{
-			char* stringStart{ m_Buffer + stringPos };
-			CopyIterable(stringStart, 0, toFindStrLen, toReplStr);
-			return;
-		}
-
-		char* tempHolder{ m_Buffer };
-
-		if (toFindStrLen > toReplStrLen)
-		{
-			replacer(m_Buffer, tempHolder, toReplStr, stringPos, toFindStrLen, toReplStrLen);
-			m_Length -= (toFindStrLen - toReplStrLen);
-			return;
-		}
-
-		size_t newLen{ m_Length + toReplStrLen - toFindStrLen };
-		m_Size = (newLen + 1) * sizeof(char);
-		AllocIterable(char, m_Buffer, m_Size);
-
-		if (m_Buffer)
-		{
-			size_t i{};
-			while (i < stringPos)
-			{
-				m_Buffer[i] = tempHolder[i];
-				++i;
-			}
-
-			replacer(m_Buffer, tempHolder, toReplStr, i, toFindStrLen, toReplStrLen);
-
-			m_Length = newLen;
-			m_Buffer[m_Length] = '\0';
-
-			DeAlloc(tempHolder);
-		}
-		else
-		{
-			DeAlloc(tempHolder);
-			m_Length = 0;
-			m_Size = 0;
-
-			throw std::bad_alloc();
-		}
+		// code yet to be written.
 	}
 
 	// .IsSomething()
@@ -487,7 +429,7 @@ public:
 		{
 			int characterAsInt{ m_Buffer[i] };
 
-			if (!(IsNum(characterAsInt) || IsUpperCharacter(characterAsInt) || IsLowerCharacter(characterAsInt)))
+			if (!(IsNum(characterAsInt) || IsChar(characterAsInt)))
 				return false;
 		}
 
@@ -503,7 +445,7 @@ public:
 		{
 			int characterAsInt{ m_Buffer[i] };
 
-			if (!(IsUpperCharacter(characterAsInt) || IsLowerCharacter(characterAsInt)))
+			if (!IsChar(characterAsInt))
 				return false;
 		}
 
@@ -535,7 +477,7 @@ public:
 		{
 			int characterAsInt{ m_Buffer[i] };
 
-			if (!IsLowerCharacter(characterAsInt))
+			if (!IsLowerChar(characterAsInt))
 				return false;
 		}
 
@@ -551,7 +493,7 @@ public:
 		{
 			int characterAsInt{ m_Buffer[i] };
 
-			if (!IsUpperCharacter(characterAsInt))
+			if (!IsUpperChar(characterAsInt))
 				return false;
 		}
 
@@ -569,7 +511,7 @@ public:
 			{
 				int characterAsInt{ m_Buffer[i] };
 
-				if (!(IsUpperCharacter(characterAsInt) || IsNum(characterAsInt)))
+				if (!(IsUpperChar(characterAsInt) || IsNum(characterAsInt)))
 					return false;
 			}
 
@@ -580,7 +522,7 @@ public:
 		{
 			int characterAsInt{ m_Buffer[i] };
 
-			if (!IsUpperCharacter(characterAsInt))
+			if (!IsUpperChar(characterAsInt))
 				return false;
 		}
 
@@ -605,7 +547,7 @@ public:
 
 		try
 		{
-			AllocIterable(char, m_Buffer, newSize);
+			AllocIterable(char, m_Buffer, length);
 		}
 		catch (const std::bad_alloc&)
 		{
@@ -613,8 +555,9 @@ public:
 			return false;
 		}
 
-		CopyIterable(m_Buffer, 0, m_Length + 1, oldBuffer); // m_Length + 1 to include '\0'
+		CopyIterable(m_Buffer, 0, m_Length, oldBuffer);
 		DeAlloc(oldBuffer);
+		m_Buffer[m_Length] = '\0';
 		m_Size = newSize;
 		return true;
 	}
@@ -624,7 +567,7 @@ public:
 	{
 		m_Length = 0;
 		m_Size = 15 * sizeof(char);
-		AllocIterableInit(char, m_Buffer, m_Size);
+		AllocIterableInit(char, m_Buffer, 15);
 	}
 
 	CONSTEXPR20 void Reset() noexcept
@@ -632,7 +575,7 @@ public:
 		DeAlloc(m_Buffer);
 		m_Length = 0;
 		m_Size = 15 * sizeof(char);
-		AllocIterableInit(char, m_Buffer, m_Size);
+		AllocIterableInit(char, m_Buffer, 15);
 	}
 
 	// .Replace()
@@ -685,46 +628,56 @@ public:
 	}
 
 	// .Shrink()
-	CONSTEXPR20 void Shrink(size_t newSize)
+	CONSTEXPR20 bool Shrink(size_t length)
 	{
-		if (((m_Length + 1u) * sizeof(char)) >= newSize)
-			return;
+		if (length >= m_Length)
+			return false;
 
 		char* data{ m_Buffer };
 
 		try
 		{
-			AllocIterable(char, m_Buffer, newSize);
-			CopyIterable(m_Buffer, 0u, m_Length + 1u, data);
-			DeAlloc(data);
-			m_Size = newSize;
+			AllocIterable(char, m_Buffer, length);
 		}
 		catch (std::bad_alloc)
 		{
 			m_Buffer = data;
+			return false;
 		}
+
+		m_Length = length;
+		m_Size = (m_Length + 1) * sizeof(char);
+
+		CopyIterable(m_Buffer, 0, m_Length, data);
+		m_Buffer[m_Length] = '\0';
+		DeAlloc(data);
+		return true;
 	}
 
 	// .ShrinkToFit()
-	CONSTEXPR20 void ShrinkToFit()
+	CONSTEXPR20 bool ShrinkToFit()
 	{
 		if (IsFilled())
 			return;
 
 		char* data{ m_Buffer };
-		size_t newSize{ (m_Length + 1u) * sizeof(char) };
 
 		try
 		{
-			AllocIterable(char, m_Buffer, newSize);
-			CopyIterable(m_Buffer, 0u, m_Length + 1u, data);
-			DeAlloc(data);
-			m_Size = newSize;
+			AllocIterable(char, m_Buffer, m_Length);
 		}
 		catch (std::bad_alloc)
 		{
 			m_Buffer = data;
+			return false;
 		}
+
+		CopyIterable(m_Buffer, 0, m_Length, data);
+		DeAlloc(data);
+		m_Buffer[m_Length] = '\0';
+		m_Size = (m_Length + 1) * sizeof(char);
+
+		return true;
 	}
 
 	// .StartsWith()
@@ -817,7 +770,7 @@ public:
 		int characterAsInt{ *m_Buffer };
 
 		size_t i{};
-		if (IsLowerCharacter(characterAsInt))
+		if (IsLowerChar(characterAsInt))
 		{
 			*m_Buffer -= 32;
 			++i;
@@ -832,7 +785,7 @@ public:
 			{
 				characterAsInt = m_Buffer[i + 1u];
 
-				if (IsLowerCharacter(characterAsInt))
+				if (IsLowerChar(characterAsInt))
 					m_Buffer[++i] -= 32;
 			}
 		}
@@ -847,7 +800,7 @@ public:
 		{
 			int characterAsInt{ m_Buffer[i] };
 
-			if (IsUpperCharacter(characterAsInt))
+			if (IsUpperChar(characterAsInt))
 				m_Buffer[i] += 32;
 		}
 
@@ -861,7 +814,7 @@ public:
 		{
 			int characterAsInt{ m_Buffer[i] };
 
-			if (IsLowerCharacter(characterAsInt))
+			if (IsLowerChar(characterAsInt))
 				m_Buffer[i] -= 32;
 		}
 
@@ -972,16 +925,13 @@ public:
 	CONSTEXPR20 String& operator=(const char* string)
 	{
 		m_Length = GetStrLen(string);
-		size_t strSize{ (m_Length + 1) * sizeof(char) };
+		m_Size = (m_Length + 1) * sizeof(char);
 
-		if (strSize > m_Size)
-		{
-			m_Size = strSize * 2;
-			DeAlloc(m_Buffer);
-			AllocIterable(char, m_Buffer, m_Size);
-		}
+		DeAlloc(m_Buffer);
+		AllocIterable(char, m_Buffer, m_Length);
+		CopyIterable(m_Buffer, 0, m_Length, string);
+		m_Buffer[m_Length] = '\0';
 
-		CopyIterable(m_Buffer, 0, m_Length + 1, string);
 		return *this;
 	}
 
@@ -1010,7 +960,7 @@ public:
 	{
 		if (count == 0)
 		{
-			FillItem(m_Buffer, 0, m_Length, '\0');
+			FillIterable(m_Buffer, 0, m_Length, '\0');
 			m_Length = 0;
 			return;
 		}
