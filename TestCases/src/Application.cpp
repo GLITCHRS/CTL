@@ -11,7 +11,7 @@ int main()
 
 	std::cout << a << '\n';
 	std::cout << a.Length() << '\n';
-	std::cout << a.Size() << '\n';
+	std::cout << a.Capacity() << '\n';
 
 	std::cout << b << '\n';
 	std::cout << b.length() << '\n';

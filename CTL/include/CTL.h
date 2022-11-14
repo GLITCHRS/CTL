@@ -21,15 +21,15 @@
 #if _MSVC_LANG >= 202002L
 
 	#define CONSTEXPR20 constexpr
-	#define AllocIterable(T, VAR, LENGTH) VAR = new (std::nothrow) T[LENGTH + 1]; _VerifyPointer(VAR)
-	#define AllocIterableInit(T, VAR, LENGTH) VAR = new (std::nothrow) T[LENGTH + 1]{}; _VerifyPointer(VAR)
+	#define AllocIterable(T, VAR, LENGTH) VAR = new (std::nothrow) T[LENGTH]; _VerifyPointer(VAR)
+	#define AllocIterableInit(T, VAR, LENGTH) VAR = new (std::nothrow) T[LENGTH]{}; _VerifyPointer(VAR)
 	#define DeAlloc(VAR) delete[] VAR; VAR = nullptr
 
 #else
 
 	#define CONSTEXPR20 inline
-	#define AllocIterable(T, VAR, LENGTH) VAR = static_cast<T*>(_malloca((LENGTH + 1) * sizeof(char))); _VerifyPointer(VAR)
-	#define AllocIterableInit(T, VAR, LENGTH) VAR = static_cast<T*>(_malloca((LENGTH + 1) * sizeof(char))); _VerifyPointer(VAR); FillIterable(VAR, 0, LENGTH, T{}); VAR[LENGTH] = T{}
+	#define AllocIterable(T, VAR, LENGTH) VAR = static_cast<T*>(_malloca((LENGTH) * sizeof(char))); _VerifyPointer(VAR)
+	#define AllocIterableInit(T, VAR, LENGTH) VAR = static_cast<T*>(_malloca(LENGTH * sizeof(char))); _VerifyPointer(VAR); FillIterable(VAR, 0, LENGTH, T{})
 	#define DeAlloc(VAR) _freea(VAR); VAR = nullptr
 
 #endif
@@ -40,7 +40,7 @@
 #define FillIterable(VAR, START, END, CHARACTER) { for(size_t i{ START }; i < END; ++i) VAR[i] = CHARACTER; }
 #define CopyIterable(VAR, START, END, ITERABLE) { for(size_t i{ START }; i < END; ++i) VAR[i] = ITERABLE[i]; }
 #define CopyIterableCustom(VAR, VAR_START, ITERABLE, ITERABLE_START, VAR_END) { for(size_t i{ VAR_START }, j{ ITERABLE_START }; VAR_START < VAR_END; ++j, ++i) VAR[i] = ITERABLE[j]; }
-#define ReAllocIterable(T, VAR, OLD_LENGTH, NEW_LENGTH) { T* tempBuffer{ VAR }; AllocIterable(T, VAR, NEW_LENGTH); CopyIterable(VAR, 0, OLD_LENGTH, tempBuffer); DeAlloc(tempBuffer); }
+#define ReAllocIterable(T, VAR, OLD_LENGTH, NEW_LENGTH) { T* tempBuffer{ VAR }; AllocIterable(T, VAR, (NEW_LENGTH)); CopyIterable(VAR, 0, OLD_LENGTH, tempBuffer); DeAlloc(tempBuffer); }
 #define ReAllocIterableInit(T, VAR, OLD_LENGTH, NEW_LENGTH) { T* tempBuffer{ VAR }; AllocIterable(T, VAR, NEW_LENGTH); CopyIterable(VAR, 0, OLD_LENGTH, tempBuffer); FillIterable(VAR, OLD_LENGTH, NEW_LENGTH, T{}); VAR[NEW_LENGTH] = T{}; DeAlloc(tempBuffer); }
 
 #define ShiftToLeft(VAR, START, END, STEPS) { for(size_t i{ START }; i < END; ++i) VAR[i - STEPS] = VAR[i]; }
