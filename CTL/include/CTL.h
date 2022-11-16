@@ -28,8 +28,8 @@
 #else
 
 	#define CONSTEXPR20 inline
-	#define AllocIterable(T, VAR, LENGTH) VAR = static_cast<T*>(_malloca((LENGTH) * sizeof(char))); _VerifyPointer(VAR)
-	#define AllocIterableInit(T, VAR, LENGTH) VAR = static_cast<T*>(_malloca(LENGTH * sizeof(char))); _VerifyPointer(VAR); FillIterable(VAR, 0, LENGTH, T{})
+	#define AllocIterable(T, VAR, LENGTH) VAR = static_cast<T*>(_malloca((LENGTH) * sizeof(T))); _VerifyPointer(VAR)
+	#define AllocIterableInit(T, VAR, LENGTH) VAR = static_cast<T*>(_malloca(LENGTH * sizeof(T))); _VerifyPointer(VAR); FillIterable(VAR, 0, LENGTH, T{})
 	#define DeAlloc(VAR) _freea(VAR); VAR = nullptr
 
 #endif

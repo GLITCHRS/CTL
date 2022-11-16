@@ -1,19 +1,15 @@
 #include <iostream>
 #include <string>
 
-#include "String/String.h"
+#include "Iterables/Dynamic/Array.h"
 
 int main()
 {
-	CTL::Dynamic::String a{ "Hi" };
-	
-	std::string b{ a.Data(), 1 };
+	int arr[]{ 1, 2, 3 };
+
+	CTL::Dynamic::Array<int> a{ arr };
 
 	std::cout << a << '\n';
 	std::cout << a.Length() << '\n';
 	std::cout << a.Capacity() << '\n';
-
-	std::cout << b << '\n';
-	std::cout << b.length() << '\n';
-	std::cout << b.capacity() << '\n';
 }
