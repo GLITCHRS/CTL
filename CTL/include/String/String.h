@@ -57,8 +57,7 @@ public:
 		m_Length = (count > strLen) ? count - 1 : strLen;
 		m_Capacity = count;
 		AllocIterable(char, m_Buffer, count);
-		CopyIterable(m_Buffer, 0, m_Length, string);
-		m_Buffer[m_Length] = '\0';
+		CopyIterableInit(char, m_Buffer, 0, m_Length, m_Capacity, string);
 	}
 
 	CONSTEXPR20 explicit String(const std::string& string) : m_Length(string.length()), m_Capacity(m_Length + 1)
@@ -553,8 +552,7 @@ public:
 			return false;
 		}
 
-		CopyIterable(m_Buffer, 0, m_Length, oldBuffer);
-		m_Buffer[m_Length] = '\0';
+		CopyIterableInit(char, m_Buffer, 0, m_Length, count, oldBuffer);
 		m_Capacity = count;
 
 		DeAlloc(oldBuffer);
@@ -1187,22 +1185,6 @@ private:
 				formatter(resultStr, value, bracketCount, nextStartingPoint);
 			else
 				resultStr.Append(value);
-		}
-	}
-
-	template<typename T, typename H>
-	CONSTEXPR20 void replacer(T& m_Buffer, T& tempHolder, H& toReplStr, size_t i, size_t toFindStrLen, size_t toReplStrLen)
-	{
-		size_t stringPos{ i };
-
-		for (size_t j{}; j < toReplStrLen; ++i, ++j)
-			m_Buffer[i] = toReplStr[j];
-
-		size_t h{ stringPos + toFindStrLen };
-		while (h < (m_Length + 1))
-		{
-			m_Buffer[i] = tempHolder[h];
-			++h, ++i;
 		}
 	}
 

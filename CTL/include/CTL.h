@@ -39,7 +39,7 @@
 #define NODISCARD17 [[nodiscard]]
 #define FillIterable(VAR, START, END, CHARACTER) { for(size_t i{ START }; i < END; ++i) VAR[i] = CHARACTER; }
 #define CopyIterable(VAR, START, END, ITERABLE) { for(size_t i{ START }; i < END; ++i) VAR[i] = ITERABLE[i]; }
-#define CopyIterableCustom(VAR, VAR_START, ITERABLE, ITERABLE_START, VAR_END) { for(size_t i{ VAR_START }, j{ ITERABLE_START }; VAR_START < VAR_END; ++j, ++i) VAR[i] = ITERABLE[j]; }
+#define CopyIterableInit(T, VAR, START, END, NEW_LENGTH, ITERABLE) CopyIterable(VAR, START, END, ITERABLE); FillIterable(VAR, END, NEW_LENGTH, T{})
 #define ReAllocIterable(T, VAR, OLD_LENGTH, NEW_LENGTH) { T* tempBuffer{ VAR }; AllocIterable(T, VAR, (NEW_LENGTH)); CopyIterable(VAR, 0, OLD_LENGTH, tempBuffer); DeAlloc(tempBuffer); }
 #define ReAllocIterableInit(T, VAR, OLD_LENGTH, NEW_LENGTH) { T* tempBuffer{ VAR }; AllocIterable(T, VAR, NEW_LENGTH); CopyIterable(VAR, 0, OLD_LENGTH, tempBuffer); FillIterable(VAR, OLD_LENGTH, NEW_LENGTH, T{}); VAR[NEW_LENGTH] = T{}; DeAlloc(tempBuffer); }
 
