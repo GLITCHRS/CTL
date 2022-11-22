@@ -134,6 +134,7 @@ public:
 			((IsAnyOf<Strings, char*, const char*, std::string, CTL::Dynamic::String>::value || (std::is_same_v<std::remove_all_extents_t<Strings>, char> && std::is_array_v<Strings>))&&...),
 			"AppendAll only accepts (char*, const char*, std::string, and CTL::Dynamic::String)!"
 			);
+
 		Reserve(((GetStrLen(VarStrings) + ...) + m_Length + 1) * 2);
 		(Append(VarStrings), ...);
 	}
@@ -352,9 +353,15 @@ public:
 			return;
 		}
 
+		if (IsFilled())
+		{
+			m_Capacity *= 2;
+			ReAllocIterable(char, m_Buffer, m_Length, m_Capacity);
+		}
+
 		++m_Length;
-		Reserve(m_Length);
 		ShiftToRight(m_Buffer, index, m_Length, 1);
+		FillIterable(m_Buffer, m_Length, m_Capacity, '\0');
 		m_Buffer[index] = character;
 	}
 

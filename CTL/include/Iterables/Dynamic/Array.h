@@ -11,6 +11,19 @@ class Array;
 _DYNAMICEND
 _CTLEND
 
+template<typename Ts>
+constexpr unsigned int GetItemsCount(const Ts& items)
+{
+	return 1u;
+}
+
+template<typename T, typename... Ts>
+constexpr unsigned int GetItemsCount(const T& item, const Ts&... items)
+{
+	return 1u + GetItemsCount(items...);
+}
+
+
 template<typename T>
 class CTL::Dynamic::Array
 {
@@ -34,17 +47,20 @@ public:
 		AllocIterableInit(T, m_Buffer, count);
 	}
 
-	template<typename... Ts>
-	CONSTEXPR20 explicit Array(const Ts&... items): m_Length(0), m_Capacity(0)
+	CONSTEXPR20 explicit Array(const T* arr, const size_t length) : m_Length(length), m_Capacity(length)
 	{
-		if (!((++m_Capacity, std::is_same_v<T, Ts>)&&...))
+		AllocIterable(T, m_Buffer, m_Capacity);
+		CopyIterable(m_Buffer, 0, m_Length, arr);
+	}
+
+	template<typename... Ts>
+	CONSTEXPR20 explicit Array(const Ts&... items): m_Length(0), m_Capacity(GetItemsCount(items...))
+	{
+		if (!((std::is_same_v<T, Ts>)&&...))
 			throw std::runtime_error("Hi");
 
 		AllocIterable(T, m_Buffer, m_Capacity);
 		((m_Buffer[m_Length] = items, ++m_Length), ...);
-
-		for (size_t i{}; i < m_Length; ++i)
-			std::cout << m_Buffer[i] << '\n';
 	}
 
 	template<typename H, size_t length>
@@ -57,19 +73,16 @@ public:
 	}
 
 	// COPY
-	CONSTEXPR20 Array(const Array<T>& array) : m_Length(string.m_Length), m_Capacity(string.m_Capacity)
+	CONSTEXPR20 Array(const Array<T>& arr) : m_Length(arr.m_Length), m_Capacity(arr.m_Capacity)
 	{
-		AllocIterable(char, m_Buffer, m_Length + 1);
-		CopyIterable(m_Buffer, 0, m_Length, string.m_Buffer);
-		m_Buffer[m_Length] = '\0';
+		AllocIterable(T, m_Buffer, m_Length + 1);
+		CopyIterable(m_Buffer, 0, m_Length, arr.m_Buffer);
 	}
 
 	// MOVE
-	CONSTEXPR20 Array(Array<T>&& string) noexcept : m_Length(string.m_Length), m_Capacity(string.m_Capacity), m_Buffer(string.m_Buffer)
+	CONSTEXPR20 Array(Array<T>&& arr) noexcept : m_Length(arr.m_Length), m_Capacity(arr.m_Capacity), m_Buffer(arr.m_Buffer)
 	{
-		string.m_Capacity = DEFAULT_CAPACITY;
-		AllocIterableInit(char, string.m_Buffer, DEFAULT_CAPACITY);
-		string.m_Length = 0;
+		arr.ReAlloc();
 	}
 
 	/*
@@ -79,261 +92,97 @@ public:
 	*/
 
 	// .Append()
-	CONSTEXPR20 void Append(const char character)
+	CONSTEXPR20 void Append(const T& item)
 	{
 		if (IsFilled())
 		{
 			m_Capacity *= 2;
-			ReAllocIterable(char, m_Buffer, m_Length, m_Capacity);
+			ReAllocIterable(T, m_Buffer, m_Length, m_Capacity);
 		}
 
-		m_Buffer[m_Length] = character;
-		m_Buffer[++m_Length] = '\0';
+		m_Buffer[m_Length] = item;
+		++m_Length;
 	}
 
-	template<typename T>
-	CONSTEXPR20 void Append(const T& string)
+	CONSTEXPR20 void Append(const Array<T>& arr)
 	{
-		static_assert(
-			IsAnyOf<T, char*, const char*, std::string, CTL::Dynamic::Array<T>>::value || (std::is_same_v<std::remove_all_extents_t<T>, char> && std::is_array_v<T>),
-			"Append only accepts (char*, const char*, char[], std::string, and CTL::Dynamic::Array<T>)!"
-			);
+		size_t newLen{ m_Length + arr.m_Length };
 
-		size_t strLength{ GetStrLen(string) };
-		size_t newLen{ m_Length + strLength };
-		size_t combinedStrCapacity{ newLen + 1 };
-
-		if (m_Capacity < combinedStrCapacity)
+		if (m_Capacity < newLen)
 		{
-			m_Capacity = combinedStrCapacity * 2;
-			ReAllocIterable(char, m_Buffer, m_Length, m_Capacity);
+			m_Capacity = newLen * 2;
+			ReAllocIterable(T, m_Buffer, m_Length, m_Capacity);
 		}
 
-		char* tempBuffer{ m_Buffer + m_Length };
-		CopyIterable(tempBuffer, 0, strLength, string);
-		tempBuffer[strLength] = '\0';
+		T* tempBuffer{ m_Buffer + m_Length };
+		CopyIterable(tempBuffer, 0, arr.m_Length, arr);
 		m_Length = newLen;
 	}
 
 	// .AppendAll()
-	template<typename... Strings>
-	CONSTEXPR20 void AppendAll(const Strings&... VarStrings)
+	template<typename... Items>
+	CONSTEXPR20 void AppendAll(const Items&... VarItems)
 	{
 		static_assert(
-			((IsAnyOf<Strings, char*, const char*, std::string, CTL::Dynamic::Array<T>>::value || (std::is_same_v<std::remove_all_extents_t<Strings>, char> && std::is_array_v<Strings>))&&...),
-			"AppendAll only accepts (char*, const char*, std::string, and CTL::Dynamic::Array<T>)!"
-			);
-		Reserve(((GetStrLen(VarStrings) + ...) + m_Length + 1) * 2);
-		(Append(VarStrings), ...);
-	}
+			((std::is_same_v<Items, T>)&&...),
+			"Condition is not satisfied ! Got unexpected Data type...");
 
-	// .Capitalize()
-	CONSTEXPR20 Array<T>& Capitalize()
-	{
-		if (m_Length == 0)
-			return *this;
+		size_t itemsLen{};
 
-		int characterAsInt{ *m_Buffer };
-
-		if (IsLowerChar(characterAsInt))
-			*m_Buffer -= 32;
-
-		return *this;
+		Reserve((((VarItems, ++itemsLen), ...) + m_Length) * 2);
+		((m_Buffer[m_Length] = VarItems, ++m_Length), ...);
 	}
 
 	// .Count()
-	CONSTEXPR20 unsigned int Count(const char character) const
+	CONSTEXPR20 unsigned int Count(const T& item) const
 	{
 		unsigned int count{};
 
 		for (size_t i{}; i < m_Length; ++i)
-			if (m_Buffer[i] == character)
+			if (m_Buffer[i] == item)
 				++count;
 
 		return count;
-	}
-
-	CONSTEXPR20 unsigned int Count(const char* string) const
-	{
-		size_t strLength{ GetStrLen(string) };
-
-		if (m_Length < strLength)
-			return 0;
-
-		unsigned int count{};
-		for (size_t i{}; i < m_Length; ++i)
-		{
-			size_t i_cpy{ i }, j{};
-
-			while (j < strLength && m_Buffer[i_cpy] == string[j])
-				++i_cpy, ++j;
-
-			if (j == strLength)
-				++count;
-		}
-
-		return count;
-	}
-
-	CONSTEXPR20 unsigned int Count(const std::string& string) const
-	{
-		return Count(string.data());
-	}
-
-	CONSTEXPR20 unsigned int Count(const Array<T>& string) const
-	{
-		return Count(string.m_Buffer);
 	}
 
 	// .EndsWith
-	CONSTEXPR20 const bool EndsWith(const char character) const
+	CONSTEXPR20 const bool EndsWith(const T item) const
 	{
-		return m_Buffer[m_Length - 1] == character;
-	}
-
-	CONSTEXPR20 const bool EndsWith(const char* string) const
-	{
-		size_t strLength{ GetStrLen(string) };
-
-		if (strLength > m_Length)
-			return false;
-
-		for (size_t i{ m_Length - strLength }, j{}; j < strLength; ++i, ++j)
-			if (m_Buffer[i] != string[j])
-				return false;
-
-		return true;
-	}
-
-	CONSTEXPR20 const bool EndsWith(const std::string& string) const
-	{
-		return EndsWith(string.data());
-	}
-
-	CONSTEXPR20 const bool EndsWith(const Array<T>& string) const
-	{
-		return EndsWith(string.m_Buffer);
+		return m_Buffer[m_Length - 1] == item;
 	}
 
 	// .Find()
 
 	// non-const
-	CONSTEXPR20 char* Find(const char character, unsigned int occurrenceNumber = 1u)
+	CONSTEXPR20 T* Find(const T& item, unsigned int occurrenceNumber = 1u)
 	{
-		return m_Buffer + Index(character, occurrenceNumber);
-	}
-
-	CONSTEXPR20 char* Find(const char* string, unsigned int occurrenceNumber = 1u)
-	{
-		return m_Buffer + Index(string, occurrenceNumber);
-	}
-
-	CONSTEXPR20 char* Find(const std::string& string, unsigned int occurrenceNumber = 1u)
-	{
-		return m_Buffer + Index(string.data(), occurrenceNumber);
-	}
-
-	CONSTEXPR20 char* Find(const Array<T>& string, unsigned int occurrenceNumber = 1u)
-	{
-		return m_Buffer + Index(string.m_Buffer, occurrenceNumber);
+		return m_Buffer + Index(item, occurrenceNumber);
 	}
 
 	// const
-	CONSTEXPR20 const char* Find(const char character, unsigned int occurrenceNumber = 1u) const
+	CONSTEXPR20 const T* Find(const T item, unsigned int occurrenceNumber = 1u) const
 	{
-		return m_Buffer + Index(character, occurrenceNumber);
-	}
-
-	CONSTEXPR20 const char* Find(const char* string, unsigned int occurrenceNumber = 1u) const
-	{
-		return m_Buffer + Index(string, occurrenceNumber);
-	}
-
-	CONSTEXPR20 const char* Find(const std::string& string, unsigned int occurrenceNumber = 1u) const
-	{
-		return m_Buffer + Index(string.data(), occurrenceNumber);
-	}
-
-	CONSTEXPR20 const char* Find(const Array<T>& string, unsigned int occurrenceNumber = 1u) const
-	{
-		return m_Buffer + Index(string.Data(), occurrenceNumber);
-	}
-
-	// .Format()
-	template<typename... TArgs>
-	CONSTEXPR20 Array<T> Format(TArgs... args)
-	{
-		Array<T> resultStr;
-		size_t nextStartingPoint{}, bracketCount{ 1 };
-
-		(formatter(resultStr, args, bracketCount, nextStartingPoint), ...);
-		resultStr.Append(m_Buffer + nextStartingPoint);
-
-		return resultStr;
+		return m_Buffer + Index(item, occurrenceNumber);
 	}
 
 	// .Has()
-	CONSTEXPR20 bool Has(const char character) const
+	CONSTEXPR20 bool Has(const T& item) const
 	{
-		return Index(character) != m_Length;
-	}
-
-	CONSTEXPR20 bool Has(const char* string) const
-	{
-		return Index(string) != m_Length;
-	}
-
-	CONSTEXPR20 bool Has(const std::string& string) const
-	{
-		return Index(string.data()) != m_Length;
-	}
-
-	CONSTEXPR20 bool Has(const Array<T>& string) const
-	{
-		return Index(string.m_Buffer) != m_Length;
+		return Index(item) != m_Length;
 	}
 
 	// .Index()
-	CONSTEXPR20 size_t Index(const char character, unsigned int occurrenceNumber = 1u) const
+	CONSTEXPR20 size_t Index(const T& item, unsigned int occurrenceNumber = 1u) const
 	{
 		for (size_t i{}; i < m_Length; ++i)
-			if (m_Buffer[i] == character && --occurrenceNumber == 0u)
+			if (m_Buffer[i] == item && --occurrenceNumber == 0u)
 				return i;
 
 		return m_Length;
-	}
-
-	CONSTEXPR20 size_t Index(const char* string, unsigned int occurrenceNumber = 1u) const
-	{
-		size_t strLength{ GetStrLen(string) };
-
-		if (m_Length < strLength)
-			return m_Length;
-
-		for (size_t i{}; i < m_Length; ++i)
-		{
-			size_t j{};
-			for (size_t i_cpy{ i }; j < strLength && m_Buffer[i_cpy] == string[j]; ++j, ++i_cpy);
-
-			if (j == strLength && --occurrenceNumber == 0u)
-				return i;
-		}
-
-		return m_Length;
-	}
-
-	CONSTEXPR20 size_t Index(const std::string& string, unsigned int occurrenceNumber = 1u) const
-	{
-		return Index(string.data(), occurrenceNumber);
-	}
-
-	CONSTEXPR20 size_t Index(const Array<T>& string, unsigned int occurrenceNumber = 1u) const
-	{
-		return Index(string.m_Buffer, occurrenceNumber);
 	}
 
 	// .Insert()
-	CONSTEXPR20 void Insert(const char character, const size_t index)
+	CONSTEXPR20 void Insert(const T& item, const size_t index)
 	{
 		if (index > m_Length)
 		{
@@ -341,186 +190,50 @@ public:
 			return;
 		}
 
-		++m_Length;
-		Reserve(m_Length);
+		if (IsFilled())
+		{
+			m_Capacity *= 2;
+			ReAllocIterable(T, m_Buffer, m_Length, m_Capacity);
+		}
+
 		ShiftToRight(m_Buffer, index, m_Length, 1);
-		m_Buffer[index] = character;
+		m_Buffer[index] = item;
+		++m_Length;
 	}
 
-	CONSTEXPR20 void Insert(const char* string, const size_t index)
+	CONSTEXPR20 void Insert(const Array<T>& arr, const size_t index)
 	{
+		if (arr.m_Length == 0)
+			return;
+
 		if (index > m_Length)
 		{
 			throw std::logic_error("index is out of bounds!");
 			return;
 		}
 
-		size_t stringLen{ GetStrLen(string) };
-		size_t bufferCount{ m_Length + 1 };
-		Reserve(stringLen + m_Length);
+		if (IsFilled())
+		{
+			m_Capacity = (m_Capacity + arr.m_Length) * 2;
+			ReAllocIterable(T, m_Buffer, m_Length, m_Capacity);
+		}
 
-		char* tempBuffer{ m_Buffer + index };
+		T* tempBuffer{ m_Buffer + index };
 
-		ShiftToRight(m_Buffer, index, bufferCount, stringLen);
-		CopyIterable(tempBuffer, 0, stringLen, string);
-		m_Length += stringLen;
-	}
-
-	CONSTEXPR20 void Insert(const std::string& string, const size_t index)
-	{
-		Insert(string.data(), index);
-	}
-
-	CONSTEXPR20 void Insert(const Array<T>& string, const size_t index)
-	{
-		Insert(string.m_Buffer, index);
-	}
-
-	// .InPlaceReplace()
-	CONSTEXPR20 void InPlaceReplace(char charA, char charB)
-	{
-		char* charPos{ Find(charA) };
-
-		if (*charPos != '\0')
-			charPos[0] = charB;
-	}
-
-	template<typename T, typename H>
-	CONSTEXPR20 void InPlaceReplace(const T& toFindStr, const H& toReplStr)
-	{
-		static_assert(
-			(std::is_array_v<T> || IsAnyOf<T, char*, const char*, std::string, Array<T>>::value) &&
-			(std::is_array_v<H> || IsAnyOf<H, char*, const char*, std::string, Array<T>>::value),
-			"This method only accepts any of (const char*, std::string, or CTL::Dynamic::Array<T>) types."
-			);
-
-		// code yet to be written.
+		ShiftToRight(m_Buffer, index, m_Length, arr.m_Length);
+		CopyIterable(tempBuffer, 0, arr.m_Length, arr.m_Buffer);
+		m_Length += arr.m_Length;
 	}
 
 	// .IsSomething()
 	CONSTEXPR20 bool IsFilled() const
 	{
-		return (m_Length + 1) == m_Capacity;
+		return m_Length == m_Capacity;
 	}
 
 	CONSTEXPR20 bool IsEmpty() const
 	{
 		return m_Length == 0;
-	}
-
-	CONSTEXPR20 bool IsAlnum() const
-	{
-		if (m_Length == 0)
-			return false;
-
-		for (size_t i{}; i < m_Length; ++i)
-		{
-			int characterAsInt{ m_Buffer[i] };
-
-			if (!(IsNum(characterAsInt) || IsChar(characterAsInt)))
-				return false;
-		}
-
-		return true;
-	}
-
-	CONSTEXPR20 bool IsAlpha() const
-	{
-		if (m_Length == 0)
-			return false;
-
-		for (size_t i{}; i < m_Length; ++i)
-		{
-			int characterAsInt{ m_Buffer[i] };
-
-			if (!IsChar(characterAsInt))
-				return false;
-		}
-
-		return true;
-	}
-
-	CONSTEXPR20 bool IsDigit() const
-	{
-		if (m_Length == 0)
-			return false;
-
-		for (size_t i{}; i < m_Length; ++i)
-		{
-			int characterAsInt{ m_Buffer[i] };
-
-			if (!IsNum(characterAsInt))
-				return false;
-		}
-
-		return true;
-	}
-
-	CONSTEXPR20 bool IsLower() const
-	{
-		if (m_Length == 0)
-			return false;
-
-		for (size_t i{}; i < m_Length; ++i)
-		{
-			int characterAsInt{ m_Buffer[i] };
-
-			if (!IsLowerChar(characterAsInt))
-				return false;
-		}
-
-		return true;
-	}
-
-	CONSTEXPR20 bool IsUpper() const
-	{
-		if (m_Length == 0)
-			return false;
-
-		for (size_t i{}; i < m_Length; ++i)
-		{
-			int characterAsInt{ m_Buffer[i] };
-
-			if (!IsUpperChar(characterAsInt))
-				return false;
-		}
-
-		return true;
-	}
-
-	CONSTEXPR20 bool IsTitle(bool ignoreNumbers = true) const
-	{
-		if (m_Length == 0)
-			return false;
-
-		if (ignoreNumbers)
-		{
-			for (size_t i{}, lastSpaceOccurrence{}; i < m_Length; ++lastSpaceOccurrence, i = Index(' ', lastSpaceOccurrence) + 1)
-			{
-				int characterAsInt{ m_Buffer[i] };
-
-				if (!(IsUpperChar(characterAsInt) || IsNum(characterAsInt)))
-					return false;
-			}
-
-			return true;
-		}
-
-		for (size_t i{}, lastSpaceOccurrence{}; i < m_Length; ++lastSpaceOccurrence, i = Index(' ', lastSpaceOccurrence) + 1)
-		{
-			int characterAsInt{ m_Buffer[i] };
-
-			if (!IsUpperChar(characterAsInt))
-				return false;
-		}
-
-		return true;
-	}
-
-	// .Lower()
-	CONSTEXPR20 Array<T> Lower() const
-	{
-		return Array<T>{ *this }.ToLower();
 	}
 
 	// .Reserve()
@@ -529,11 +242,11 @@ public:
 		if (count <= m_Capacity)
 			return false;
 
-		char* oldBuffer{ m_Buffer };
+		T* oldBuffer{ m_Buffer };
 
 		try
 		{
-			AllocIterable(char, m_Buffer, count);
+			AllocIterable(T, m_Buffer, count);
 		}
 		catch (const std::bad_alloc&)
 		{
@@ -541,7 +254,7 @@ public:
 			return false;
 		}
 
-		CopyIterableInit(char, m_Buffer, 0, m_Length, count, oldBuffer);
+		CopyIterableInit(T, m_Buffer, 0, m_Length, count, oldBuffer);
 		m_Capacity = count;
 
 		DeAlloc(oldBuffer);
@@ -553,7 +266,7 @@ public:
 	{
 		m_Length = 0;
 		m_Capacity = DEFAULT_CAPACITY;
-		AllocIterableInit(char, m_Buffer, DEFAULT_CAPACITY);
+		AllocIterableInit(T, m_Buffer, DEFAULT_CAPACITY);
 	}
 
 	CONSTEXPR20 void Reset() noexcept
@@ -561,46 +274,33 @@ public:
 		DeAlloc(m_Buffer);
 		m_Length = 0;
 		m_Capacity = DEFAULT_CAPACITY;
-		AllocIterableInit(char, m_Buffer, DEFAULT_CAPACITY);
+		AllocIterableInit(T, m_Buffer, DEFAULT_CAPACITY);
 	}
 
 	// .Replace()
-	template<typename T, typename H>
-	CONSTEXPR20 Array<T> Replace(const T& toFindStr, const H& toReplStr)
+	CONSTEXPR20 Array<T>& Replace(const T& toFindItem, const T& toReplItem)
 	{
-		static_assert(
-			(std::is_array_v<T> || IsAnyOf<T, char*, const char*, std::string, Array<T>>::value) &&
-			(std::is_array_v<H> || IsAnyOf<H, char*, const char*, std::string, Array<T>>::value),
-			"This method only accepts any of (const char*, std::string, or CTL::Dynamic::Array<T>) types."
-			);
+		for (size_t i{}; i < m_Length; ++i)
+			if (m_Buffer[i] == toFindItem)
+				m_Buffer[i] = toReplItem;
+	}
 
-		int toFindStrLen(GetStrLen(toFindStr));
-		int toReplStrLen(GetStrLen(toReplStr));
+	CONSTEXPR20 Array<T>& Replace(const T& toFindItem, const T& toReplItem, unsigned int numberOfReplaces)
+	{
+		if (numberOfReplaces == 0)
+			return;
 
-		Array<T> resultStr{ m_Length + Count(toFindStr) * (toReplStrLen - toFindStrLen) };
-		char* tempResultBuffer{ resultStr.m_Buffer };
-
-		size_t end{ Index(toFindStr) };
-		char* tempBuffer{ m_Buffer };
-
-		for (size_t src{ end }, oldSrc{}, occurence{ 1 }; src != m_Length; ++occurence, oldSrc = src + toFindStrLen, src = Index(toFindStr, occurence), end = src - oldSrc, tempBuffer = m_Buffer + oldSrc)
-		{
-			CopyIterable(tempResultBuffer, 0, end, tempBuffer);
-
-			tempResultBuffer += end;
-
-			CopyIterable(tempResultBuffer, 0, toReplStrLen, toReplStr);
-
-			tempResultBuffer += toReplStrLen;
-		}
-
-		CopyIterable(tempResultBuffer, 0, end, tempBuffer);
-
-		return resultStr;
+		for (size_t i{}; i < m_Length; ++i)
+			if (m_Buffer[i] == toFindItem)
+			{
+				m_Buffer[i] = toReplItem;
+				if (--numberOfReplaces == 0)
+					return;
+			}
 	}
 
 	// .ReverseIndex()
-	CONSTEXPR20 size_t ReverseIndex(const char character, unsigned int occurrenceNumber = 1u) const
+	CONSTEXPR20 size_t ReverseIndex(const T character, unsigned int occurrenceNumber = 1u) const
 	{
 		size_t i{ m_Length };
 		while (i > 0)
@@ -619,11 +319,11 @@ public:
 		if (count > m_Length)
 			return false;
 
-		char* data{ m_Buffer };
+		T* data{ m_Buffer };
 
 		try
 		{
-			AllocIterable(char, m_Buffer, count);
+			AllocIterable(T, m_Buffer, count);
 		}
 		catch (std::bad_alloc)
 		{
@@ -635,7 +335,6 @@ public:
 		m_Capacity = count;
 
 		CopyIterable(m_Buffer, 0, m_Length, data);
-		m_Buffer[m_Length] = '\0';
 
 		DeAlloc(data);
 		return true;
@@ -647,11 +346,11 @@ public:
 		if (IsFilled())
 			return true;
 
-		char* data{ m_Buffer };
+		T* data{ m_Buffer };
 
 		try
 		{
-			AllocIterable(char, m_Buffer, m_Length + 1);
+			AllocIterable(T, m_Buffer, m_Length);
 		}
 		catch (std::bad_alloc)
 		{
@@ -660,41 +359,16 @@ public:
 		}
 
 		CopyIterable(m_Buffer, 0, m_Length, data);
-		m_Buffer[m_Length] = '\0';
-		m_Capacity = m_Length + 1;
+		m_Capacity = m_Length;
 
 		DeAlloc(data);
 		return true;
 	}
 
 	// .StartsWith()
-	CONSTEXPR20 const bool StartsWith(const char character) const
+	CONSTEXPR20 const bool StartsWith(const T character) const
 	{
 		return *m_Buffer == character;
-	}
-
-	CONSTEXPR20 const bool StartsWith(const char* string) const
-	{
-		size_t strLength{ GetStrLen(string) };
-
-		if (strLength > m_Length)
-			return false;
-
-		for (size_t i{}; i < strLength; ++i)
-			if (m_Buffer[i] != string[i])
-				return false;
-
-		return true;
-	}
-
-	CONSTEXPR20 const bool StartsWith(const std::string& string) const
-	{
-		return StartsWith(string.data());
-	}
-
-	CONSTEXPR20 const bool StartsWith(const Array<T>& string) const
-	{
-		return StartsWith(string.m_Buffer);
 	}
 
 	// .SubStr()
@@ -748,72 +422,6 @@ public:
 		*this = std::move(temp);
 	}
 
-	// .Title()
-	CONSTEXPR20 Array<T>& Title()
-	{
-		if (m_Length == 0)
-			return *this;
-
-		int characterAsInt{ *m_Buffer };
-
-		size_t i{};
-		if (IsLowerChar(characterAsInt))
-		{
-			*m_Buffer -= 32;
-			++i;
-		}
-
-		for (; i < m_Length; ++i)
-		{
-			characterAsInt = m_Buffer[i];
-
-			// If Is White Space Character (space, \n, tab)
-			if (characterAsInt == 32 || characterAsInt == 10 || characterAsInt == 9)
-			{
-				characterAsInt = m_Buffer[i + 1u];
-
-				if (IsLowerChar(characterAsInt))
-					m_Buffer[++i] -= 32;
-			}
-		}
-
-		return *this;
-	}
-
-	// .ToLower()
-	CONSTEXPR20 Array<T>& ToLower()
-	{
-		for (size_t i{}; i < m_Length; ++i)
-		{
-			int characterAsInt{ m_Buffer[i] };
-
-			if (IsUpperChar(characterAsInt))
-				m_Buffer[i] += 32;
-		}
-
-		return *this;
-	}
-
-	// .ToUpper()
-	CONSTEXPR20 Array<T>& ToUpper()
-	{
-		for (size_t i{}; i < m_Length; ++i)
-		{
-			int characterAsInt{ m_Buffer[i] };
-
-			if (IsLowerChar(characterAsInt))
-				m_Buffer[i] -= 32;
-		}
-
-		return *this;
-	}
-
-	// .Upper()
-	CONSTEXPR20 Array<T> Upper() const
-	{
-		return Array<T>{ *this }.ToUpper();
-	}
-
 	/*
 	*
 	*	GETTERS AND SETTERS
@@ -821,7 +429,7 @@ public:
 	*/
 
 	// .At()
-	CONSTEXPR20 char& At(size_t index)
+	CONSTEXPR20 T& At(size_t index)
 	{
 		if (m_Length > index)
 			return m_Buffer[index];
@@ -829,7 +437,7 @@ public:
 		throw std::out_of_range("Index out of bounds!");
 	}
 
-	CONSTEXPR20 const char At(size_t index) const
+	CONSTEXPR20 const T& At(size_t index) const
 	{
 		if (m_Length > index)
 			return m_Buffer[index];
@@ -840,13 +448,13 @@ public:
 	// .begin()
 
 	// non-const
-	CONSTEXPR20 char* begin()
+	CONSTEXPR20 T* begin()
 	{
 		return m_Buffer;
 	}
 
 	// const
-	CONSTEXPR20 const char* begin() const
+	CONSTEXPR20 const T* begin() const
 	{
 		return m_Buffer;
 	}
@@ -854,13 +462,13 @@ public:
 	// .Data()
 
 	// non-const
-	CONSTEXPR20 char* Data()
+	CONSTEXPR20 T* Data()
 	{
 		return m_Buffer;
 	}
 
 	// const
-	CONSTEXPR20 const char* Data() const
+	CONSTEXPR20 const T* Data() const
 	{
 		return m_Buffer;
 	}
@@ -868,13 +476,13 @@ public:
 	// .end()
 
 	// non-const
-	CONSTEXPR20 char* end()
+	CONSTEXPR20 T* end()
 	{
 		return m_Buffer + m_Length;
 	}
 
 	// const
-	CONSTEXPR20 const char* end() const
+	CONSTEXPR20 const T* end() const
 	{
 		return m_Buffer + m_Length;
 	}
@@ -909,27 +517,26 @@ public:
 	}
 
 	// operator=()
-	CONSTEXPR20 Array<T>& operator=(const char* string)
+	CONSTEXPR20 Array<T>& operator=(const T* arr)
 	{
-		m_Length = GetStrLen(string);
-		m_Capacity = m_Length + 1;
+		m_Length = GetStrLen(arr);
+		m_Capacity = m_Length;
 
 		DeAlloc(m_Buffer);
-		AllocIterable(char, m_Buffer, m_Length + 1);
-		CopyIterable(m_Buffer, 0, m_Length, string);
-		m_Buffer[m_Length] = '\0';
+		AllocIterable(T, m_Buffer, m_Length);
+		CopyIterable(m_Buffer, 0, m_Length, arr);
 
 		return *this;
 	}
 
-	CONSTEXPR20 Array<T>& operator=(const std::string& string)
+	CONSTEXPR20 Array<T>& operator=(const std::string& arr)
 	{
-		return *this = string.data(); // i.e. this->operator=(string.data());
+		return *this = arr.data(); // i.e. this->operator=(arr.data());
 	}
 
-	CONSTEXPR20 Array<T>& operator=(const Array<T>& string)
+	CONSTEXPR20 Array<T>& operator=(const Array<T>& arr)
 	{
-		return *this = string.m_Buffer; // i.e. this->operator=(string.m_Buffer);
+		return *this = arr.m_Buffer; // i.e. this->operator=(arr.m_Buffer);
 	}
 
 	CONSTEXPR20 Array<T>& operator=(Array<T>&& other) noexcept
@@ -947,14 +554,14 @@ public:
 	{
 		if (multiplier == 0)
 		{
-			FillIterable(m_Buffer, 0, m_Length, '\0');
+			FillIterable(m_Buffer, 0, m_Length, T{});
 			m_Length = 0;
 			return;
 		}
 
-		Reserve(m_Length * multiplier + 1);
+		Reserve(m_Length * multiplier);
 
-		char* tempBuffer{ m_Buffer + m_Length };
+		T* tempBuffer{ m_Buffer + m_Length };
 		for (size_t i{ 1 }; i < multiplier; ++i)
 		{
 			CopyIterable(tempBuffer, 0, m_Length, m_Buffer);
@@ -962,39 +569,38 @@ public:
 		}
 
 		m_Length *= multiplier;
-		m_Buffer[m_Length] = '\0';
 	}
 
 	// operator+()
-	NODISCARD17 CONSTEXPR20 Array<T> operator+(const char character) const
+	NODISCARD17 CONSTEXPR20 Array<T> operator+(const T item) const
 	{
-		Array<T> newStr{ m_Buffer, m_Length + 2 };
-		newStr.m_Buffer[m_Length] = character;
-		newStr.m_Buffer[++newStr.m_Length] = '\0';
+		Array<T> newStr{ m_Buffer, m_Length + 1 };
+		newStr.m_Buffer[m_Length] = item;
+		++newStr.m_Length;
 
 		return newStr;
 	}
 
-	NODISCARD17 CONSTEXPR20 Array<T> operator+(const char* string) const
+	NODISCARD17 CONSTEXPR20 Array<T> operator+(const T* arr) const
 	{
-		size_t strCount{ GetStrLen(string) + 1 };
+		size_t strCount{ GetStrLen(arr) + 1 };
 		Array<T> newStr{ m_Buffer, m_Length + strCount };
 
-		char* tempNewStrBuffer{ newStr.m_Buffer + m_Length };
-		CopyIterable(tempNewStrBuffer, 0, strCount, string);
+		T* tempNewStrBuffer{ newStr.m_Buffer + m_Length };
+		CopyIterable(tempNewStrBuffer, 0, strCount, arr);
 
 		newStr.m_Length += strCount - 1;
 		return newStr;
 	}
 
-	NODISCARD17 CONSTEXPR20 Array<T> operator+(const std::string& string) const
+	NODISCARD17 CONSTEXPR20 Array<T> operator+(const std::string& arr) const
 	{
-		return (*this + string.data()); // i.e. this->operator+(string.data());
+		return (*this + arr.data()); // i.e. this->operator+(arr.data());
 	}
 
-	NODISCARD17 CONSTEXPR20 Array<T> operator+(const Array<T>& string) const
+	NODISCARD17 CONSTEXPR20 Array<T> operator+(const Array<T>& arr) const
 	{
-		return (*this + string.m_Buffer); // i.e. this->operator+(string.m_Buffer);
+		return (*this + arr.m_Buffer); // i.e. this->operator+(arr.m_Buffer);
 	}
 
 	// operator*()
@@ -1005,7 +611,7 @@ public:
 
 		size_t requiredLen{ multiplier * m_Length };
 		Array<T> newStr{ requiredLen };
-		char* tempNewStrBuffer{ newStr.m_Buffer };
+		T* tempNewStrBuffer{ newStr.m_Buffer };
 
 		while (multiplier > 0)
 		{
@@ -1019,127 +625,127 @@ public:
 	}
 
 	// operator==()
-	CONSTEXPR20 bool operator==(const char* string) const
+	CONSTEXPR20 bool operator==(const T* arr) const
 	{
-		if (m_Length != GetStrLen(string)) return false;
+		if (m_Length != GetStrLen(arr)) return false;
 
 		for (size_t i{}; i < m_Length; ++i)
-			if (m_Buffer[i] != string[i])
+			if (m_Buffer[i] != arr[i])
 				return false;
 
 		return true;
 	}
 
-	CONSTEXPR20 bool operator==(const std::string& string) const
+	CONSTEXPR20 bool operator==(const std::string& arr) const
 	{
-		return *this == string.data(); // i.e. this->operator==(string.data());
+		return *this == arr.data(); // i.e. this->operator==(arr.data());
 	}
 
-	CONSTEXPR20 bool operator==(const Array<T>& string) const
+	CONSTEXPR20 bool operator==(const Array<T>& arr) const
 	{
-		return *this == string.m_Buffer; // i.e. this->operator==(string.m_Buffer)
+		return *this == arr.m_Buffer; // i.e. this->operator==(arr.m_Buffer)
 	}
 
 	// operator!=()
-	CONSTEXPR20 bool operator!=(const char* string) const
+	CONSTEXPR20 bool operator!=(const T* arr) const
 	{
-		if (m_Length != GetStrLen(string)) return true;
+		if (m_Length != GetStrLen(arr)) return true;
 
 		for (size_t i{}; i < m_Length; ++i)
-			if (m_Buffer[i] != string[i])
+			if (m_Buffer[i] != arr[i])
 				return true;
 
 		return false;
 	}
 
-	CONSTEXPR20 bool operator!=(const std::string& string) const
+	CONSTEXPR20 bool operator!=(const std::string& arr) const
 	{
-		return *this != string.data(); // i.e. this->operator!=(string.data())
+		return *this != arr.data(); // i.e. this->operator!=(arr.data())
 	}
 
-	CONSTEXPR20 bool operator!=(const Array<T>& string) const
+	CONSTEXPR20 bool operator!=(const Array<T>& arr) const
 	{
-		return *this != string.m_Buffer; // i.e. this->operator!=(string.m_Buffer)
+		return *this != arr.m_Buffer; // i.e. this->operator!=(arr.m_Buffer)
 	}
 
 	// operator>()
-	CONSTEXPR20 bool operator>(const char* string) const
+	CONSTEXPR20 bool operator>(const T* arr) const
 	{
 		for (size_t i{}; i < m_Length; ++i)
-			if (string[i] <= m_Buffer[i]) // i.e. m_Buffer[i] >= string[i]
+			if (arr[i] <= m_Buffer[i]) // i.e. m_Buffer[i] >= arr[i]
 				return true;
 
 		return false;
 	}
 
-	CONSTEXPR20 bool operator>(const std::string& string) const
+	CONSTEXPR20 bool operator>(const std::string& arr) const
 	{
-		return *this > string.data(); // i.e. this->operator>(string.data())
+		return *this > arr.data(); // i.e. this->operator>(arr.data())
 	}
 
-	CONSTEXPR20 bool operator>(const Array<T>& string) const
+	CONSTEXPR20 bool operator>(const Array<T>& arr) const
 	{
-		return *this > string.m_Buffer; // i.e. this->operator>(string.m_Buffer)
+		return *this > arr.m_Buffer; // i.e. this->operator>(arr.m_Buffer)
 	}
 
 	// operator<()
-	CONSTEXPR20 bool operator<(const char* string) const
+	CONSTEXPR20 bool operator<(const T* arr) const
 	{
 		for (size_t i{}; i < m_Length; ++i)
-			if (string[i] >= m_Buffer[i]) // i.e. m_Buffer[i] <= string[i]
+			if (arr[i] >= m_Buffer[i]) // i.e. m_Buffer[i] <= arr[i]
 				return true;
 
 		return false;
 	}
 
-	CONSTEXPR20 bool operator<(const std::string& string) const
+	CONSTEXPR20 bool operator<(const std::string& arr) const
 	{
-		return *this < string.data(); // i.e. this->operator<(string.data())
+		return *this < arr.data(); // i.e. this->operator<(arr.data())
 	}
 
-	CONSTEXPR20 bool operator<(const Array<T>& string) const
+	CONSTEXPR20 bool operator<(const Array<T>& arr) const
 	{
-		return *this < string.m_Buffer; // i.e. this->operator<(string.m_Buffer)
+		return *this < arr.m_Buffer; // i.e. this->operator<(arr.m_Buffer)
 	}
 
 	// operator>=()
-	CONSTEXPR20 bool operator>=(const char* string) const
+	CONSTEXPR20 bool operator>=(const T* arr) const
 	{
 		for (size_t i{}; i < m_Length; ++i)
-			if (m_Buffer[i] >= string[i])
+			if (m_Buffer[i] >= arr[i])
 				return true;
 
 		return false;
 	}
 
-	CONSTEXPR20 bool operator>=(const std::string& string) const
+	CONSTEXPR20 bool operator>=(const std::string& arr) const
 	{
-		return *this >= string.data(); // i.e. this->operator>=(string.data())
+		return *this >= arr.data(); // i.e. this->operator>=(arr.data())
 	}
 
-	CONSTEXPR20 bool operator>=(const Array<T>& string) const
+	CONSTEXPR20 bool operator>=(const Array<T>& arr) const
 	{
-		return *this >= string.m_Buffer; // i.e. this->operator>=(string.m_Buffer)
+		return *this >= arr.m_Buffer; // i.e. this->operator>=(arr.m_Buffer)
 	}
 
 	// operator<=()
-	CONSTEXPR20 bool operator<=(const char* string) const
+	CONSTEXPR20 bool operator<=(const T* arr) const
 	{
 		for (size_t i{}; i < m_Length; ++i)
-			if (m_Buffer[i] <= string[i])
+			if (m_Buffer[i] <= arr[i])
 				return false;
 
 		return true;
 	}
 
-	CONSTEXPR20 bool operator<=(const std::string& string) const
+	CONSTEXPR20 bool operator<=(const std::string& arr) const
 	{
-		return *this <= string.data(); // i.e. this->operator<=(string.data())
+		return *this <= arr.data(); // i.e. this->operator<=(arr.data())
 	}
 
-	CONSTEXPR20 bool operator<=(const Array<T>& string) const
+	CONSTEXPR20 bool operator<=(const Array<T>& arr) const
 	{
-		return *this <= string.m_Buffer; // i.e. this->operator<=(string.m_Buffer)
+		return *this <= arr.m_Buffer; // i.e. this->operator<=(arr.m_Buffer)
 	}
 
 	// operator std::string()
@@ -1152,6 +758,13 @@ public:
 	CONSTEXPR20 ~Array()
 	{
 		DeAlloc(m_Buffer);
+	}
+
+public:
+	constexpr static void SetDefaultCapacity(const size_t value)
+	{
+		if (value > 0)
+			DEFAULT_CAPACITY = value;
 	}
 
 private:
@@ -1182,7 +795,7 @@ private:
 	size_t m_Capacity;
 	T* m_Buffer;
 
-	constexpr static size_t DEFAULT_CAPACITY{ 15 };
+	inline static size_t DEFAULT_CAPACITY{ 15 };
 };
 
 // operator<<()

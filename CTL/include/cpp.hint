@@ -2,3 +2,4 @@
 #define _DYNAMICBEGIN namespace Dynamic{
 #define _DYNAMICEND }
 #define _CTLEND }
+#define CONSTEXPR20
