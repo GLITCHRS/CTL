@@ -145,12 +145,6 @@ public:
 		return count;
 	}
 
-	// .EndsWith
-	CONSTEXPR20 const bool EndsWith(const T item) const
-	{
-		return m_Buffer[m_Length - 1] == item;
-	}
-
 	// .Find()
 
 	// non-const
@@ -300,13 +294,13 @@ public:
 	}
 
 	// .ReverseIndex()
-	CONSTEXPR20 size_t ReverseIndex(const T character, unsigned int occurrenceNumber = 1u) const
+	CONSTEXPR20 size_t ReverseIndex(const T& item, unsigned int occurrenceNumber = 1u) const
 	{
 		size_t i{ m_Length };
 		while (i > 0)
 		{
 			--i;
-			if (m_Buffer[i] == character && --occurrenceNumber == 0u)
+			if (m_Buffer[i] == item && --occurrenceNumber == 0u)
 				return i;
 		}
 
@@ -316,7 +310,10 @@ public:
 	// .Shrink()
 	CONSTEXPR20 bool Shrink(size_t count)
 	{
-		if (count > m_Length)
+		if (count == m_Capacity)
+			return true;
+
+		if (count > m_Capacity || count < m_Length)
 			return false;
 
 		T* data{ m_Buffer };
@@ -325,16 +322,14 @@ public:
 		{
 			AllocIterable(T, m_Buffer, count);
 		}
-		catch (std::bad_alloc)
+		catch (const std::bad_alloc&)
 		{
 			m_Buffer = data;
 			return false;
 		}
 
-		m_Length = count - 1;
 		m_Capacity = count;
-
-		CopyIterable(m_Buffer, 0, m_Length, data);
+		CopyIterableInit(char, m_Buffer, 0, m_Length, m_Capacity, data);
 
 		DeAlloc(data);
 		return true;
@@ -343,53 +338,34 @@ public:
 	// .ShrinkToFit()
 	CONSTEXPR20 bool ShrinkToFit()
 	{
-		if (IsFilled())
-			return true;
-
-		T* data{ m_Buffer };
-
-		try
-		{
-			AllocIterable(T, m_Buffer, m_Length);
-		}
-		catch (std::bad_alloc)
-		{
-			m_Buffer = data;
-			return false;
-		}
-
-		CopyIterable(m_Buffer, 0, m_Length, data);
-		m_Capacity = m_Length;
-
-		DeAlloc(data);
-		return true;
-	}
-
-	// .StartsWith()
-	CONSTEXPR20 const bool StartsWith(const T character) const
-	{
-		return *m_Buffer == character;
+		return Shrink(m_Length);
 	}
 
 	// .SubStr()
-	CONSTEXPR20 Array<T> SubStr(size_t startIndex, size_t endIndex) const
+	CONSTEXPR20 Array<T> Slice(size_t startIndex, size_t endIndex = 0, size_t steps = 1) const
 	{
+		endIndex = (endIndex > 0) ? endIndex : m_Length;
 		Array<T> data{ endIndex - startIndex };
 
 		size_t i{};
-		for (size_t j{ startIndex }; j < endIndex; ++j, ++i)
+		for (size_t j{ startIndex }; j < endIndex; j += steps, ++i)
 			data[i] = m_Buffer[j];
 
 		return data;
 	}
 
-	CONSTEXPR20 Array<T> SubStrS(size_t startIndex, size_t endIndex) const
+	CONSTEXPR20 Array<T> SliceS(size_t startIndex, size_t endIndex = 0, size_t steps = 1) const
 	{
+		endIndex = (endIndex > 0) ? endIndex : m_Length;
+
 		if (startIndex > m_Length)
 			throw std::logic_error("Start Index is larger than m_Length!");
 
 		if (endIndex > m_Length)
 			throw std::logic_error("End Index is larger than m_Length!");
+
+		if (steps == 0)
+			throw std::logic_error("Steps is 0! Why?!");
 
 		if (startIndex > endIndex)
 			throw std::logic_error("Start Index is larger than End Index!");
@@ -397,19 +373,19 @@ public:
 		Array<T> data{ endIndex - startIndex };
 
 		size_t i{};
-		for (size_t j{ startIndex }; j < endIndex; ++j, ++i)
+		for (size_t j{ startIndex }; j < endIndex; j += steps, ++i)
 			data[i] = m_Buffer[j];
 
 		return data;
 	}
 
 	// .SubStrC()
-	CONSTEXPR20 Array<T> SubStrC(size_t startIndex, size_t count) const
+	CONSTEXPR20 Array<T> SliceC(size_t startIndex, size_t count) const
 	{
-		return SubStr(startIndex, startIndex + count);
+		return Slice(startIndex, startIndex + count);
 	}
 
-	CONSTEXPR20 Array<T> SubStrCS(size_t startIndex, size_t count) const
+	CONSTEXPR20 Array<T> SliceCS(size_t startIndex, size_t count) const
 	{
 		return SubStrS(startIndex, startIndex + count);
 	}
@@ -778,7 +754,7 @@ private:
 			size_t closeBracket{ openBracket + 1 };
 			size_t condition{ m_Buffer[closeBracket] != '}' };
 
-			resultStr.Append(SubStr(nextStartingPoint, openBracket + condition).m_Buffer);
+			resultStr.Append(Slice(nextStartingPoint, openBracket + condition).m_Buffer);
 
 			++bracketCount;
 			nextStartingPoint = closeBracket + (condition ^ 1);
