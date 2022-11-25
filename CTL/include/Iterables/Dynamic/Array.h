@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CTL.h"
-#include <iostream>
+#include <vector>
 
 // Foward Decl
 _CTLBEGIN
@@ -380,14 +380,14 @@ public:
 	}
 
 	// .SubStrC()
-	CONSTEXPR20 Array<T> SliceC(size_t startIndex, size_t count) const
+	CONSTEXPR20 Array<T> SliceC(size_t startIndex, size_t count, size_t steps = 0) const
 	{
-		return Slice(startIndex, startIndex + count);
+		return Slice(startIndex, startIndex + count, steps);
 	}
 
-	CONSTEXPR20 Array<T> SliceCS(size_t startIndex, size_t count) const
+	CONSTEXPR20 Array<T> SliceCS(size_t startIndex, size_t count, size_t steps = 0) const
 	{
-		return SubStrS(startIndex, startIndex + count);
+		return SliceS(startIndex, startIndex + count, steps);
 	}
 
 	// .Swap()
@@ -407,7 +407,7 @@ public:
 	// .At()
 	CONSTEXPR20 T& At(size_t index)
 	{
-		if (m_Length > index)
+		if (m_Length >= index)
 			return m_Buffer[index];
 
 		throw std::out_of_range("Index out of bounds!");
@@ -415,7 +415,7 @@ public:
 
 	CONSTEXPR20 const T& At(size_t index) const
 	{
-		if (m_Length > index)
+		if (m_Length >= index)
 			return m_Buffer[index];
 
 		throw std::out_of_range("Index out of bounds!");
@@ -487,32 +487,22 @@ public:
 		return m_Buffer[index];
 	}
 
-	CONSTEXPR20 const T operator[](size_t index) const
+	CONSTEXPR20 const T& operator[](size_t index) const
 	{
 		return m_Buffer[index];
 	}
 
 	// operator=()
-	CONSTEXPR20 Array<T>& operator=(const T* arr)
+	CONSTEXPR20 Array<T>& operator=(const Array<T>& arr)
 	{
-		m_Length = GetStrLen(arr);
-		m_Capacity = m_Length;
+		m_Length = arr.m_Length;
+		m_Capacity = arr.m_Capacity;
 
 		DeAlloc(m_Buffer);
-		AllocIterable(T, m_Buffer, m_Length);
+		AllocIterable(T, m_Buffer, m_Capacity);
 		CopyIterable(m_Buffer, 0, m_Length, arr);
 
 		return *this;
-	}
-
-	CONSTEXPR20 Array<T>& operator=(const std::string& arr)
-	{
-		return *this = arr.data(); // i.e. this->operator=(arr.data());
-	}
-
-	CONSTEXPR20 Array<T>& operator=(const Array<T>& arr)
-	{
-		return *this = arr.m_Buffer; // i.e. this->operator=(arr.m_Buffer);
 	}
 
 	CONSTEXPR20 Array<T>& operator=(Array<T>&& other) noexcept
@@ -548,35 +538,25 @@ public:
 	}
 
 	// operator+()
-	NODISCARD17 CONSTEXPR20 Array<T> operator+(const T item) const
+	NODISCARD17 CONSTEXPR20 Array<T> operator+(const T& item) const
 	{
-		Array<T> newStr{ m_Buffer, m_Length + 1 };
-		newStr.m_Buffer[m_Length] = item;
-		++newStr.m_Length;
+		Array<T> newArr{ m_Buffer, m_Length + 1 };
+		newArr.m_Buffer[m_Length] = item;
+		++newArr.m_Length;
 
-		return newStr;
-	}
-
-	NODISCARD17 CONSTEXPR20 Array<T> operator+(const T* arr) const
-	{
-		size_t strCount{ GetStrLen(arr) + 1 };
-		Array<T> newStr{ m_Buffer, m_Length + strCount };
-
-		T* tempNewStrBuffer{ newStr.m_Buffer + m_Length };
-		CopyIterable(tempNewStrBuffer, 0, strCount, arr);
-
-		newStr.m_Length += strCount - 1;
-		return newStr;
-	}
-
-	NODISCARD17 CONSTEXPR20 Array<T> operator+(const std::string& arr) const
-	{
-		return (*this + arr.data()); // i.e. this->operator+(arr.data());
+		return newArr;
 	}
 
 	NODISCARD17 CONSTEXPR20 Array<T> operator+(const Array<T>& arr) const
 	{
-		return (*this + arr.m_Buffer); // i.e. this->operator+(arr.m_Buffer);
+		size_t arrLen{ arr.m_Length };
+		Array<T> newArr{ m_Buffer, m_Length + arrLen };
+
+		T* tempNewArrBuffer{ newArr.m_Buffer + m_Length };
+		CopyIterable(tempNewArrBuffer, 0, arrLen, arr);
+
+		newArr.m_Length += arrLen - 1;
+		return newStr;
 	}
 
 	// operator*()
@@ -586,24 +566,24 @@ public:
 			return {};
 
 		size_t requiredLen{ multiplier * m_Length };
-		Array<T> newStr{ requiredLen };
-		T* tempNewStrBuffer{ newStr.m_Buffer };
+		Array<T> newArr{ requiredLen };
+		T* tempNewArrBuffer{ newArr.m_Buffer };
 
 		while (multiplier > 0)
 		{
-			CopyIterable(tempNewStrBuffer, 0, m_Length, m_Buffer);
-			tempNewStrBuffer += m_Length;
+			CopyIterable(tempNewArrBuffer, 0, m_Length, m_Buffer);
+			tempNewArrBuffer += m_Length;
 			--multiplier;
 		}
 
-		newStr.m_Length = requiredLen;
-		return newStr;
+		newArr.m_Length = requiredLen;
+		return newArr;
 	}
 
 	// operator==()
-	CONSTEXPR20 bool operator==(const T* arr) const
+	CONSTEXPR20 bool operator==(const Array<T>& arr) const
 	{
-		if (m_Length != GetStrLen(arr)) return false;
+		if (m_Length != arr.m_Length) return false;
 
 		for (size_t i{}; i < m_Length; ++i)
 			if (m_Buffer[i] != arr[i])
@@ -612,20 +592,10 @@ public:
 		return true;
 	}
 
-	CONSTEXPR20 bool operator==(const std::string& arr) const
-	{
-		return *this == arr.data(); // i.e. this->operator==(arr.data());
-	}
-
-	CONSTEXPR20 bool operator==(const Array<T>& arr) const
-	{
-		return *this == arr.m_Buffer; // i.e. this->operator==(arr.m_Buffer)
-	}
-
 	// operator!=()
-	CONSTEXPR20 bool operator!=(const T* arr) const
+	CONSTEXPR20 bool operator!=(const Array<T>& arr) const
 	{
-		if (m_Length != GetStrLen(arr)) return true;
+		if (m_Length != arr.m_Length) return true;
 
 		for (size_t i{}; i < m_Length; ++i)
 			if (m_Buffer[i] != arr[i])
@@ -634,58 +604,28 @@ public:
 		return false;
 	}
 
-	CONSTEXPR20 bool operator!=(const std::string& arr) const
-	{
-		return *this != arr.data(); // i.e. this->operator!=(arr.data())
-	}
-
-	CONSTEXPR20 bool operator!=(const Array<T>& arr) const
-	{
-		return *this != arr.m_Buffer; // i.e. this->operator!=(arr.m_Buffer)
-	}
-
 	// operator>()
-	CONSTEXPR20 bool operator>(const T* arr) const
+	CONSTEXPR20 bool operator>(const Array<T>& arr) const
 	{
 		for (size_t i{}; i < m_Length; ++i)
-			if (arr[i] <= m_Buffer[i]) // i.e. m_Buffer[i] >= arr[i]
+			if (m_Buffer[i] > arr[i])
 				return true;
 
 		return false;
-	}
-
-	CONSTEXPR20 bool operator>(const std::string& arr) const
-	{
-		return *this > arr.data(); // i.e. this->operator>(arr.data())
-	}
-
-	CONSTEXPR20 bool operator>(const Array<T>& arr) const
-	{
-		return *this > arr.m_Buffer; // i.e. this->operator>(arr.m_Buffer)
 	}
 
 	// operator<()
-	CONSTEXPR20 bool operator<(const T* arr) const
+	CONSTEXPR20 bool operator<(const Array<T>& arr) const
 	{
 		for (size_t i{}; i < m_Length; ++i)
-			if (arr[i] >= m_Buffer[i]) // i.e. m_Buffer[i] <= arr[i]
+			if (m_Buffer[i] < arr[i])
 				return true;
 
 		return false;
 	}
 
-	CONSTEXPR20 bool operator<(const std::string& arr) const
-	{
-		return *this < arr.data(); // i.e. this->operator<(arr.data())
-	}
-
-	CONSTEXPR20 bool operator<(const Array<T>& arr) const
-	{
-		return *this < arr.m_Buffer; // i.e. this->operator<(arr.m_Buffer)
-	}
-
 	// operator>=()
-	CONSTEXPR20 bool operator>=(const T* arr) const
+	CONSTEXPR20 bool operator>=(const Array<T>& arr) const
 	{
 		for (size_t i{}; i < m_Length; ++i)
 			if (m_Buffer[i] >= arr[i])
@@ -694,18 +634,8 @@ public:
 		return false;
 	}
 
-	CONSTEXPR20 bool operator>=(const std::string& arr) const
-	{
-		return *this >= arr.data(); // i.e. this->operator>=(arr.data())
-	}
-
-	CONSTEXPR20 bool operator>=(const Array<T>& arr) const
-	{
-		return *this >= arr.m_Buffer; // i.e. this->operator>=(arr.m_Buffer)
-	}
-
 	// operator<=()
-	CONSTEXPR20 bool operator<=(const T* arr) const
+	CONSTEXPR20 bool operator<=(const Array<T>& arr) const
 	{
 		for (size_t i{}; i < m_Length; ++i)
 			if (m_Buffer[i] <= arr[i])
@@ -714,20 +644,17 @@ public:
 		return true;
 	}
 
-	CONSTEXPR20 bool operator<=(const std::string& arr) const
-	{
-		return *this <= arr.data(); // i.e. this->operator<=(arr.data())
-	}
-
-	CONSTEXPR20 bool operator<=(const Array<T>& arr) const
-	{
-		return *this <= arr.m_Buffer; // i.e. this->operator<=(arr.m_Buffer)
-	}
-
 	// operator std::string()
-	operator std::string() const
+	operator std::vector<T>() const
 	{
-		return std::string{ m_Buffer };
+		std::vector<T> tempVec{};
+
+		tempVec.reserve(m_Capacity);
+
+		for (size_t i{}; i < m_Length; ++i)
+			tempVec.push_back(m_Buffer[i]);
+
+		return tempVec;
 	}
 
 	// Destructor
@@ -741,29 +668,6 @@ public:
 	{
 		if (value > 0)
 			DEFAULT_CAPACITY = value;
-	}
-
-private:
-	template<typename T>
-	CONSTEXPR20 void formatter(Array<T>& resultStr, const T& value, size_t& bracketCount, size_t& nextStartingPoint)
-	{
-		size_t openBracket{ Index('{', bracketCount) };
-
-		if (openBracket != m_Length)
-		{
-			size_t closeBracket{ openBracket + 1 };
-			size_t condition{ m_Buffer[closeBracket] != '}' };
-
-			resultStr.Append(Slice(nextStartingPoint, openBracket + condition).m_Buffer);
-
-			++bracketCount;
-			nextStartingPoint = closeBracket + (condition ^ 1);
-
-			if (condition)
-				formatter(resultStr, value, bracketCount, nextStartingPoint);
-			else
-				resultStr.Append(value);
-		}
 	}
 
 private:
