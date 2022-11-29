@@ -55,13 +55,15 @@ public:
 		m_Buffer[m_Length] = '\0';
 	}
 
-	CONSTEXPR20 explicit Array<char>(const char* string, const size_t count)
+	CONSTEXPR20 explicit Array<char>(const char* string, const size_t capacity)
 	{
-		const size_t strLen{ GetStrLen(string) };
+		m_Length = GetStrLen(string);
 
-		m_Length = (count > strLen) ? count - 1 : strLen;
-		m_Capacity = count;
-		AllocIterable(char, m_Buffer, count);
+		if (capacity < m_Length)
+			throw std::bad_array_new_length();
+
+		m_Capacity = capacity;
+		AllocIterable(char, m_Buffer, capacity);
 		CopyIterableInit(char, m_Buffer, 0, m_Length, m_Capacity, string);
 	}
 
@@ -955,6 +957,8 @@ public:
 
 	CONSTEXPR20 Array<char>& operator=(Array<char>&& other) noexcept
 	{
+		DeAlloc(m_Buffer);
+
 		m_Buffer = other.m_Buffer;
 		m_Length = other.m_Length;
 		m_Capacity = other.m_Capacity;

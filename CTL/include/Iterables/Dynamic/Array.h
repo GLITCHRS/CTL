@@ -53,6 +53,12 @@ public:
 		CopyIterable(m_Buffer, 0, m_Length, arr);
 	}
 
+	CONSTEXPR20 explicit Array(const T* arr, const size_t length, const size_t capacity) : m_Length(length), m_Capacity(capacity)
+	{
+		AllocIterable(T, m_Buffer, m_Capacity);
+		CopyIterableInit(T, m_Buffer, 0, m_Length, m_Capacity, arr);
+	}
+
 	template<typename... Ts>
 	CONSTEXPR20 explicit Array(const Ts&... items): m_Length(0), m_Capacity(GetItemsCount(items...))
 	{
@@ -68,8 +74,8 @@ public:
 	{
 		static_assert(std::is_same_v<T, H>, "Hi");
 
-		AllocIterable(H, m_Buffer, m_Capacity);
-		CopyIterable(m_Buffer, 0, m_Length, arr);
+		AllocIterable(H, m_Buffer, length);
+		CopyIterable(m_Buffer, 0, length, arr);
 	}
 
 	// COPY
@@ -393,9 +399,17 @@ public:
 	// .Swap()
 	CONSTEXPR20 void Swap(Array<T>& other)
 	{
-		Array<T> temp{ std::move(other) };
-		other = std::move(*this);
-		*this = std::move(temp);
+		T* tempBuffer{ other.m_Buffer };
+		size_t tempLen{ other.m_Length };
+		size_t tempCap{ other.m_Capacity };
+
+		other.m_Buffer = m_Buffer;
+		other.m_Length = m_Length;
+		other.m_Capacity = m_Capacity;
+
+		m_Buffer = tempBuffer;
+		m_Length = m_Length;
+		m_Capacity = m_Capacity;
 	}
 
 	/*
@@ -407,7 +421,7 @@ public:
 	// .At()
 	CONSTEXPR20 T& At(size_t index)
 	{
-		if (m_Length >= index)
+		if (m_Length > index)
 			return m_Buffer[index];
 
 		throw std::out_of_range("Index out of bounds!");
@@ -415,7 +429,7 @@ public:
 
 	CONSTEXPR20 const T& At(size_t index) const
 	{
-		if (m_Length >= index)
+		if (m_Length > index)
 			return m_Buffer[index];
 
 		throw std::out_of_range("Index out of bounds!");
@@ -495,6 +509,14 @@ public:
 	// operator=()
 	CONSTEXPR20 Array<T>& operator=(const Array<T>& arr)
 	{
+		if (m_Length >= arr.m_Length)
+		{
+			m_Length = arr.m_Length;
+			CopyIterableInit(T, m_Buffer, 0, m_Length, m_Capacity, arr);
+			
+			return *this;
+		}
+
 		m_Length = arr.m_Length;
 		m_Capacity = arr.m_Capacity;
 
@@ -507,6 +529,8 @@ public:
 
 	CONSTEXPR20 Array<T>& operator=(Array<T>&& other) noexcept
 	{
+		DeAlloc(m_Buffer);
+
 		m_Buffer = other.m_Buffer;
 		m_Length = other.m_Length;
 		m_Capacity = other.m_Capacity;
@@ -542,7 +566,6 @@ public:
 	{
 		Array<T> newArr{ m_Buffer, m_Length + 1 };
 		newArr.m_Buffer[m_Length] = item;
-		++newArr.m_Length;
 
 		return newArr;
 	}
@@ -555,7 +578,6 @@ public:
 		T* tempNewArrBuffer{ newArr.m_Buffer + m_Length };
 		CopyIterable(tempNewArrBuffer, 0, arrLen, arr);
 
-		newArr.m_Length += arrLen - 1;
 		return newStr;
 	}
 
