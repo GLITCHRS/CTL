@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CTL.h"
+#include <iostream>
 #include <vector>
 
 // Foward Decl
@@ -578,7 +579,7 @@ public:
 		T* tempNewArrBuffer{ newArr.m_Buffer + m_Length };
 		CopyIterable(tempNewArrBuffer, 0, arrLen, arr);
 
-		return newStr;
+		return newArr;
 	}
 
 	// operator*()
@@ -588,14 +589,13 @@ public:
 			return {};
 
 		size_t requiredLen{ multiplier * m_Length };
-		Array<T> newArr{ requiredLen };
-		T* tempNewArrBuffer{ newArr.m_Buffer };
+		Array<T> newArr{ m_Buffer, m_Length, requiredLen };
+		T* tempNewArrBuffer{ newArr.m_Buffer + m_Length };
 
-		while (multiplier > 0)
+		while (--multiplier > 0)
 		{
 			CopyIterable(tempNewArrBuffer, 0, m_Length, m_Buffer);
 			tempNewArrBuffer += m_Length;
-			--multiplier;
 		}
 
 		newArr.m_Length = requiredLen;
@@ -661,16 +661,15 @@ public:
 	{
 		for (size_t i{}; i < m_Length; ++i)
 			if (m_Buffer[i] <= arr[i])
-				return false;
+				return true;
 
-		return true;
+		return false;
 	}
 
 	// operator std::string()
 	operator std::vector<T>() const
 	{
 		std::vector<T> tempVec{};
-
 		tempVec.reserve(m_Capacity);
 
 		for (size_t i{}; i < m_Length; ++i)
@@ -704,8 +703,17 @@ private:
 template<typename T>
 __forceinline std::ostream& operator<<(std::ostream& stream, const CTL::Dynamic::Array<T>& data)
 {
-	for (size_t i{}; i < data.Length(); ++i)
-		stream << data[i] << ' ';
+	stream << "Array[";
+
+	// Penultimate is the name used for the item before the last
+	size_t penultimateIndex{ data.Length() - 1 };
+	size_t i{};
+	while (i < penultimateIndex)
+	{
+		stream << data[i] << ", ";
+		++i;
+	}
+	stream << data[i] << "]\n";
 
 	return stream;
 }

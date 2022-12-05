@@ -1,12 +1,14 @@
 #pragma once
 
 #include "CTL.h"
-#include "Array.h"
 #include <iostream>
 
 // Foward Decl
 _CTLBEGIN
 _DYNAMICBEGIN
+template<typename T>
+class Array;
+
 template<>
 class Array<char>;
 
