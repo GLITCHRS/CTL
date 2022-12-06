@@ -2,13 +2,13 @@
 
 #define LOGStr(VAR) PrintStr(VAR, __FUNCTION__, __LINE__)
 
-#include "String/String.h"
+#include "Iterables/Dynamic/String.h"
 
 void PrintStr(const CTL::Dynamic::String& str, const char* funcName, int line);
 
-void Test1();
+void ConstructorsTest();
 void Test2();
-void Test3();
+void AppendTest();
 void Test4();
 void Test5();
 void Test6();
