@@ -7,8 +7,15 @@
 void PrintStr(const CTL::Dynamic::String& str, const char* funcName, int line);
 
 void ConstructorsTest();
-void Test2();
 void AppendTest();
+void CapitalizeTest();
+void CountTest();
+void EndsWithTest();
+void FindTest();
+void FormatTest();
+void HasTest();
+void IndexTest();
+void InsertTest();
 void Test4();
 void Test5();
 void Test6();

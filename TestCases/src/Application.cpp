@@ -9,5 +9,5 @@
 
 int main()
 {
-	AppendTest();
+	InsertTest();
 }

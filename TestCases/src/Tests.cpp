@@ -48,6 +48,141 @@ void AppendTest()
 	LOGStr(b);
 }
 
+void CapitalizeTest()
+{
+	CTL::Dynamic::String a{ "My name is, Ahmed." };
+	CTL::Dynamic::String b{ "my name is, Ahmed." };
+
+	a.Capitalize();
+	b.Capitalize();
+
+	LOGStr(a);
+	LOGStr(b);
+}
+
+void CountTest()
+{
+	const CTL::Dynamic::String a{ "abcdc" };
+
+	std::cout << a.Count('a') << '\n';
+	std::cout << a.Count("a") << '\n';
+	std::cout << a.Count("ab") << '\n';
+	std::cout << a.Count('c') << '\n';
+	std::cout << a.Count("dc") << '\n';
+	std::cout << a.Count("cdc") << '\n';
+	std::cout << a.Count("bcd") << '\n';
+	std::cout << a.Count("bd") << '\n';
+}
+
+void EndsWithTest()
+{
+	CTL::Dynamic::String a{ "abcdc" };
+
+	std::cout << a.EndsWith('a') << '\n';
+	std::cout << a.EndsWith("a") << '\n';
+	std::cout << a.EndsWith("ab") << '\n';
+	std::cout << a.EndsWith('c') << '\n';
+	std::cout << a.EndsWith("c") << '\n';
+	std::cout << a.EndsWith("dc") << '\n';
+	std::cout << a.EndsWith("cdc") << '\n';
+	std::cout << a.EndsWith("bcd") << '\n';
+	std::cout << a.EndsWith("bd") << '\n';
+}
+
+void FindTest()
+{
+	const CTL::Dynamic::String a{ "abcdc" };
+
+	const char* data1{ a.Find('a') };
+	const char* data2{ a.Find("a") };
+	const char* data3{ a.Find("ab") };
+	const char* data4{ a.Find('c') };
+	const char* data5{ a.Find("c")};
+	const char* data6{ a.Find("dc") };
+	const char* data7{ a.Find("cdc") };
+	const char* data8{ a.Find("bcd") };
+	const char* data9{ a.Find("bd") };
+
+	if (data1)
+		std::cout << data1 << '\n';
+
+	if (data2)
+		std::cout << data2 << '\n';
+
+	if (data3)
+		std::cout << data3 << '\n';
+
+	if (data4)
+		std::cout << data4 << '\n';
+	
+	if (data5)
+		std::cout << data5 << '\n';
+
+	if (data6)
+		std::cout << data6 << '\n';
+
+	if (data7)
+		std::cout << data7 << '\n';
+
+	if (data8)
+		std::cout << data8 << '\n';
+
+	if (data9)
+		std::cout << data9 << '\n';
+}
+
+void FormatTest()
+{
+	CTL::Dynamic::String a{ "Hi {} Hello {}" };
+
+	std::cout << a << '\n';
+	std::cout << a.Format("Ahmed") << '\n';
+	std::cout << a.Format("Ahmed", "Asem") << '\n';
+	std::cout << a.Format("Ahmed", "Asem", "Khalid") << '\n';
+}
+
+void HasTest()
+{
+	CTL::Dynamic::String a{ "abcdc" };
+
+	std::cout << a.Has('a') << '\n';
+	std::cout << a.Has("a") << '\n';
+	std::cout << a.Has("ab") << '\n';
+	std::cout << a.Has('c') << '\n';
+	std::cout << a.Has("c") << '\n';
+	std::cout << a.Has("dc") << '\n';
+	std::cout << a.Has("cdc") << '\n';
+	std::cout << a.Has("bcd") << '\n';
+	std::cout << a.Has("bd") << '\n';
+}
+
+void IndexTest()
+{
+	const CTL::Dynamic::String a{ "abcdc" };
+
+	std::cout << a.Index('a') << '\n';
+	std::cout << a.Index("a") << '\n';
+	std::cout << a.Index("ab") << '\n';
+	std::cout << a.Index('c') << '\n';
+	std::cout << a.Index("c") << '\n';
+	std::cout << a.Index("dc") << '\n';
+	std::cout << a.Index("cdc") << '\n';
+	std::cout << a.Index("bcd") << '\n';
+	std::cout << a.Index("bd") << '\n';
+}
+
+void InsertTest()
+{
+	CTL::Dynamic::String a{ "is ahmed"};
+
+	a.Insert('M', 0);
+	std::cout << a << '\n';
+	a.Insert('y', 1);
+	std::cout << a << '\n';
+	a.Insert(" Name ", 2);
+	std::cout << a << '\n';
+}
+
 void Test2()
 {
 	CTL::Dynamic::String a{};
@@ -76,93 +211,6 @@ void Test4()
 	LOGStr(a);
 	a.AppendAll("\nNEW"_DS, " STRING"_DS);
 	LOGStr(a);
-}
-
-void Test5()
-{
-	CTL::Dynamic::String a{ "abcdc" };
-
-	std::cout << a.Has('a') << '\n';
-	std::cout << a.Has("a") << '\n';
-	std::cout << a.Has("ab") << '\n';
-	std::cout << a.Has('c') << '\n';
-	std::cout << a.Has("dc") << '\n';
-	std::cout << a.Has("cdc") << '\n';
-	std::cout << a.Has("cdc") << '\n';
-	std::cout << a.Has("bcd") << '\n';
-	std::cout << a.Has("bd") << '\n';
-}
-
-void Test6()
-{
-	const CTL::Dynamic::String a{ "abcdc" };
-
-	const char* data1{ a.Find('a')};
-	const char* data2{ a.Find("a")};
-	const char* data3{ a.Find("ab")};
-	const char* data4{ a.Find('c')};
-	const char* data5{ a.Find("dc")};
-	const char* data6{ a.Find("cdc")};
-	const char* data7{ a.Find("cdc")};
-	const char* data8{ a.Find("bcd")};
-	const char* data9{ a.Find("bd") };
-
-	if (data1)
-		std::cout << data1 << '\n';
-
-	if (data2)
-		std::cout << data2 << '\n';
-
-	if (data3)
-		std::cout << data3 << '\n';
-
-	if (data4)
-		std::cout << data4 << '\n';
-
-	if (data5)
-		std::cout << data5 << '\n';
-
-	if (data6)
-		std::cout << data6 << '\n';
-
-	if (data7)
-		std::cout << data7 << '\n';
-
-	if (data8)
-		std::cout << data8 << '\n';
-
-	if (data9)
-		std::cout << data9 << '\n';
-}
-
-void Test7()
-{
-	const CTL::Dynamic::String a{ "abcdc" };
-
-	std::cout << a.Index('a') << '\n';
-	std::cout << a.Index("a") << '\n';
-	std::cout << a.Index("ab") << '\n';
-	std::cout << a.Index('c') << '\n';
-	std::cout << a.Index("dc") << '\n';
-	std::cout << a.Index("cdc") << '\n';
-	std::cout << a.Index("cdc") << '\n';
-	std::cout << a.Index("bcd") << '\n';
-	std::cout << a.Index("bd") << '\n';
-}
-
-void Test8()
-{
-	const CTL::Dynamic::String a{ "abcdc" };
-
-	std::cout << a.Count('a') << '\n';
-	std::cout << a.Count("a") << '\n';
-	std::cout << a.Count("ab") << '\n';
-	std::cout << a.Count('c') << '\n';
-	std::cout << a.Count("dc") << '\n';
-	std::cout << a.Count("cdc") << '\n';
-	std::cout << a.Count("cdc") << '\n';
-	std::cout << a.Count("bcd") << '\n';
-	std::cout << a.Count("bd") << '\n';
 }
 
 void Test9()
@@ -223,19 +271,4 @@ void Test13()
 	std::cout << a.StartsWith("cdc") << '\n';
 	std::cout << a.StartsWith("bcd") << '\n';
 	std::cout << a.StartsWith("bd") << '\n';
-}
-
-void Test14()
-{
-	CTL::Dynamic::String a{ "abcdc" };
-
-	std::cout << a.EndsWith('a') << '\n';
-	std::cout << a.EndsWith("a") << '\n';
-	std::cout << a.EndsWith("ab") << '\n';
-	std::cout << a.EndsWith('c') << '\n';
-	std::cout << a.EndsWith("dc") << '\n';
-	std::cout << a.EndsWith("cdc") << '\n';
-	std::cout << a.EndsWith("cdc") << '\n';
-	std::cout << a.EndsWith("bcd") << '\n';
-	std::cout << a.EndsWith("bd") << '\n';
 }

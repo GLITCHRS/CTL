@@ -151,9 +151,6 @@ public:
 	// .Capitalize()
 	CONSTEXPR20 Array<char>& Capitalize()
 	{
-		if (m_Length == 0)
-			return *this;
-
 		int characterAsInt{ *m_Buffer };
 
 		if (IsLowerChar(characterAsInt))
@@ -725,11 +722,13 @@ public:
 	// .SubStr()
 	CONSTEXPR20 Array<char> SubStr(size_t startIndex, size_t endIndex) const
 	{
-		Array<char> data{ endIndex - startIndex };
+		Array<char> data{ endIndex - startIndex + 1 };
 
 		size_t i{};
 		for (size_t j{ startIndex }; j < endIndex; ++j, ++i)
 			data[i] = m_Buffer[j];
+
+		data[i] = '\0';
 
 		return data;
 	}

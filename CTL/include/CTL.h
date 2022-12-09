@@ -44,7 +44,7 @@
 #define ReAllocIterableInit(T, VAR, OLD_LENGTH, NEW_LENGTH) { T* tempBuffer{ VAR }; AllocIterable(T, VAR, NEW_LENGTH); CopyIterable(VAR, 0, OLD_LENGTH, tempBuffer); FillIterable(VAR, OLD_LENGTH, NEW_LENGTH, T{}); VAR[NEW_LENGTH] = T{}; DeAlloc(tempBuffer); }
 
 #define ShiftToLeft(VAR, START, END, STEPS) { for(size_t i{ START }; i < END; ++i) VAR[i - STEPS] = VAR[i]; }
-#define ShiftToRight(VAR, START, END, STEPS) { size_t i{ END }; while(i > START) VAR[--i + STEPS] = VAR[i]; }
+#define ShiftToRight(VAR, START, END, STEPS) { size_t i{ END }; while(i > START) VAR[i + STEPS] = VAR[--i]; }
 
 #define IsNum(INT) (47 < INT && INT < 58)
 #define IsLowerChar(INT) (96 < INT && INT < 123)
