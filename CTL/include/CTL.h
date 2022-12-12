@@ -50,6 +50,7 @@
 #define IsLowerChar(INT) (96 < INT && INT < 123)
 #define IsUpperChar(INT) (64 < INT && INT < 91)
 #define IsChar(INT) (IsLowerChar(INT) || IsUpperChar(INT))
+#define IsSpace(INT) (INT == 32 || INT == 10 || INT == 9)
 
 template<typename T, typename... H>
 struct IsAnyOf

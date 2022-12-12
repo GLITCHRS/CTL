@@ -183,6 +183,38 @@ void InsertTest()
 	std::cout << a << '\n';
 }
 
+void IsSomethingTest()
+{
+	CTL::Dynamic::String a{ "ahmed 5" };
+	CTL::Dynamic::String b{ "Ahmed 5" };
+	CTL::Dynamic::String c{ "55 A" };
+
+	std::cout << a.IsAlnum() << '\n';
+	std::cout << a.IsAlpha() << '\n';
+	std::cout << a.IsDigit() << '\n';
+	std::cout << a.IsLower() << '\n';
+	std::cout << a.Upper().IsUpper() << '\n';
+	std::cout << a.IsTitle() << '\n';
+
+	std::cout << "------------------\n";
+
+	std::cout << b.IsAlnum() << '\n';
+	std::cout << b.IsAlpha() << '\n';
+	std::cout << b.IsDigit() << '\n';
+	std::cout << b.Lower().IsLower() << '\n';
+	std::cout << b.IsUpper() << '\n';
+	std::cout << b.IsTitle() << '\n';
+
+	std::cout << "------------------\n";
+
+	std::cout << c.IsAlnum() << '\n';
+	std::cout << c.IsAlpha() << '\n';
+	std::cout << c.IsDigit() << '\n';
+	std::cout << c.IsLower() << '\n';
+	std::cout << c.Upper().IsUpper() << '\n';
+	std::cout << c.IsTitle() << '\n';
+}
+
 void Test2()
 {
 	CTL::Dynamic::String a{};

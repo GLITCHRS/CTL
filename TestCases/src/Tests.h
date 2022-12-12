@@ -16,6 +16,7 @@ void FormatTest();
 void HasTest();
 void IndexTest();
 void InsertTest();
+void IsSomethingTest();
 void Test4();
 void Test5();
 void Test6();

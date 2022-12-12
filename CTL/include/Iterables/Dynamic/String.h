@@ -485,15 +485,20 @@ public:
 		if (m_Length == 0)
 			return false;
 
+		bool lowerCharFound{};
+
 		for (size_t i{}; i < m_Length; ++i)
 		{
 			int characterAsInt{ m_Buffer[i] };
 
-			if (!IsLowerChar(characterAsInt))
+			if (IsUpperChar(characterAsInt))
 				return false;
-		}
 
-		return true;
+			if (!lowerCharFound && IsLowerChar(characterAsInt))
+				lowerCharFound = true;
+		}
+		
+		return lowerCharFound;
 	}
 
 	CONSTEXPR20 bool IsUpper() const
@@ -501,44 +506,45 @@ public:
 		if (m_Length == 0)
 			return false;
 
+		bool upperCharFound{};
+
 		for (size_t i{}; i < m_Length; ++i)
 		{
 			int characterAsInt{ m_Buffer[i] };
 
-			if (!IsUpperChar(characterAsInt))
+			if (IsLowerChar(characterAsInt))
 				return false;
+
+			if (!upperCharFound && IsUpperChar(characterAsInt))
+				upperCharFound = true;
 		}
 
-		return true;
+		return upperCharFound;
 	}
 
-	CONSTEXPR20 bool IsTitle(bool ignoreNumbers = true) const
+	CONSTEXPR20 bool IsTitle() const
 	{
 		if (m_Length == 0)
 			return false;
 
-		if (ignoreNumbers)
-		{
-			for (size_t i{}, lastSpaceOccurrence{}; i < m_Length; ++lastSpaceOccurrence, i = Index(' ', lastSpaceOccurrence) + 1)
-			{
-				int characterAsInt{ m_Buffer[i] };
-
-				if (!(IsUpperChar(characterAsInt) || IsNum(characterAsInt)))
-					return false;
-			}
-
-			return true;
-		}
-
-		for (size_t i{}, lastSpaceOccurrence{}; i < m_Length; ++lastSpaceOccurrence, i = Index(' ', lastSpaceOccurrence) + 1)
+		bool isWordsFirstChar{ true };
+		bool upperCharFound{};
+		
+		for (size_t i{}; i < m_Length; ++i)
 		{
 			int characterAsInt{ m_Buffer[i] };
 
-			if (!IsUpperChar(characterAsInt))
-				return false;
+			if (isWordsFirstChar)
+				if (!(IsUpperChar(characterAsInt) || IsNum(characterAsInt)))
+					return false;
+			
+			if (!upperCharFound && IsUpperChar(characterAsInt))
+				upperCharFound = true;
+
+			isWordsFirstChar = IsSpace(characterAsInt);
 		}
 
-		return true;
+		return upperCharFound;
 	}
 
 	// .Lower()
