@@ -9,5 +9,5 @@
 
 int main()
 {
-	IsSomethingTest();
+	Replace();
 }

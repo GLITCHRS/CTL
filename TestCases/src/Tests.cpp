@@ -215,7 +215,13 @@ void IsSomethingTest()
 	std::cout << c.IsTitle() << '\n';
 }
 
-void Test2()
+void LowerTest()
+{
+	CTL::Dynamic::String a{"AHMED"};
+	std::cout << a.Lower() << '\n';
+}
+
+void Reserve()
 {
 	CTL::Dynamic::String a{};
 
@@ -226,8 +232,31 @@ void Test2()
 	LOGStr(a);
 	a.Reserve(17);
 	LOGStr(a);
+	a.Reserve(1);
+	LOGStr(a);
 	a.Reserve(0);
 	LOGStr(a);
+}
+
+void Reset()
+{
+	CTL::Dynamic::String a{ "Ahmed" };
+
+	LOGStr(a);
+	a.Reset();
+	LOGStr(a);
+}
+
+void Replace()
+{
+	CTL::Dynamic::String a{ "Ahmed" };
+
+	LOGStr(a);
+	LOGStr(a.Replace('A', 'm'));
+	LOGStr(a.Replace("A", "M"));
+	LOGStr(a.Replace('A', "KHALID"));
+	LOGStr(a.Replace("med", "CHILD"));
+	LOGStr(a.Replace("hm", 'b'));
 }
 
 void Test4()

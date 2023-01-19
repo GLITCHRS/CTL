@@ -140,7 +140,7 @@ public:
 	CONSTEXPR20 void AppendAll(const Strings&... VarStrings)
 	{
 		static_assert(
-			((IsAnyOf<Strings, char*, const char*, std::string, CTL::Dynamic::Array<char>>::value || (std::is_same_v<std::remove_all_extents_t<Strings>, char> && std::is_array_v<Strings>))&&...),
+			((IsAnyOf<Strings, char, char*, const char*, std::string, CTL::Dynamic::Array<char>>::value || (std::is_same_v<std::remove_all_extents_t<Strings>, char> && std::is_array_v<Strings>))&&...),
 			"AppendAll only accepts (char*, const char*, std::string, and CTL::Dynamic::Array<char>)!"
 			);
 
@@ -579,13 +579,6 @@ public:
 	}
 
 	// .Reset()
-	CONSTEXPR20 void ReAlloc() noexcept
-	{
-		m_Length = 0;
-		m_Capacity = DEFAULT_CAPACITY;
-		AllocIterableInit(char, m_Buffer, DEFAULT_CAPACITY);
-	}
-
 	CONSTEXPR20 void Reset() noexcept
 	{
 		DeAlloc(m_Buffer);
@@ -599,32 +592,55 @@ public:
 	CONSTEXPR20 Array<char> Replace(const T& toFindStr, const H& toReplStr)
 	{
 		static_assert(
-			(std::is_array_v<T> || IsAnyOf<T, char*, const char*, std::string, Array<char>>::value) &&
-			(std::is_array_v<H> || IsAnyOf<H, char*, const char*, std::string, Array<char>>::value),
+			(std::is_array_v<T> || IsAnyOf<T, char, char*, const char*, std::string, Array<char>>::value) &&
+			(std::is_array_v<H> || IsAnyOf<H, char, char*, const char*, std::string, Array<char>>::value),
 			"This method only accepts any of (const char*, std::string, or CTL::Dynamic::Array<char>) types."
 			);
 
 		int toFindStrLen(GetStrLen(toFindStr));
 		int toReplStrLen(GetStrLen(toReplStr));
 
-		Array<char> resultStr{ m_Length + Count(toFindStr) * (toReplStrLen - toFindStrLen) };
+		Array<char> resultStr{ m_Length + 1 + Count(toFindStr) * (toReplStrLen - toFindStrLen) };
 		char* tempResultBuffer{ resultStr.m_Buffer };
 
 		size_t end{ Index(toFindStr) };
 		char* tempBuffer{ m_Buffer };
 
-		for (size_t src{ end }, oldSrc{}, occurence{ 1 }; src != m_Length; ++occurence, oldSrc = src + toFindStrLen, src = Index(toFindStr, occurence), end = src - oldSrc, tempBuffer = m_Buffer + oldSrc)
-		{
-			CopyIterable(tempResultBuffer, 0, end, tempBuffer);
+		if constexpr(std::is_same_v<H, char>)
+			for (size_t src{ end }, oldSrc{}, occurence{ 1 }; src != m_Length;)
+			{
+				CopyIterable(tempResultBuffer, 0, end, tempBuffer);
+				tempResultBuffer += end;
 
-			tempResultBuffer += end;
+				*tempResultBuffer = toReplStr;
+				++tempResultBuffer;
 
-			CopyIterable(tempResultBuffer, 0, toReplStrLen, toReplStr);
+				++occurence;
+				oldSrc = src + toFindStrLen;
+				src = Index(toFindStr, occurence);
+				end = src - oldSrc;
+				tempBuffer = m_Buffer + oldSrc;
+			}
 
-			tempResultBuffer += toReplStrLen;
-		}
+		else
+			for (size_t src{ end }, oldSrc{}, occurence{ 1 }; src != m_Length;)
+			{
+				CopyIterable(tempResultBuffer, 0, end, tempBuffer);
+				tempResultBuffer += end;
+
+				CopyIterable(tempResultBuffer, 0, toReplStrLen, toReplStr);
+				tempResultBuffer += toReplStrLen;
+
+				++occurence;
+				oldSrc = src + toFindStrLen;
+				src = Index(toFindStr, occurence);
+				end = src - oldSrc;
+				tempBuffer = m_Buffer + oldSrc;
+			}
 
 		CopyIterable(tempResultBuffer, 0, end, tempBuffer);
+		tempResultBuffer[end] = '\0';
+		resultStr.m_Length = resultStr.m_Capacity - 1;
 
 		return resultStr;
 	}
@@ -1187,6 +1203,13 @@ public:
 	}
 
 private:
+	CONSTEXPR20 void ReAlloc() noexcept
+	{
+		m_Length = 0;
+		m_Capacity = DEFAULT_CAPACITY;
+		AllocIterableInit(char, m_Buffer, DEFAULT_CAPACITY);
+	}
+
 	template<typename T>
 	CONSTEXPR20 void formatter(Array<char>& resultStr, const T& value, size_t& bracketCount, size_t& nextStartingPoint)
 	{
@@ -1227,7 +1250,12 @@ __forceinline std::ostream& operator<<(std::ostream& stream, const CTL::Dynamic:
 template<typename T>
 constexpr size_t GetStrLen(const T str)
 {
-	throw std::runtime_error("GetStrLen only accepts (char*, const char*, std::string, and CTL::Dynamic::Array<char>)!");
+	throw std::runtime_error("GetStrLen only accepts (char, char*, const char*, std::string, and CTL::Dynamic::Array<char>)!");
+}
+
+constexpr size_t GetStrLen(char str)
+{
+	return 1u;
 }
 
 constexpr size_t GetStrLen(char* str)
