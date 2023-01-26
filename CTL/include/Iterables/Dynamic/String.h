@@ -645,8 +645,8 @@ public:
 		return resultStr;
 	}
 
-	// .ReverseIndex()
-	CONSTEXPR20 size_t ReverseIndex(const char character, unsigned int occurrenceNumber = 1u) const
+	// .RIndex() (Reverse Index)
+	CONSTEXPR20 size_t RIndex(const char character, unsigned int occurrenceNumber = 1u) const
 	{
 		size_t i{ m_Length };
 		while (i > 0)
@@ -758,13 +758,13 @@ public:
 	CONSTEXPR20 Array<char> SubStrS(size_t startIndex, size_t endIndex) const
 	{
 		if (startIndex > m_Length)
-			throw std::logic_error("Start Index is larger than m_Length!");
+			throw std::logic_error("Start Index > m_Length!");
 
 		if (endIndex > m_Length)
-			throw std::logic_error("End Index is larger than m_Length!");
+			throw std::logic_error("End Index > m_Length!");
 
-		if (startIndex > endIndex)
-			throw std::logic_error("Start Index is larger than End Index!");
+		if (startIndex >= endIndex)
+			throw std::logic_error("Start Index >= End Index!");
 
 		Array<char> data{ endIndex - startIndex };
 

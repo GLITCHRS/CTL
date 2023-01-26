@@ -259,6 +259,68 @@ void Replace()
 	LOGStr(a.Replace("hm", 'b'));
 }
 
+void RIndex()
+{
+	CTL::Dynamic::String a{ "aeeea" };
+
+	std::cout << a.RIndex('e') << '\n';
+	std::cout << a.RIndex('a') << '\n';
+	std::cout << a.RIndex('a', 2) << '\n';
+}
+
+void Shrinking()
+{
+	CTL::Dynamic::String a{ "aeeea", 100 };
+
+	LOGStr(a);
+	a.Shrink(55);
+	LOGStr(a);
+	a.ShrinkToFit();
+	LOGStr(a);
+	a.Shrink(101);
+	LOGStr(a);
+}
+
+void StartsWith()
+{
+	CTL::Dynamic::String a{ "abcdc" };
+
+	std::cout << a.StartsWith('a') << '\n';
+	std::cout << a.StartsWith("a") << '\n';
+	std::cout << a.StartsWith("ab") << '\n';
+	std::cout << a.StartsWith('c') << '\n';
+	std::cout << a.StartsWith("dc") << '\n';
+	std::cout << a.StartsWith("cdc") << '\n';
+	std::cout << a.StartsWith("bcd") << '\n';
+	std::cout << a.StartsWith("bd") << '\n';
+}
+
+void SubStr()
+{
+	CTL::Dynamic::String a{ "abcdc" };
+
+	LOGStr(a.SubStr(2, 4));
+	LOGStr(a.SubStrC(2, 2));
+
+	try
+	{
+		LOGStr(a.SubStrS(2, 2));
+	}
+	catch (const std::exception& e)
+	{
+		std::cout << e.what() << '\n';
+	}
+
+	try
+	{
+		LOGStr(a.SubStrCS(2, 4));
+	}
+	catch (const std::exception& e)
+	{
+		std::cout << e.what() << '\n';
+	}
+}
+
 void Test4()
 {
 	CTL::Dynamic::String a{};
@@ -308,28 +370,4 @@ void Test11()
 	std::cout << b.Capacity() << '\n';
 	std::cout << "Hello"_DS.Length() << '\n';
 	std::cout << "Hello"_DS.Capacity() << '\n';
-}
-
-void Test12()
-{
-	CTL::Dynamic::String a{ "abcdc" };
-	const CTL::Dynamic::String b{ "Hello" };
-
-	std::cout << a.SubStr(a.Length() / 2, a.Length()) << '\n';
-	std::cout << b.SubStr(b.Length() / 2, b.Length()) << '\n';
-}
-
-void Test13()
-{
-	CTL::Dynamic::String a{ "abcdc" };
-
-	std::cout << a.StartsWith('a') << '\n';
-	std::cout << a.StartsWith("a") << '\n';
-	std::cout << a.StartsWith("ab") << '\n';
-	std::cout << a.StartsWith('c') << '\n';
-	std::cout << a.StartsWith("dc") << '\n';
-	std::cout << a.StartsWith("cdc") << '\n';
-	std::cout << a.StartsWith("cdc") << '\n';
-	std::cout << a.StartsWith("bcd") << '\n';
-	std::cout << a.StartsWith("bd") << '\n';
 }

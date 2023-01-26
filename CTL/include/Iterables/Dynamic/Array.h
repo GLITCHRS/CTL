@@ -301,7 +301,7 @@ public:
 	}
 
 	// .ReverseIndex()
-	CONSTEXPR20 size_t ReverseIndex(const T& item, unsigned int occurrenceNumber = 1u) const
+	CONSTEXPR20 size_t RIndex(const T& item, unsigned int occurrenceNumber = 1u) const
 	{
 		size_t i{ m_Length };
 		while (i > 0)
