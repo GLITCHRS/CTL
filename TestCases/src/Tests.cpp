@@ -321,53 +321,80 @@ void SubStr()
 	}
 }
 
-void Test4()
+void Swap()
 {
-	CTL::Dynamic::String a{};
+	CTL::Dynamic::String a{ "Ahmed 5" };
+	CTL::Dynamic::String b{ "55 A" };
 
-	using namespace std::string_literals;
+	LOGStr(a);
+	LOGStr(b);
+
+	std::cout << "Swapped......\n";
+	a.Swap(b);
 
 	LOGStr(a);
-	a.AppendAll("Hi", "Hi2"s, "Hi3"_DS);
+	LOGStr(b);
+
+	std::cout << "Swapped 2......\n";
+	b.Swap(a);
+
 	LOGStr(a);
-	a.AppendAll(", "s, "Is", " Me"_DS);
+	LOGStr(b);
+}
+
+void Title()
+{
+	CTL::Dynamic::String a{ "this is going to be a title string" };
+	LOGStr(a.Title());
 	LOGStr(a);
-	a.AppendAll("\nNEW"_DS, " STRING"_DS);
+	LOGStr(a.ToTitle());
 	LOGStr(a);
 }
 
-void Test9()
+void ToLUU()
+{
+	CTL::Dynamic::String a{ "this is going to be a title string" };
+
+	LOGStr(a.ToUpper());
+	LOGStr(a.ToLower());
+	LOGStr(a.Upper());
+	LOGStr(a);
+}
+
+void GettersAndSetters()
 {
 	const CTL::Dynamic::String a{ "abcdc" };
 
-	for (char item : a)
-		std::cout << item;
-
-	std::cout << '\n';
-
-	std::cout << a.begin() << '\n';
-	std::cout << static_cast<int>(a.end()[0]) << '\n';
+	std::cout << "Char At Index 1: " << a.At(5) << '\n';
+	std::cout << ".begin of string: " << a.begin() << '\n';
+	std::cout << ".Data of string: " << a.Data() << '\n';
+	std::cout << ".end of string: " << a.end() << '\n';
+	std::cout << ".Length of string: " << a.Length() << '\n';
+	std::cout << ".Capacity of string: " << a.Capacity() << '\n';
 }
 
-void Test10()
+void Operators()
 {
 	CTL::Dynamic::String a{ "abcdc" };
-	const CTL::Dynamic::String b{ "abcdc" };
+	CTL::Dynamic::String b{ "cscba" };
 
-	std::cout << a.Data() << '\n';
-	std::cout << b.Data() << '\n';
-	std::cout << "Hello"_DS.Data() << '\n';
-}
-
-void Test11()
-{
-	CTL::Dynamic::String a{ "abcdc" };
-	const CTL::Dynamic::String b{ "abcdc" };
-
-	std::cout << a.Length() << '\n';
-	std::cout << a.Capacity() << '\n';
-	std::cout << b.Length() << '\n';
-	std::cout << b.Capacity() << '\n';
-	std::cout << "Hello"_DS.Length() << '\n';
-	std::cout << "Hello"_DS.Capacity() << '\n';
+	std::cout << "operator[2]: " << a[2] << '\n';
+	std::cout << "(a = 'New Data'): " << (a = "New Data") << '\n';
+	std::cout << "(a = std::move(b)): " << (a = std::move(b)) << '\n';
+	std::cout << "(a *= 2): " << (a *= 2) << '\n';
+	std::cout << "operator+'h': " << (a + 'h') << '\n';
+	std::cout << "operator+'Test': " << (a + "Test") << '\n';
+	std::cout << "operator*2: " << (a * 2) << '\n';
+	std::cout << "operator==cscbacscba: " << (a == "cscbacscba") << '\n';
+	std::cout << "operator!=cscbacscba: " << (a != "cscbacscba") << '\n';
+	std::cout << "operator>a: " << (a > "a") << '\n';
+	std::cout << "operator>A: " << (a > "A") << '\n';
+	std::cout << "operator<a: " << (a < "a") << '\n';
+	std::cout << "operator<A: " << (a < "A") << '\n';
+	std::cout << "operator>=c: " << (a < "c") << '\n';
+	std::cout << "operator>=b: " << (a < "b") << '\n';
+	std::cout << "operator<=A: " << (a < "A") << '\n';
+	std::cout << "operator<=B: " << (a < "B") << '\n';
+	std::cout << "operator std::string(): " << (std::string)a << '\n';
+	std::cout << "operator''_DS: " << "Hi"_DS << '\n';
 }

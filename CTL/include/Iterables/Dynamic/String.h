@@ -795,7 +795,12 @@ public:
 	}
 
 	// .Title()
-	CONSTEXPR20 Array<char>& Title()
+	CONSTEXPR20 Array<char> Title()
+	{
+		return String{ m_Buffer, m_Length }.ToTitle();
+	}
+
+	CONSTEXPR20 Array<char>& ToTitle()
 	{
 		if (m_Length == 0)
 			return *this;
@@ -991,13 +996,13 @@ public:
 	}
 
 	// operator*=()
-	CONSTEXPR20 void operator*=(const size_t multiplier)
+	CONSTEXPR20 Array<char>& operator*=(const size_t multiplier)
 	{
 		if (multiplier == 0)
 		{
 			FillIterable(m_Buffer, 0, m_Length, '\0');
 			m_Length = 0;
-			return;
+			return *this;
 		}
 
 		Reserve(m_Length * multiplier + 1);
@@ -1011,6 +1016,8 @@ public:
 
 		m_Length *= multiplier;
 		m_Buffer[m_Length] = '\0';
+
+		return *this;
 	}
 
 	// operator+()
@@ -1052,7 +1059,7 @@ public:
 			return {};
 
 		size_t requiredLen{ multiplier * m_Length };
-		Array<char> newStr{ requiredLen };
+		Array<char> newStr{ requiredLen + sizeof(char) };
 		char* tempNewStrBuffer{ newStr.m_Buffer };
 
 		while (multiplier > 0)
@@ -1061,6 +1068,7 @@ public:
 			tempNewStrBuffer += m_Length;
 			--multiplier;
 		}
+		newStr[requiredLen] = '\0';
 
 		newStr.m_Length = requiredLen;
 		return newStr;
@@ -1113,11 +1121,21 @@ public:
 	// operator>()
 	CONSTEXPR20 bool operator>(const char* string) const
 	{
-		for (size_t i{}; i < m_Length; ++i)
-			if (string[i] <= m_Buffer[i]) // i.e. m_Buffer[i] >= string[i]
+		size_t strLen{ GetStrLen(string) };
+
+		bool cond{ m_Length > strLen };
+		size_t lenToUse{ cond ? strLen : m_Length };
+
+		for (size_t i{}; i < lenToUse; ++i)
+		{
+			if (m_Buffer[i] > string[i])
 				return true;
 
-		return false;
+			else if (m_Buffer[i] < string[i])
+				return false;
+		}
+
+		return cond;
 	}
 
 	CONSTEXPR20 bool operator>(const std::string& string) const
@@ -1133,11 +1151,21 @@ public:
 	// operator<()
 	CONSTEXPR20 bool operator<(const char* string) const
 	{
-		for (size_t i{}; i < m_Length; ++i)
-			if (string[i] >= m_Buffer[i]) // i.e. m_Buffer[i] <= string[i]
+		size_t strLen{ GetStrLen(string) };
+
+		bool cond{ m_Length > strLen };
+		size_t lenToUse{ cond ? strLen : m_Length };
+
+		for (size_t i{}; i < lenToUse; ++i)
+		{
+			if (m_Buffer[i] < string[i])
 				return true;
 
-		return false;
+			else if (m_Buffer[i] > string[i])
+				return false;
+		}
+
+		return cond;
 	}
 
 	CONSTEXPR20 bool operator<(const std::string& string) const

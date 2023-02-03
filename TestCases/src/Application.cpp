@@ -9,5 +9,5 @@
 
 int main()
 {
-	SubStr();
+	Operators();
 }
