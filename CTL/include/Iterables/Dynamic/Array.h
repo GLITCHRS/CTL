@@ -13,13 +13,13 @@ _DYNAMICEND
 _CTLEND
 
 template<typename Ts>
-constexpr unsigned int GetItemsCount(const Ts& items)
+constexpr unsigned int GetItemsCount(const Ts&)
 {
 	return 1u;
 }
 
 template<typename T, typename... Ts>
-constexpr unsigned int GetItemsCount(const T& item, const Ts&... items)
+constexpr unsigned int GetItemsCount(const T&, const Ts&... items)
 {
 	return 1u + GetItemsCount(items...);
 }
@@ -667,7 +667,7 @@ public:
 	}
 
 	// operator std::string()
-	operator std::vector<T>() const
+	explicit operator std::vector<T>() const
 	{
 		std::vector<T> tempVec{};
 		tempVec.reserve(m_Capacity);

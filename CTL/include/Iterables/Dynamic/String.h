@@ -87,8 +87,17 @@ public:
 	// MOVE
 	CONSTEXPR20 Array<char>(Array<char>&& string) noexcept : m_Length(string.m_Length), m_Capacity(string.m_Capacity), m_Buffer(string.m_Buffer)
 	{
-		string.m_Capacity = DEFAULT_CAPACITY;
-		AllocIterableInit(char, string.m_Buffer, DEFAULT_CAPACITY);
+		try
+		{
+			AllocIterableInit(char, string.m_Buffer, DEFAULT_CAPACITY);
+			string.m_Capacity = DEFAULT_CAPACITY;
+		}
+		catch (const std::bad_alloc e)
+		{
+			string.m_Capacity = 1;
+			string.m_Buffer = "";
+		}
+
 		string.m_Length = 0;
 	}
 
@@ -184,7 +193,7 @@ public:
 			size_t i_cpy{ i }, j{};
 
 			while (j < strLength && m_Buffer[i_cpy] == string[j])
-				++i_cpy, ++j;
+				++i_cpy; ++j;
 
 			if (j == strLength)
 				++count;
@@ -315,8 +324,12 @@ public:
 	CONSTEXPR20 size_t Index(const char character, unsigned int occurrenceNumber = 1u) const
 	{
 		for (size_t i{}; i < m_Length; ++i)
-			if (m_Buffer[i] == character && --occurrenceNumber == 0u)
-				return i;
+			if (m_Buffer[i] == character)
+			{
+				--occurrenceNumber;
+				if(occurrenceNumber == 0u)
+					return i;
+			}
 
 		return m_Length;
 	}
@@ -333,8 +346,12 @@ public:
 			size_t j{};
 			for (size_t i_cpy{ i }; j < strLength && m_Buffer[i_cpy] == string[j]; ++j, ++i_cpy);
 
-			if (j == strLength && --occurrenceNumber == 0u)
-				return i;
+			if (j == strLength)
+			{
+				--occurrenceNumber;
+				if(occurrenceNumber == 0u)
+					return i;
+			}
 		}
 
 		return m_Length;
@@ -534,9 +551,8 @@ public:
 		{
 			int characterAsInt{ m_Buffer[i] };
 
-			if (isWordsFirstChar)
-				if (!(IsUpperChar(characterAsInt) || IsNum(characterAsInt)))
-					return false;
+			if (isWordsFirstChar && !(IsUpperChar(characterAsInt) || IsNum(characterAsInt)))
+				return false;
 			
 			if (!upperCharFound && IsUpperChar(characterAsInt))
 				upperCharFound = true;
@@ -579,7 +595,7 @@ public:
 	}
 
 	// .Reset()
-	CONSTEXPR20 void Reset() noexcept
+	CONSTEXPR20 void Reset()
 	{
 		DeAlloc(m_Buffer);
 		m_Length = 0;
@@ -652,8 +668,12 @@ public:
 		while (i > 0)
 		{
 			--i;
-			if (m_Buffer[i] == character && --occurrenceNumber == 0u)
-				return i;
+			if (m_Buffer[i] == character)
+			{
+				--occurrenceNumber;
+				if(occurrenceNumber == 0u)
+					return i;
+			}
 		}
 
 		return m_Length;
@@ -980,7 +1000,8 @@ public:
 
 	CONSTEXPR20 Array<char>& operator=(const Array<char>& string)
 	{
-		return *this = string.m_Buffer; // i.e. this->operator=(string.m_Buffer);
+		*this = string.m_Buffer;
+		return *this; // i.e. this->operator=(string.m_Buffer);
 	}
 
 	CONSTEXPR20 Array<char>& operator=(Array<char>&& other) noexcept
@@ -991,7 +1012,16 @@ public:
 		m_Length = other.m_Length;
 		m_Capacity = other.m_Capacity;
 
-		other.ReAlloc();
+		try
+		{
+			other.ReAlloc();
+		}
+		catch (const std::bad_alloc e)
+		{
+			other.m_Capacity = 1;
+			other.m_Buffer = "";
+		}
+
 		return *this;
 	}
 
@@ -1219,7 +1249,7 @@ public:
 	}
 
 	// operator std::string()
-	operator std::string() const
+	explicit operator std::string() const
 	{
 		return std::string{ m_Buffer };
 	}
@@ -1231,7 +1261,7 @@ public:
 	}
 
 private:
-	CONSTEXPR20 void ReAlloc() noexcept
+	CONSTEXPR20 void ReAlloc()
 	{
 		m_Length = 0;
 		m_Capacity = DEFAULT_CAPACITY;
@@ -1281,7 +1311,7 @@ constexpr size_t GetStrLen(const T str)
 	throw std::runtime_error("GetStrLen only accepts (char, char*, const char*, std::string, and CTL::Dynamic::Array<char>)!");
 }
 
-constexpr size_t GetStrLen(char str)
+constexpr size_t GetStrLen(char)
 {
 	return 1u;
 }
