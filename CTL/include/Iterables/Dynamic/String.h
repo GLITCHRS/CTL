@@ -193,7 +193,10 @@ public:
 			size_t i_cpy{ i }, j{};
 
 			while (j < strLength && m_Buffer[i_cpy] == string[j])
-				++i_cpy; ++j;
+			{
+				++i_cpy;
+				++j;
+			}
 
 			if (j == strLength)
 				++count;
@@ -243,27 +246,6 @@ public:
 	}
 
 	// .Find()
-
-	// non-const
-	CONSTEXPR20 char* Find(const char character, unsigned int occurrenceNumber = 1u)
-	{
-		return m_Buffer + Index(character, occurrenceNumber);
-	}
-
-	CONSTEXPR20 char* Find(const char* string, unsigned int occurrenceNumber = 1u)
-	{
-		return m_Buffer + Index(string, occurrenceNumber);
-	}
-
-	CONSTEXPR20 char* Find(const std::string& string, unsigned int occurrenceNumber = 1u)
-	{
-		return m_Buffer + Index(string.data(), occurrenceNumber);
-	}
-
-	CONSTEXPR20 char* Find(const Array<char>& string, unsigned int occurrenceNumber = 1u)
-	{
-		return m_Buffer + Index(string.m_Buffer, occurrenceNumber);
-	}
 
 	// const
 	CONSTEXPR20 const char* Find(const char character, unsigned int occurrenceNumber = 1u) const
@@ -1006,6 +988,9 @@ public:
 
 	CONSTEXPR20 Array<char>& operator=(Array<char>&& other) noexcept
 	{
+		if (this == &other)
+			return;
+
 		DeAlloc(m_Buffer);
 
 		m_Buffer = other.m_Buffer;

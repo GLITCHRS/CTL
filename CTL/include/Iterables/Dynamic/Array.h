@@ -263,14 +263,15 @@ public:
 	}
 
 	// .Reset()
-	CONSTEXPR20 void ReAlloc() noexcept
+	CONSTEXPR20 void ReAlloc()
 	{
 		m_Length = 0;
 		m_Capacity = DEFAULT_CAPACITY;
+
 		AllocIterableInit(T, m_Buffer, DEFAULT_CAPACITY);
 	}
 
-	CONSTEXPR20 void Reset() noexcept
+	CONSTEXPR20 void Reset()
 	{
 		DeAlloc(m_Buffer);
 		m_Length = 0;
@@ -284,6 +285,8 @@ public:
 		for (size_t i{}; i < m_Length; ++i)
 			if (m_Buffer[i] == toFindItem)
 				m_Buffer[i] = toReplItem;
+
+		return *this;
 	}
 
 	CONSTEXPR20 Array<T>& Replace(const T& toFindItem, const T& toReplItem, unsigned int numberOfReplaces)
@@ -298,6 +301,8 @@ public:
 				if (--numberOfReplaces == 0)
 					return;
 			}
+
+		return *this;
 	}
 
 	// .ReverseIndex()
@@ -409,8 +414,8 @@ public:
 		other.m_Capacity = m_Capacity;
 
 		m_Buffer = tempBuffer;
-		m_Length = m_Length;
-		m_Capacity = m_Capacity;
+		m_Length = tempLen;
+		m_Capacity = tempCap;
 	}
 
 	/*
@@ -510,6 +515,9 @@ public:
 	// operator=()
 	CONSTEXPR20 Array<T>& operator=(const Array<T>& arr)
 	{
+		if (this == &arr)
+			return;
+
 		if (m_Length >= arr.m_Length)
 		{
 			m_Length = arr.m_Length;
@@ -528,8 +536,11 @@ public:
 		return *this;
 	}
 
-	CONSTEXPR20 Array<T>& operator=(Array<T>&& other) noexcept
+	CONSTEXPR20 Array<T>& operator=(Array<T>&& other)
 	{
+		if (this == &other)
+			return;
+
 		DeAlloc(m_Buffer);
 
 		m_Buffer = other.m_Buffer;
